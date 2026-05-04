@@ -1,0 +1,24 @@
+{
+    "@context": {
+        "dwc": "http://rs.tdwg.org/dwc/terms/",
+        "dcterms": "http://purl.org/dc/terms/",
+        "abcd": "http://www.tdwg.org/schemas/abcd/2.06/",
+        "schema": "http://schema.org/"
+    },
+    "@type": "MappingSchema",
+    "name": "Default BiodivPipeline Mapping (Stub)",
+    "description": "Placeholder mapping schema. Replace with expert-crafted schema from WP8 Schema Editor UI.",
+    "mappings": [
+        {"source": "HerbariumID",       "target": "dwc:catalogNumber"},
+        {"source": "Family",            "target": "dwc:family"},
+        {"source": "FullNameCache",     "target": "dwc:scientificName"},
+        {"source": "Genus",             "target": "dwc:genus"},
+        {"source": "Sammlerteam",       "target": "dwc:recordedBy"},
+        {"source": "Sammelnummer",      "target": "dwc:recordNumber"},
+        {"source": "CollectionDateBegin","target": "dwc:eventDate"},
+        {"source": "Country",           "target": "dwc:country"},
+        {"source": "Locality",          "target": "dwc:locality"},
+        {"source": "Latitude",          "target": "dwc:decimalLatitude"},
+        {"source": "Longitude",         "target": "dwc:decimalLongitude"}
+    ]
+}
