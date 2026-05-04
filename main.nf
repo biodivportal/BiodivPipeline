@@ -96,7 +96,6 @@ workflow {
         params.plaintext_email,
         params.outdir,
         params.monochrome_logs,
-        channel.empty()   // no multiqc report — we use our own reporting
     )
 }
 
