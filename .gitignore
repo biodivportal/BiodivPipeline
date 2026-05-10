@@ -26,3 +26,6 @@ testing*
 
 # Docker
 *.tar
+
+
+.env
