@@ -2,6 +2,8 @@ process COLLECT_REPORTS {
     tag "reports"
     label 'process_single'
 
+    container 'biodivpipeline/placeholder:0.1' // TODO: replace with module team's container
+
     input:
     path quality_report
     path rdf_report
@@ -13,23 +15,7 @@ process COLLECT_REPORTS {
 
     script:
     """
-    # Collect all per-step reports into a single pipeline summary
-    cat <<-SUMMARY > pipeline_summary.json
-    {
-        "pipeline": "biodivpipeline",
-        "version": "0.1.0",
-        "reports": {
-            "quality": "\$(cat ${quality_report})",
-            "rdf": "\$(cat ${rdf_report})",
-            "column_mapping": "${column_mapping}",
-            "provisional_concepts": "${provisional_concepts}"
-        }
-    }
-    SUMMARY
-
-    cat <<-VERSIONS > versions.yml
-    "${task.process}":
-        collect_reports: 0.1.0
-    VERSIONS
+    # Stub — aggregator. Real implementation merges per-module reports into a single summary.
+    echo '{}' > pipeline_summary.json
     """
 }

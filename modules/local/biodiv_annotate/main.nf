@@ -2,7 +2,7 @@ process BIODIV_ANNOTATE {
     tag "annotate"
     label 'process_low'
 
-    container 'biodiv/wp2-annotator:latest'
+    container 'biodivpipeline/placeholder:0.1' // TODO: replace with module team's container
 
     input:
     path csv
@@ -14,25 +14,15 @@ process BIODIV_ANNOTATE {
 
     script:
     """
-    # WP2: Wrap BiodivPortal Annotator REST API
-    # Batch-submit records, parse JSON-LD, emit annotated + unresolved terms
-    # Stub: generate minimal output structure
+    # Stub — module team replaces this script with the real implementation.
+    # Emits minimal valid outputs matching the channel contract.
 
-    cat <<-JSONLD > annotated.jsonld
-    {
-        "@context": "https://biodivportal.gfbio.org/context.jsonld",
-        "total_records": \$(wc -l < ${csv}),
-        "annotated": [],
-        "status": "stub"
-    }
-    JSONLD
-
-    # Extract terms that couldn't be resolved (stub: empty)
-    echo "term,field,record_id" > unresolved_terms.csv
+    echo '{"@context": {}, "@graph": []}' > annotated.jsonld
+    : > unresolved_terms.csv
 
     cat <<-VERSIONS > versions.yml
     "${task.process}":
-        biodiv_annotator: 0.1.0
+        stub: "0.0.0"
     VERSIONS
     """
 }

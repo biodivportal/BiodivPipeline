@@ -21,7 +21,7 @@
                     "exists": true,
                     "mimetype": "text/csv",
                     "pattern": "^\\S+\\.csv$",
-                    "description": "Path to input CSV file containing biodiversity records (e.g. BGBM herbarium specimens).",
+                    "description": "Path to input CSV file containing biodiversity records.",
                     "fa_icon": "fas fa-file-csv"
                 },
                 "outdir": {
