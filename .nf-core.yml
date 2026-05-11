@@ -8,7 +8,7 @@ template:
   org: nf-core
   name: biodivpipeline
   description: Modular nf-core workflow for FAIR biodiversity data processing
-  author: SPST Team
+  author: ""
   version: 1.0.0dev
   force: true
   outdir: nf-core-biodivpipeline

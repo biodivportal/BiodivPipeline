@@ -104,9 +104,9 @@ Run the pipeline with the test profile to verify changes:
 nextflow run main.nf -profile test,docker --outdir results
 ```
 
-The test profile uses `test_data/sample.csv` (109 records) and `assets/default_mapping.jsonld`.
+The test profile uses `test_data/sample.csv` and `assets/default_mapping.jsonld`.
 
-All 7 modules should complete successfully:
+All modules should complete successfully:
 
 ```
 NFCORE_BIODIVPIPELINE:BIODIVPIPELINE:COLUMN_STANDARDISE
@@ -126,9 +126,3 @@ NFCORE_BIODIVPIPELINE:BIODIVPIPELINE:COLLECT_REPORTS
 4. Ensure the pipeline test passes
 5. Request review from at least one team member
 6. Squash-merge or rebase-merge (no merge commits)
-
-## Project contacts
-
-- **Coordinator:** Prof. Dr. Adrian Paschke
-- **Customer:** Naouel Karam (karam@infai.org), Jan Fillies (fillies@infai.org)
-- **Repository:** [github.com/biodivportal/BiodivPipeline](https://github.com/biodivportal/BiodivPipeline)
