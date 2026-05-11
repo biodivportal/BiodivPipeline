@@ -24,7 +24,7 @@ OUT_UNRESOLVED = "results/annotation/unresolved_terms.csv"
 
 # atm, small number for Sprint 0 testing, so we do not send too many API requests
 
-MAX_ROWS = 10
+MAX_ROWS = 50
 WAIT_BETWEEN_REQUESTS = 0.5
 
 
