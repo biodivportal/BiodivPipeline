@@ -5,12 +5,12 @@ import time
 import requests
 from dotenv import load_dotenv
 
-# small WP2 prototype:
-# read a few biodiversity records, call BiodivPortal Annotator,
-# and save simplified annotation results
+# WP2 Sprint 0 prototype
+# for now this script only tests the BiodivPortal Annotator on a few sample rows.
 
 load_dotenv()
 
+# API key is kept in .env, so we do not hardcode it in the script
 API_KEY = os.getenv("BIODIV_API_KEY")
 
 if not API_KEY:
@@ -22,9 +22,14 @@ INPUT_CSV = "test_data/sample.csv"
 OUT_JSON = "results/annotation/annotated.jsonld"
 OUT_UNRESOLVED = "results/annotation/unresolved_terms.csv"
 
-MAX_ROWS = 5
+# atm, small number for Sprint 0 testing, so we do not send too many API requests
+
+MAX_ROWS = 10
 WAIT_BETWEEN_REQUESTS = 0.5
 
+
+# columns contain the most useful text for ontology annotation
+# technical fields like image links, etc are skipped for now
 FIELDS_TO_CHECK = [
     "FullNameCache",
     "NameCache",
@@ -38,12 +43,15 @@ FIELDS_TO_CHECK = [
 
 
 def get_ontology_name(url):
+    # Ontology links end with the ontology acronym ex: NCBITAXON
     if not url:
         return ""
     return url.rstrip("/").split("/")[-1]
 
 
 def ask_annotator(text):
+    # send one text value to BiodivPortal Annotator
+    # The response is JSON-LD, but we can read it like normal JSON
     params = {
         "text": text,
         "apikey": API_KEY,
@@ -57,6 +65,8 @@ def ask_annotator(text):
 
 
 def simplify_response(api_result, field_name):
+    # The API returns a large nested response
+    # Here we keep only the parts that are useful for the next pipeline steps
     annotations = []
 
     for item in api_result:
@@ -87,6 +97,8 @@ def simplify_response(api_result, field_name):
 
 
 def remove_duplicates(annotations):
+    # The same concept can appear from several fields, for example genus/name.
+    # This keeps only one copy of the same matched text + ontology class.
     result = []
     seen = set()
 
@@ -101,6 +113,7 @@ def remove_duplicates(annotations):
 
 
 def read_rows(path, limit):
+    # utf-8-sig avoids problems with BOM in the CSV header
     rows = []
 
     with open(path, newline="", encoding="utf-8-sig") as f:
@@ -137,6 +150,9 @@ def annotate_record(row):
             api_result = ask_annotator(value)
             parsed = simplify_response(api_result, field)
 
+
+            # Empty API result means WP2 could not resolve this field
+            # These terms can later be useful for WP5
             if len(parsed) == 0:
                 unresolved.append({
                     "record_id": record_id,
@@ -148,6 +164,8 @@ def annotate_record(row):
             all_annotations.extend(parsed)
 
         except requests.RequestException as e:
+            # If the API request fails, we keep the term in unresolved output
+            # instead of stopping the whole run.
             unresolved.append({
                 "record_id": record_id,
                 "source_field": field,
@@ -155,7 +173,8 @@ def annotate_record(row):
                 "reason": f"api_error: {e}",
             })
 
-        time.sleep(WAIT_BETWEEN_REQUESTS)
+        time.sleep(WAIT_BETWEEN_REQUESTS)   # Small pause to avoid sending requests too aggressively.
+
 
     all_annotations = remove_duplicates(all_annotations)
 
