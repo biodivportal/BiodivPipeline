@@ -1,9 +1,20 @@
 repository_type: pipeline
-
 nf_core_version: 4.0.2
-
-lint: {}
-
+lint:
+  actions_awsfulltest: false
+  actions_awstest: false
+  actions_nf_test: false
+  actions_schema_validation: false
+  files_unchanged: false
+  files_exist:
+    - .github/workflows/branch.yml
+    - .github/workflows/ci.yml
+    - .github/workflows/linting.yml
+    - .github/workflows/linting_comment.yml
+  pipeline_todos: false
+  multiqc_config: false
+  rocrate_readme_sync: false
+  modules_json: false
 template:
   org: nf-core
   name: biodivpipeline
@@ -13,3 +24,4 @@ template:
   force: true
   outdir: nf-core-biodivpipeline
   is_nfcore: true
+
