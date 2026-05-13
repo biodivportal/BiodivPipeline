@@ -24,7 +24,7 @@ OUT_UNRESOLVED = "results/annotation/unresolved_terms.csv"
 
 # atm, small number for Sprint 0 testing, so we do not send too many API requests
 
-MAX_ROWS = 50
+MAX_ROWS = 110
 WAIT_BETWEEN_REQUESTS = 0.5
 
 
@@ -178,7 +178,7 @@ def annotate_record(row):
 
 
     all_annotations = remove_duplicates(all_annotations)
-    
+
     # final enriched biodiversity record
     enriched = {
         "record_id": record_id,
