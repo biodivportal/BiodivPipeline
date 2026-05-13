@@ -113,7 +113,7 @@ def remove_duplicates(annotations):
 
 
 def read_rows(path, limit):
-    # utf-8-sig avoids problems with BOM in the CSV header
+    # utf-8-sig avoids problems with BOM (Byte Order Mark) in the CSV header
     rows = []
 
     with open(path, newline="", encoding="utf-8-sig") as f:
@@ -128,6 +128,7 @@ def read_rows(path, limit):
 
 
 def annotate_record(row):
+     # Each CSV row becomes one enriched biodiversity record
     record_id = row.get("HerbariumID")
     all_annotations = []
     unresolved = []
@@ -177,7 +178,8 @@ def annotate_record(row):
 
 
     all_annotations = remove_duplicates(all_annotations)
-
+    
+    # final enriched biodiversity record
     enriched = {
         "record_id": record_id,
         "source_fields": used_fields,
