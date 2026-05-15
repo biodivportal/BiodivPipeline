@@ -2,6 +2,7 @@ import os
 import csv
 import json
 import time
+import argparse
 import requests
 from dotenv import load_dotenv
 
@@ -18,13 +19,11 @@ if not API_KEY:
 
 API_URL = "https://data.biodivportal.gfbio.org/annotator"
 
-INPUT_CSV = "test_data/sample.csv"
-OUT_JSON = "results/annotation/annotated.jsonld"
-OUT_UNRESOLVED = "results/annotation/unresolved_terms.csv"
+DEFAULT_INPUT_CSV = "test_data/Belege_aus_D.csv"
+DEFAULT_OUT_JSON = "results/annotation/annotated.jsonld"
+DEFAULT_OUT_UNRESOLVED = "results/annotation/unresolved_terms.csv"
 
-# atm, small number for Sprint 0 testing, so we do not send too many API requests
-
-MAX_ROWS = 110
+DEFAULT_MAX_ROWS = 20
 WAIT_BETWEEN_REQUESTS = 0.5
 
 
@@ -49,9 +48,7 @@ def get_ontology_name(url):
     return url.rstrip("/").split("/")[-1]
 
 
-def ask_annotator(text):
-    # send one text value to BiodivPortal Annotator
-    # The response is JSON-LD, but we can read it like normal JSON
+def ask_annotator(text, retries=3):
     params = {
         "text": text,
         "apikey": API_KEY,
@@ -59,9 +56,21 @@ def ask_annotator(text):
         "exclude_numbers": "true",
     }
 
-    res = requests.get(API_URL, params=params, timeout=30)
-    res.raise_for_status()
-    return res.json()
+    last_error = None
+
+    for attempt in range(retries):
+        try:
+            res = requests.get(API_URL, params=params, timeout=30)
+            res.raise_for_status()
+            return res.json()
+
+        except requests.RequestException as e:
+            last_error = e
+
+            if attempt < retries - 1:
+                time.sleep(2 * (attempt + 1))
+
+    raise last_error
 
 
 def simplify_response(api_result, field_name):
@@ -79,6 +88,9 @@ def simplify_response(api_result, field_name):
 
         for hit in item.get("annotations", []):
             text = hit.get("text", "")
+
+            # if text and len(text) <= 3:
+            #     continue
 
             annotations.append({
                 "source_field": field_name,
@@ -190,20 +202,32 @@ def annotate_record(row):
     return enriched, unresolved
 
 
-def save_json(records):
-    with open(OUT_JSON, "w", encoding="utf-8") as f:
+def save_json(records, output_path):
+    with open(output_path, "w", encoding="utf-8") as f:
         json.dump(records, f, indent=2, ensure_ascii=False)
 
 
-def save_unresolved(rows):
-    with open(OUT_UNRESOLVED, "w", newline="", encoding="utf-8") as f:
+def save_unresolved(rows, output_path):
+    with open(output_path, "w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=["record_id", "source_field", "term", "reason"])
         writer.writeheader()
         writer.writerows(rows)
 
 
+def get_args():
+    parser = argparse.ArgumentParser(description="WP2 BiodivPortal annotation prototype")
+
+    parser.add_argument("--input", default=DEFAULT_INPUT_CSV)
+    parser.add_argument("--out-json", default=DEFAULT_OUT_JSON)
+    parser.add_argument("--out-unresolved", default=DEFAULT_OUT_UNRESOLVED)
+    parser.add_argument("--max-rows", type=int, default=DEFAULT_MAX_ROWS)
+
+    return parser.parse_args()    
+
 if __name__ == "__main__":
-    rows = read_rows(INPUT_CSV, MAX_ROWS)
+    args = get_args()
+
+    rows = read_rows(args.input, args.max_rows)
 
     annotated = []
     unresolved_terms = []
@@ -215,8 +239,9 @@ if __name__ == "__main__":
         annotated.append(result)
         unresolved_terms.extend(unresolved)
 
-    save_json(annotated)
-    save_unresolved(unresolved_terms)
+  
+    save_json(annotated, args.out_json)
+    save_unresolved(unresolved_terms, args.out_unresolved)
 
     total_annotations = sum(item["annotation_count"] for item in annotated)
 
@@ -224,6 +249,5 @@ if __name__ == "__main__":
     print("Processed records:", len(annotated))
     print("Total annotations:", total_annotations)
     print("Unresolved terms:", len(unresolved_terms))
-    print("Saved:", OUT_JSON)
-    print("Saved:", OUT_UNRESOLVED)
-    
+    print("Saved:", args.out_json)
+    print("Saved:", args.out_unresolved)    
