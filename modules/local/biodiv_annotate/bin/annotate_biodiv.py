@@ -2,9 +2,11 @@ import os
 import csv
 import json
 import time
-import argparse
 import requests
 from dotenv import load_dotenv
+import unicodedata
+import argparse
+# from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # WP2 Sprint 0 prototype
 # for now this script only tests the BiodivPortal Annotator on a few sample rows.
@@ -19,11 +21,16 @@ if not API_KEY:
 
 API_URL = "https://data.biodivportal.gfbio.org/annotator"
 
-DEFAULT_INPUT_CSV = "test_data/Belege_aus_D.csv"
-DEFAULT_OUT_JSON = "results/annotation/annotated.jsonld"
-DEFAULT_OUT_UNRESOLVED = "results/annotation/unresolved_terms.csv"
+INPUT_CSV = "test_data/Belege_aus_D.csv"
+OUT_JSON = "results/annotation/annotated.jsonld"
+OUT_UNRESOLVED = "results/annotation/unresolved_terms.csv"
 
-DEFAULT_MAX_ROWS = 20
+# prevents crash if results folder does not exist
+os.makedirs("results/annotation", exist_ok=True)
+
+# atm, small number for Sprint 0 testing, so we do not send too many API requests
+
+MAX_ROWS = 5000
 WAIT_BETWEEN_REQUESTS = 0.5
 
 
@@ -38,8 +45,9 @@ FIELDS_TO_CHECK = [
     "FundortUNdOeko",
     "Country",
     "TitelEtikett",
+    "Expeditionsangabe",
+    # "Anmerkungen",
 ]
-
 
 def get_ontology_name(url):
     # Ontology links end with the ontology acronym ex: NCBITAXON
@@ -47,8 +55,10 @@ def get_ontology_name(url):
         return ""
     return url.rstrip("/").split("/")[-1]
 
-
 def ask_annotator(text, retries=3):
+    # send one text value to BiodivPortal Annotator
+    # The response is JSON-LD, but we can read it like normal JSON
+    # retry because the API can sometimes timeout
     params = {
         "text": text,
         "apikey": API_KEY,
@@ -62,14 +72,17 @@ def ask_annotator(text, retries=3):
         try:
             res = requests.get(API_URL, params=params, timeout=30)
             res.raise_for_status()
-            return res.json()
+
+            try:
+                return res.json()
+            except ValueError as e:
+                raise RuntimeError(f"Invalid JSON response from API: {e}")
 
         except requests.RequestException as e:
             last_error = e
 
             if attempt < retries - 1:
                 time.sleep(2 * (attempt + 1))
-
     raise last_error
 
 
@@ -88,9 +101,6 @@ def simplify_response(api_result, field_name):
 
         for hit in item.get("annotations", []):
             text = hit.get("text", "")
-
-            # if text and len(text) <= 3:
-            #     continue
 
             annotations.append({
                 "source_field": field_name,
@@ -125,7 +135,7 @@ def remove_duplicates(annotations):
 
 
 def read_rows(path, limit):
-    # utf-8-sig avoids problems with BOM (Byte Order Mark) in the CSV header
+    # utf-8-sig avoids problems with BOM in the CSV header
     rows = []
 
     with open(path, newline="", encoding="utf-8-sig") as f:
@@ -139,115 +149,361 @@ def read_rows(path, limit):
     return rows
 
 
-def annotate_record(row):
-     # Each CSV row becomes one enriched biodiversity record
-    record_id = row.get("HerbariumID")
-    all_annotations = []
+def normalize_term(value):
+# Normalize the term before sending to the API    
+    if not value:
+        return ""
+
+    value = str(value).strip()
+    value = unicodedata.normalize("NFKC", value)
+    value = " ".join(value.split())
+
+    return value
+
+
+def annotate_term(term):    
+# Annotate a single unique term via the BiodivPortal API
+# Returns the annotation result or error information
+    try:
+        api_result = ask_annotator(term)
+
+        result = {
+            "term": term,
+            "api_result": api_result,
+        }
+
+    # If the API request fails, we keep the term in unresolved output
+    # instead of stopping the whole run
+    except requests.RequestException as e:
+        result = {
+            "term": term,
+            "api_result": [],
+            "error": f"api_error: {e}",
+        }    
+
+    except Exception as e:
+        result = {
+            "term": term,
+            "api_result": [],
+            "error": f"unexpected_error: {e}",
+        }
+
+    time.sleep(WAIT_BETWEEN_REQUESTS)
+
+    return result
+
+def collect_terms(rows):
+# Collect unique terms from specified fields across all records, and keep track of where they occur for later annotation    
+    terms = {}
+
+    for row in rows:
+        record_id = row.get("HerbariumID")
+
+        # print(
+        #     f"Collecting terms from HerbariumID: {record_id}",
+        #     flush=True
+        # )
+
+        for field in FIELDS_TO_CHECK:
+            raw_value = row.get(field, "")
+            value = normalize_term(row.get(field, ""))
+
+            if not value:
+                continue
+
+            key = f"{field}::{value.lower()}"
+
+            if key not in terms:
+                terms[key] = {
+                    "term": value,
+                    "occurrences": [],
+                }
+
+            terms[key]["occurrences"].append({
+                "record_id": record_id,
+                "source_field": field,
+                "original_term": raw_value,
+                "normalized_term": value,
+            })
+
+    return terms
+
+
+def annotate_unique_terms(terms):
+# Annotate each unique term and store the results in a dictionary   
+    results = {}
+
+    for key, data in terms.items():
+        term = data["term"]
+
+        print(f"Annotating term: {term}", flush=True)
+
+        results[key] = annotate_term(term)
+
+    return results
+
+# ---- Optional parallel version for larger datasets: ----
+# def annotate_unique_terms(terms):
+#     # Annotate unique terms in parallel
+#     results = {}
+#     total = len(terms)
+
+#     with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
+#         future_to_key = {
+#             executor.submit(annotate_term, data["term"]): key
+#             for key, data in terms.items()
+#         }
+
+#         for index, future in enumerate(as_completed(future_to_key), start=1):
+#             key = future_to_key[future]
+#             term = terms[key]["term"]
+
+#             print(
+#                 f"[{index}/{total}] Finished annotating term: {term}",
+#                 flush=True
+#             )
+
+#             results[key] = future.result()
+
+#     return results
+
+def count_unique_unresolved(rows):
+    return len({
+        (normalize_term(row["term"]).lower(), row["reason"])
+        for row in rows
+    })
+# improving unresolved_terms.csv output 
+def guess_category(field):
+    if field in ["FullNameCache", "NameCache", "Genus", "Family"]:
+        return "taxon"
+    if field in ["Country", "Locality"]:
+        return "location"
+    if field == "FundortUNdOeko":
+        return "ecology_or_habitat"
+    if field in ["TitelEtikett", "Expeditionsangabe"]:
+        return "expedition_or_note"
+    return "unknown"
+
+def annotate_records(rows, terms, term_results):
+    records = {}
     unresolved = []
-    used_fields = {}
 
-    for field in FIELDS_TO_CHECK:
-        value = row.get(field, "")
+    for row in rows:
+        record_id = row.get("HerbariumID")
 
-        if not value:
-            continue
+        records[record_id] = {
+            "record_id": record_id,
+            "source_fields": {},
+            "annotation_count": 0,
+            "annotations": [],
+        }
 
-        value = value.strip()
+    for key, data in terms.items():
+        term = data["term"]
+        result = term_results[key]
 
-        if not value:
-            continue
+        for occurrence in data["occurrences"]:
+            record_id = occurrence["record_id"]
+            field = occurrence["source_field"]
 
-        used_fields[field] = value
+            row = next(
+                r for r in rows
+                if r.get("HerbariumID") == record_id
+            )
 
-        try:
-            api_result = ask_annotator(value)
-            parsed = simplify_response(api_result, field)
+            records[record_id]["source_fields"][field] = term
 
+            parsed = simplify_response(result["api_result"], field)
 
-            # Empty API result means WP2 could not resolve this field
-            # These terms can later be useful for WP5
             if len(parsed) == 0:
+                reason = result.get("error", "no_annotation_returned")
+
                 unresolved.append({
                     "record_id": record_id,
                     "source_field": field,
-                    "term": value,
-                    "reason": "no_annotation_returned",
+                    "original_term": occurrence.get("original_term", term),
+                    "normalized_term": occurrence.get("normalized_term", term),
+                    "term": term,
+                    "reason": reason,
+                    "suggested_category":guess_category(field),
+                    "row_context": row,
+
+                    "example_FullNameCache": row.get("FullNameCache", ""),
+                    "example_NameCache": row.get("NameCache", ""),
+                    "example_Genus": row.get("Genus", ""),
+                    "example_Family": row.get("Family", ""),
+                    "example_Country": row.get("Country", ""),
+                    "example_Locality": row.get("Locality", ""),
+                    "example_FundortUNdOeko": row.get("FundortUNdOeko", ""),
+                    "example_TitelEtikett": row.get("TitelEtikett", ""),
+                    "example_Expeditionsangabe": row.get("Expeditionsangabe", ""),
                 })
 
-            all_annotations.extend(parsed)
+                continue
 
-        except requests.RequestException as e:
-            # If the API request fails, we keep the term in unresolved output
-            # instead of stopping the whole run.
-            unresolved.append({
-                "record_id": record_id,
-                "source_field": field,
-                "term": value,
-                "reason": f"api_error: {e}",
-            })
+            records[record_id]["annotations"].extend(parsed)
 
-        time.sleep(WAIT_BETWEEN_REQUESTS)   # Small pause to avoid sending requests too aggressively.
+    final_records = []
+
+    for record in records.values():
+        deduplicated = remove_duplicates(record["annotations"])
+
+        record["annotations"] = deduplicated
+        record["annotation_count"] = len(deduplicated)
+
+        final_records.append(record)
+
+    return final_records, unresolved
 
 
-    all_annotations = remove_duplicates(all_annotations)
 
-    # final enriched biodiversity record
-    enriched = {
-        "record_id": record_id,
-        "source_fields": used_fields,
-        "annotation_count": len(all_annotations),
-        "annotations": all_annotations,
+def save_json(records):
+    output = {
+        "@context": {
+            "record_id": "https://schema.org/identifier",
+            "source_fields": "https://schema.org/additionalProperty",
+            "annotations": "https://schema.org/about",
+            "matched_text": "https://schema.org/name",
+            "source_field": "https://schema.org/propertyID",
+            "match_type": "https://schema.org/additionalType",
+            "class_id": "@id",
+            "ontology": "https://schema.org/isPartOf",
+            "ontology_url": "https://schema.org/url",
+            "ui_link": "https://schema.org/url",
+            "suspicious_short_match": "https://schema.org/Boolean",
+        },
+        "@graph": records,
     }
 
-    return enriched, unresolved
+    with open(OUT_JSON, "w", encoding="utf-8") as f:
+        json.dump(output, f, indent=2, ensure_ascii=False)
 
-
-def save_json(records, output_path):
-    with open(output_path, "w", encoding="utf-8") as f:
-        json.dump(records, f, indent=2, ensure_ascii=False)
-
-
-def save_unresolved(rows, output_path):
-    with open(output_path, "w", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=["record_id", "source_field", "term", "reason"])
-        writer.writeheader()
-        writer.writerows(rows)
-
-
-def get_args():
-    parser = argparse.ArgumentParser(description="WP2 BiodivPortal annotation prototype")
-
-    parser.add_argument("--input", default=DEFAULT_INPUT_CSV)
-    parser.add_argument("--out-json", default=DEFAULT_OUT_JSON)
-    parser.add_argument("--out-unresolved", default=DEFAULT_OUT_UNRESOLVED)
-    parser.add_argument("--max-rows", type=int, default=DEFAULT_MAX_ROWS)
-
-    return parser.parse_args()    
-
-if __name__ == "__main__":
-    args = get_args()
-
-    rows = read_rows(args.input, args.max_rows)
-
-    annotated = []
-    unresolved_terms = []
+def save_unresolved(rows):
+    aggregated = {}
 
     for row in rows:
-        print("Annotating:", row.get("HerbariumID"))
+        key = (
+            row["source_field"],
+            normalize_term(row["normalized_term"]).lower(),
+            row["reason"],
+            # "suggested_category": guess_category(field),
+            # "row_context": row,
+        )
 
-        result, unresolved = annotate_record(row)
-        annotated.append(result)
-        unresolved_terms.extend(unresolved)
+        if key not in aggregated:
+            aggregated[key] = {
+        "source_field": row["source_field"],
+        "original_term": row["original_term"],
+        "normalized_term": row["normalized_term"],
+        "suggested_category": row.get("suggested_category", ""),
+        "reason": row["reason"],
+        "count": 0,
+        "record_ids": set(),
 
-  
-    save_json(annotated, args.out_json)
-    save_unresolved(unresolved_terms, args.out_unresolved)
+        "example_FullNameCache": row.get("example_FullNameCache", ""),
+        "example_NameCache": row.get("example_NameCache", ""),
+        "example_Genus": row.get("example_Genus", ""),
+        "example_Family": row.get("example_Family", ""),
+        "example_Country": row.get("example_Country", ""),
+        "example_Locality": row.get("example_Locality", ""),
+        "example_FundortUNdOeko": row.get("example_FundortUNdOeko", ""),
+        "example_TitelEtikett": row.get("example_TitelEtikett", ""),
+        "example_Expeditionsangabe": row.get("example_Expeditionsangabe", ""),
+}
+
+        aggregated[key]["count"] += 1
+        aggregated[key]["record_ids"].add(row["record_id"])
+        # aggregated[key]["source_fields"].add(row["source_field"])
+
+    with open(OUT_UNRESOLVED, "w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(
+            f,
+            fieldnames=[
+                "source_field",
+                "original_term",
+                "normalized_term",
+                "suggested_category",
+                "reason",
+                "count",
+                "record_ids",
+                "example_FullNameCache",
+                "example_NameCache",
+                "example_Genus",
+                "example_Family",
+                "example_Country",
+                "example_Locality",
+                "example_FundortUNdOeko",
+                "example_TitelEtikett",
+                "example_Expeditionsangabe",
+            ]
+        )
+
+        writer.writeheader()
+
+        for item in aggregated.values():
+            item["record_ids"] = "|".join(sorted(item["record_ids"]))
+            # item["source_fields"] = "|".join(sorted(item["source_fields"]))
+
+            writer.writerow(item)
+
+def parse_args():
+    parser = argparse.ArgumentParser(description="Annotate biodiversity CSV records with BiodivPortal.")
+    parser.add_argument("--input", default=INPUT_CSV)
+    parser.add_argument("--out-json", default=OUT_JSON)
+    parser.add_argument("--out-unresolved", default=OUT_UNRESOLVED)
+    parser.add_argument("--max-rows", type=int, default=MAX_ROWS)
+    return parser.parse_args()
+
+# if __name__ == "__main__":
+#     start_time = time.perf_counter()
+
+#     rows = read_rows(INPUT_CSV, MAX_ROWS)
+if __name__ == "__main__":
+    args = parse_args()
+
+    INPUT_CSV = args.input
+    OUT_JSON = args.out_json
+    OUT_UNRESOLVED = args.out_unresolved
+    MAX_ROWS = args.max_rows
+
+    # os.makedirs(os.path.dirname(OUT_JSON), exist_ok=True)
+    # os.makedirs(os.path.dirname(OUT_UNRESOLVED), exist_ok=True)
+
+    out_json_dir = os.path.dirname(OUT_JSON)
+    out_unresolved_dir = os.path.dirname(OUT_UNRESOLVED)
+
+    if out_json_dir:
+        os.makedirs(out_json_dir, exist_ok=True)
+
+    if out_unresolved_dir:
+        os.makedirs(out_unresolved_dir, exist_ok=True)
+
+    start_time = time.perf_counter()
+
+    rows = read_rows(INPUT_CSV, MAX_ROWS)
+
+    terms = collect_terms(rows)
+    term_results = annotate_unique_terms(terms)
+
+    annotated, unresolved_terms = annotate_records(
+        rows,
+        terms,
+        term_results)
+
+    save_json(annotated)
+    save_unresolved(unresolved_terms)
 
     total_annotations = sum(item["annotation_count"] for item in annotated)
+
+    runtime = time.perf_counter() - start_time
+    minutes = int(runtime // 60)
+    seconds = runtime % 60
 
     print()
     print("Processed records:", len(annotated))
     print("Total annotations:", total_annotations)
-    print("Unresolved terms:", len(unresolved_terms))
-    print("Saved:", args.out_json)
-    print("Saved:", args.out_unresolved)    
+    print("Unresolved occurrences:", len(unresolved_terms))
+    print("Unresolved terms:", count_unique_unresolved(unresolved_terms))
+    print("Saved:", OUT_JSON)
+    print("Saved:", OUT_UNRESOLVED)
+    print(f"Runtime: {minutes}m {seconds:.2f}s")
