@@ -16,6 +16,7 @@ modules/local/<your_module>/
 ```
 
 You never touch:
+
 - `main.nf` at the repo root
 - `workflows/biodivpipeline.nf`
 - `nextflow.config`, `conf/`, `subworkflows/`
@@ -24,10 +25,10 @@ You never touch:
 
 ## Three ways to implement your module
 
-| Approach | How | When to use |
-|---|---|---|
-| **Embedded script** | Write shell/Python directly in the `script:` block of `main.nf` | Short, self-contained logic with no external deps |
-| **`bin/` script** | Put your script in `modules/local/<module>/bin/`, call it by name | Cleaner separation; Nextflow auto-adds `bin/` to PATH |
+| Approach             | How                                                                   | When to use                                              |
+| -------------------- | --------------------------------------------------------------------- | -------------------------------------------------------- |
+| **Embedded script**  | Write shell/Python directly in the `script:` block of `main.nf`       | Short, self-contained logic with no external deps        |
+| **`bin/` script**    | Put your script in `modules/local/<module>/bin/`, call it by name     | Cleaner separation; Nextflow auto-adds `bin/` to PATH    |
 | **Docker container** | Set `container 'ghcr.io/biodivportal/your-tool:1.0'` and call its CLI | Complex dependencies, external services, production code |
 
 All three produce the same result from the pipeline's perspective.
@@ -63,12 +64,12 @@ Each module has a fixed input/output contract. Your script must read the input f
 
 > Maps raw CSV column headers to target schema terms.
 
-| Direction | File | Format |
-|---|---|---|
-| Input | `<any>.csv` | Raw biodiversity records CSV |
-| Output | `standardised.csv` | Same records, headers remapped |
-| Output | `column_mapping.json` | Original → standardised header map |
-| Output | `versions.yml` | Tool version declaration (required) |
+| Direction | File                  | Format                              |
+| --------- | --------------------- | ----------------------------------- |
+| Input     | `<any>.csv`           | Raw biodiversity records CSV        |
+| Output    | `standardised.csv`    | Same records, headers remapped      |
+| Output    | `column_mapping.json` | Original → standardised header map  |
+| Output    | `versions.yml`        | Tool version declaration (required) |
 
 ---
 
@@ -76,12 +77,12 @@ Each module has a fixed input/output contract. Your script must read the input f
 
 > Annotates records against biodiversity ontologies.
 
-| Direction | File | Format |
-|---|---|---|
-| Input | `standardised.csv` | Output of COLUMN_STANDARDISE |
-| Output | `annotated.jsonld` | Records with ontology term URIs |
-| Output | `unresolved_terms.csv` | Terms that could not be matched |
-| Output | `versions.yml` | Tool version declaration (required) |
+| Direction | File                   | Format                              |
+| --------- | ---------------------- | ----------------------------------- |
+| Input     | `standardised.csv`     | Output of COLUMN_STANDARDISE        |
+| Output    | `annotated.jsonld`     | Records with ontology term URIs     |
+| Output    | `unresolved_terms.csv` | Terms that could not be matched     |
+| Output    | `versions.yml`         | Tool version declaration (required) |
 
 ---
 
@@ -89,11 +90,11 @@ Each module has a fixed input/output contract. Your script must read the input f
 
 > Resolves taxon names to GBIF/WFO identifiers.
 
-| Direction | File | Format |
-|---|---|---|
-| Input | `standardised.csv` | Output of COLUMN_STANDARDISE |
-| Output | `taxonomy_resolved.csv` | Records with resolved taxon IDs |
-| Output | `versions.yml` | Tool version declaration (required) |
+| Direction | File                    | Format                              |
+| --------- | ----------------------- | ----------------------------------- |
+| Input     | `standardised.csv`      | Output of COLUMN_STANDARDISE        |
+| Output    | `taxonomy_resolved.csv` | Records with resolved taxon IDs     |
+| Output    | `versions.yml`          | Tool version declaration (required) |
 
 ---
 
@@ -101,12 +102,12 @@ Each module has a fixed input/output contract. Your script must read the input f
 
 > Flags records with bad coordinates, dates, or semantic anomalies.
 
-| Direction | File | Format |
-|---|---|---|
-| Input | `standardised.csv` | Output of COLUMN_STANDARDISE |
-| Output | `quality_report.json` | Quality check summary |
-| Output | `flagged_records.csv` | Records flagged with reason codes |
-| Output | `versions.yml` | Tool version declaration (required) |
+| Direction | File                  | Format                              |
+| --------- | --------------------- | ----------------------------------- |
+| Input     | `standardised.csv`    | Output of COLUMN_STANDARDISE        |
+| Output    | `quality_report.json` | Quality check summary               |
+| Output    | `flagged_records.csv` | Records flagged with reason codes   |
+| Output    | `versions.yml`        | Tool version declaration (required) |
 
 ---
 
@@ -114,11 +115,11 @@ Each module has a fixed input/output contract. Your script must read the input f
 
 > Registers unresolved terms as provisional concept URIs.
 
-| Direction | File | Format |
-|---|---|---|
-| Input | `unresolved_terms.csv` | Output of BIODIV_ANNOTATE |
-| Output | `provisional_concepts.json` | Newly registered provisional URIs |
-| Output | `versions.yml` | Tool version declaration (required) |
+| Direction | File                        | Format                              |
+| --------- | --------------------------- | ----------------------------------- |
+| Input     | `unresolved_terms.csv`      | Output of BIODIV_ANNOTATE           |
+| Output    | `provisional_concepts.json` | Newly registered provisional URIs   |
+| Output    | `versions.yml`              | Tool version declaration (required) |
 
 ---
 
@@ -126,16 +127,16 @@ Each module has a fixed input/output contract. Your script must read the input f
 
 > Converts the cleaned, annotated data into RDF triples.
 
-| Direction | File | Format |
-|---|---|---|
-| Input | `standardised.csv` | Output of COLUMN_STANDARDISE |
-| Input | `annotated.jsonld` | Output of BIODIV_ANNOTATE |
-| Input | `taxonomy_resolved.csv` | Output of TAXONOMY_CLASSIFY |
-| Input | `<mapping_schema>` | JSON-LD or Turtle mapping schema |
-| Output | `output.ttl` | RDF triples (Turtle) |
-| Output | `output.jsonld` | RDF triples (JSON-LD) |
-| Output | `rdf_report.json` | Transformation statistics |
-| Output | `versions.yml` | Tool version declaration (required) |
+| Direction | File                    | Format                              |
+| --------- | ----------------------- | ----------------------------------- |
+| Input     | `standardised.csv`      | Output of COLUMN_STANDARDISE        |
+| Input     | `annotated.jsonld`      | Output of BIODIV_ANNOTATE           |
+| Input     | `taxonomy_resolved.csv` | Output of TAXONOMY_CLASSIFY         |
+| Input     | `<mapping_schema>`      | JSON-LD or Turtle mapping schema    |
+| Output    | `output.ttl`            | RDF triples (Turtle)                |
+| Output    | `output.jsonld`         | RDF triples (JSON-LD)               |
+| Output    | `rdf_report.json`       | Transformation statistics           |
+| Output    | `versions.yml`          | Tool version declaration (required) |
 
 ---
 
@@ -143,13 +144,13 @@ Each module has a fixed input/output contract. Your script must read the input f
 
 > Aggregates all per-module reports into a single pipeline summary.
 
-| Direction | File | Format |
-|---|---|---|
-| Input | `quality_report.json` | Output of OUTLIER_DETECT |
-| Input | `rdf_report.json` | Output of RDF_TRANSFORM |
-| Input | `column_mapping.json` | Output of COLUMN_STANDARDISE |
-| Input | `provisional_concepts.json` | Output of PROVISIONAL_CONCEPTS |
-| Output | `pipeline_summary.json` | Aggregated pipeline summary |
+| Direction | File                        | Format                         |
+| --------- | --------------------------- | ------------------------------ |
+| Input     | `quality_report.json`       | Output of OUTLIER_DETECT       |
+| Input     | `rdf_report.json`           | Output of RDF_TRANSFORM        |
+| Input     | `column_mapping.json`       | Output of COLUMN_STANDARDISE   |
+| Input     | `provisional_concepts.json` | Output of PROVISIONAL_CONCEPTS |
+| Output    | `pipeline_summary.json`     | Aggregated pipeline summary    |
 
 ---
 
@@ -159,7 +160,7 @@ Every module must produce a `versions.yml` file. This is how nf-core tracks repr
 
 ```yaml
 "NFCORE_BIODIVPIPELINE:BIODIVPIPELINE:YOUR_PROCESS_NAME":
-    your_tool: "1.2.3"
+  your_tool: "1.2.3"
 ```
 
 Shortest valid way to produce it in your script:

@@ -2,11 +2,11 @@
 
 ## Branch model
 
-| Branch | Purpose |
-|---|---|
-| `master` | Stable releases only. Never commit directly. |
-| `dev` | Integration branch. All feature branches merge here via PR. |
-| `wp1-*`, `wp2-*`, ... | Feature branches per work package |
+| Branch                | Purpose                                                     |
+| --------------------- | ----------------------------------------------------------- |
+| `master`              | Stable releases only. Never commit directly.                |
+| `dev`                 | Integration branch. All feature branches merge here via PR. |
+| `wp1-*`, `wp2-*`, ... | Feature branches per work package                           |
 
 ```
 master ← dev ← wp1-nf-core-pipeline
@@ -30,6 +30,7 @@ Use [Conventional Commits](https://www.conventionalcommits.org/):
 Types: `feat`, `fix`, `docs`, `refactor`, `test`, `chore`, `ci`, `build`
 
 Examples:
+
 ```
 feat(pipeline): wire 7 modules into biodivpipeline workflow DAG
 docs: rewrite README for biodiversity pipeline
