@@ -1,0 +1,7 @@
+{
+    "@context": {},
+    "@type": "MappingSchema",
+    "name": "Placeholder mapping schema",
+    "description": "Empty placeholder. Real mapping schema is owned by the RDF transform module team.",
+    "mappings": []
+}

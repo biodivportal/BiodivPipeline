@@ -1,0 +1,42 @@
+repository_type: pipeline
+nf_core_version: 4.0.2
+lint:
+  actions_awsfulltest: false
+  actions_awstest: false
+  actions_nf_test: false
+  actions_schema_validation: false
+  files_unchanged: false
+  files_exist:
+    - .github/workflows/branch.yml
+    - .github/workflows/ci.yml
+    - .github/workflows/linting.yml
+    - .github/workflows/linting_comment.yml
+    - .github/workflows/awstest.yml
+    - .github/workflows/awsfulltest.yml
+    - .github/.dockstore.yml
+    - .gitattributes
+    - CHANGELOG.md
+    - CODE_OF_CONDUCT.md
+    - assets/email_template.html
+    - assets/email_template.txt
+    - assets/sendmail_template.txt
+    - assets/nf-core-biodivpipeline_logo_light.png
+    - conf/test_full.config
+    - docs/README.md
+    - docs/images/nf-core-biodivpipeline_logo_light.png
+    - docs/images/nf-core-biodivpipeline_logo_dark.png
+    - ro-crate-metadata.json
+  pipeline_todos: false
+  multiqc_config: false
+  rocrate_readme_sync: false
+  modules_json: false
+  readme: false
+template:
+  org: nf-core
+  name: biodivpipeline
+  description: Modular nf-core workflow for FAIR biodiversity data processing
+  author: ""
+  version: 1.0.0dev
+  force: true
+  outdir: nf-core-biodivpipeline
+  is_nfcore: true
