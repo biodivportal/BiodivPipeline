@@ -88,13 +88,3 @@ nextflow run main.nf -profile docker --input data.csv --outdir results -resume
 ```bash
 nextflow run main.nf -profile docker --input data.csv --outdir results -bg > pipeline.log 2>&1
 ```
-
-Or use `screen` / `tmux` for a detached session.
-
-## Nextflow memory
-
-If Nextflow requests too much JVM memory, set:
-
-```bash
-export NXF_OPTS='-Xms1g -Xmx4g'
-```
