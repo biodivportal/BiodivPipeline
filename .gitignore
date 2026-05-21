@@ -28,4 +28,6 @@ testing*
 *.tar
 
 
-.env
+.env.nf-test/
+.nf-test.log
+nf-test
