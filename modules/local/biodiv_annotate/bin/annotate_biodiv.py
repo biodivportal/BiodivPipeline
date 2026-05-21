@@ -27,7 +27,7 @@ OUT_UNRESOLVED = "results/annotation/unresolved_terms.csv"
 os.makedirs("results/annotation", exist_ok=True)
 
 
-MAX_ROWS = 50
+MAX_ROWS = 3000
 WAIT_BETWEEN_REQUESTS = 0
 MAX_WORKERS = 5
 
