@@ -6,7 +6,7 @@ import requests
 from dotenv import load_dotenv
 import unicodedata
 import argparse
-# from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # WP2 Sprint 0 prototype
 # for now this script only tests the BiodivPortal Annotator on a few sample rows.
@@ -30,8 +30,9 @@ os.makedirs("results/annotation", exist_ok=True)
 
 # atm, small number for Sprint 0 testing, so we do not send too many API requests
 
-MAX_ROWS = 5000
-WAIT_BETWEEN_REQUESTS = 0.5
+MAX_ROWS = 50
+WAIT_BETWEEN_REQUESTS = 0
+MAX_WORKERS = 5
 
 
 # columns contain the most useful text for ontology annotation
@@ -229,43 +230,43 @@ def collect_terms(rows):
     return terms
 
 
-def annotate_unique_terms(terms):
-# Annotate each unique term and store the results in a dictionary   
-    results = {}
-
-    for key, data in terms.items():
-        term = data["term"]
-
-        print(f"Annotating term: {term}", flush=True)
-
-        results[key] = annotate_term(term)
-
-    return results
-
-# ---- Optional parallel version for larger datasets: ----
 # def annotate_unique_terms(terms):
-#     # Annotate unique terms in parallel
+# # Annotate each unique term and store the results in a dictionary   
 #     results = {}
-#     total = len(terms)
 
-#     with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
-#         future_to_key = {
-#             executor.submit(annotate_term, data["term"]): key
-#             for key, data in terms.items()
-#         }
+#     for key, data in terms.items():
+#         term = data["term"]
 
-#         for index, future in enumerate(as_completed(future_to_key), start=1):
-#             key = future_to_key[future]
-#             term = terms[key]["term"]
+#         print(f"Annotating term: {term}", flush=True)
 
-#             print(
-#                 f"[{index}/{total}] Finished annotating term: {term}",
-#                 flush=True
-#             )
-
-#             results[key] = future.result()
+#         results[key] = annotate_term(term)
 
 #     return results
+
+# ---- Optional parallel version for larger datasets: ----
+def annotate_unique_terms(terms):
+    # Annotate unique terms in parallel
+    results = {}
+    total = len(terms)
+
+    with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
+        future_to_key = {
+            executor.submit(annotate_term, data["term"]): key
+            for key, data in terms.items()
+        }
+
+        for index, future in enumerate(as_completed(future_to_key), start=1):
+            key = future_to_key[future]
+            term = terms[key]["term"]
+
+            print(
+                f"[{index}/{total}] Finished annotating term: {term}",
+                flush=True
+            )
+
+            results[key] = future.result()
+
+    return results
 
 def count_unique_unresolved(rows):
     return len({
@@ -376,7 +377,8 @@ def save_json(records):
     }
 
     with open(OUT_JSON, "w", encoding="utf-8") as f:
-        json.dump(output, f, indent=2, ensure_ascii=False)
+        json.dump(records, f, indent=2, ensure_ascii=False)
+
 
 def save_unresolved(rows):
     aggregated = {}
@@ -485,13 +487,22 @@ if __name__ == "__main__":
     terms = collect_terms(rows)
     term_results = annotate_unique_terms(terms)
 
+    print("Building annotated records...", flush=True)
+
     annotated, unresolved_terms = annotate_records(
         rows,
         terms,
         term_results)
 
+    save_start = time.perf_counter()
+
+    print("Writing annotated JSON-LD...", flush=True)
     save_json(annotated)
+
+    print("Writing unresolved CSV...", flush=True)
     save_unresolved(unresolved_terms)
+
+    save_time = time.perf_counter() - save_start
 
     total_annotations = sum(item["annotation_count"] for item in annotated)
 
@@ -507,3 +518,4 @@ if __name__ == "__main__":
     print("Saved:", OUT_JSON)
     print("Saved:", OUT_UNRESOLVED)
     print(f"Runtime: {minutes}m {seconds:.2f}s")
+    print(f"Saving time: {save_time:.2f}s")
