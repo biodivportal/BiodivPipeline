@@ -8,16 +8,14 @@ import unicodedata
 import argparse
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-# WP2 Sprint 0 prototype
-# for now this script only tests the BiodivPortal Annotator on a few sample rows.
 
-load_dotenv()
 
-# API key is kept in .env, so we do not hardcode it in the script
-API_KEY = os.getenv("BIODIV_API_KEY")
+API_KEY = os.environ.get("BIODIV_API_KEY")
 
 if not API_KEY:
-    raise RuntimeError("BIODIV_API_KEY is missing. Please add it to your .env file.")
+    raise RuntimeError(
+        "BIODIV_API_KEY is missing. Please export it before running the annotator."
+    )
 
 API_URL = "https://data.biodivportal.gfbio.org/annotator"
 
@@ -28,7 +26,6 @@ OUT_UNRESOLVED = "results/annotation/unresolved_terms.csv"
 # prevents crash if results folder does not exist
 os.makedirs("results/annotation", exist_ok=True)
 
-# atm, small number for Sprint 0 testing, so we do not send too many API requests
 
 MAX_ROWS = 50
 WAIT_BETWEEN_REQUESTS = 0
@@ -200,10 +197,6 @@ def collect_terms(rows):
     for row in rows:
         record_id = row.get("HerbariumID")
 
-        # print(
-        #     f"Collecting terms from HerbariumID: {record_id}",
-        #     flush=True
-        # )
 
         for field in FIELDS_TO_CHECK:
             raw_value = row.get(field, "")
@@ -228,20 +221,6 @@ def collect_terms(rows):
             })
 
     return terms
-
-
-# def annotate_unique_terms(terms):
-# # Annotate each unique term and store the results in a dictionary   
-#     results = {}
-
-#     for key, data in terms.items():
-#         term = data["term"]
-
-#         print(f"Annotating term: {term}", flush=True)
-
-#         results[key] = annotate_term(term)
-
-#     return results
 
 # ---- Optional parallel version for larger datasets: ----
 def annotate_unique_terms(terms):
@@ -377,7 +356,7 @@ def save_json(records):
     }
 
     with open(OUT_JSON, "w", encoding="utf-8") as f:
-        json.dump(records, f, indent=2, ensure_ascii=False)
+        json.dump(output, f, indent=2, ensure_ascii=False)
 
 
 def save_unresolved(rows):
@@ -499,7 +478,7 @@ if __name__ == "__main__":
     print("Writing annotated JSON-LD...", flush=True)
     save_json(annotated)
 
-    print("Writing unresolved CSV...", flush=True)
+    print("Writing Unresovled CSV...", flush=True)
     save_unresolved(unresolved_terms)
 
     save_time = time.perf_counter() - save_start
