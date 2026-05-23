@@ -12,7 +12,7 @@
 
 The pipeline expects a CSV file with biodiversity specimen records and a header row. Column names do not need to follow any specific standard — the first pipeline module is responsible for mapping headers to a target schema.
 
-A small mock dataset is provided under `test_data/sample.csv` for use with `-profile test`.
+A small mock dataset is provided under `data/sample.csv` for use with `-profile test`.
 
 ## Running the pipeline
 
@@ -22,7 +22,7 @@ A small mock dataset is provided under `test_data/sample.csv` for use with `-pro
 nextflow run main.nf -profile test,docker --outdir results
 ```
 
-The `test` profile points to `test_data/sample.csv` and `assets/default_mapping.jsonld` so no other parameters are needed.
+The `test` profile points to `data/sample.csv` and `assets/default_mapping.jsonld` so no other parameters are needed.
 
 ### Custom input run
 
@@ -69,7 +69,7 @@ Multiple profiles can be combined: `-profile test,docker`. They load in order, s
 
 | Profile       | Description                                                        |
 | ------------- | ------------------------------------------------------------------ |
-| `test`        | Uses the bundled mock CSV in `test_data/`. No other params needed. |
+| `test`        | Uses the bundled mock CSV in `data/`. No other params needed.      |
 | `docker`      | Run module containers with Docker                                  |
 | `singularity` | Run module containers with Singularity                             |
 | `podman`      | Run module containers with Podman                                  |
