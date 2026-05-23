@@ -37,6 +37,6 @@ template:
   description: Modular nf-core workflow for FAIR biodiversity data processing
   author: ""
   version: 1.0.0dev
-  force: true
+  force: false
   outdir: nf-core-biodivpipeline
   is_nfcore: true

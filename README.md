@@ -40,7 +40,7 @@ BiodivPipeline/
 ├── modules/local/               # Pipeline modules (one per work package)
 ├── conf/                        # Nextflow config profiles
 ├── assets/                      # Static files (default mapping schema)
-├── test_data/                   # Mock dataset for the test profile
+├── data/                        # Input datasets (raw + test sample)
 ├── subworkflows/                # nf-core shared utilities
 └── docs/                        # Documentation
 ```
