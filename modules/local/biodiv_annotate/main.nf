@@ -1,8 +1,7 @@
 process BIODIV_ANNOTATE {
     tag "annotate"
-    label 'process_low'
+    label 'process_single'
 
-    container 'biodiv/wp2-annotator:latest'
 
     input:
     path csv
@@ -14,25 +13,17 @@ process BIODIV_ANNOTATE {
 
     script:
     """
-    # WP2: Wrap BiodivPortal Annotator REST API
-    # Batch-submit records, parse JSON-LD, emit annotated + unresolved terms
-    # Stub: generate minimal output structure
+    export BIODIV_API_KEY="${params.biodiv_api_key}"
 
-    cat <<-JSONLD > annotated.jsonld
-    {
-        "@context": "https://biodivportal.gfbio.org/context.jsonld",
-        "total_records": \$(wc -l < ${csv}),
-        "annotated": [],
-        "status": "stub"
-    }
-    JSONLD
-
-    # Extract terms that couldn't be resolved (stub: empty)
-    echo "term,field,record_id" > unresolved_terms.csv
+    python ${moduleDir}/bin/annotate_biodiv.py \\
+        --input ${csv} \\
+        --out-json annotated.jsonld \\
+        --out-unresolved unresolved_terms.csv \\
+        --max-rows ${params.max_rows ?: 30}
 
     cat <<-VERSIONS > versions.yml
     "${task.process}":
-        biodiv_annotator: 0.1.0
+        annotate_biodiv: "0.1.0"
     VERSIONS
     """
 }
