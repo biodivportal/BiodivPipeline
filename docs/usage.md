@@ -10,18 +10,9 @@
 
 ## Input data
 
-The pipeline expects a CSV file with biodiversity specimen records. The input CSV must have a header row. Column names do not need to follow a standard — the Column Standardisation module maps them to ABCD schema terms.
+The pipeline expects a CSV file with biodiversity specimen records and a header row. Column names do not need to follow any specific standard — the first pipeline module is responsible for mapping headers to a target schema.
 
-The included test dataset (`test_data/sample.csv`) contains 109 records with 23 columns sampled from the BGBM Belege_aus_D dataset:
-
-```
-HerbariumID, Bild, DB, Family, FullNameCache, Anmerkungen, Sammlerteam,
-Sammelnummer, CollectionDateBegin, CollectionDateEnd, Country, Locality,
-TitelEtikett, Expeditionsangabe, ShowOnMap, Latitude, Longitude,
-FundortUNdOeko, NameCache, Genus, Identifier, Barcode, StableURI
-```
-
-The full dataset (`Belege_aus_D.csv`, 109,297 records) is distributed as a zip archive in the repository.
+A small mock dataset is provided under `data/sample.csv` for use with `-profile test`.
 
 ## Running the pipeline
 
@@ -31,16 +22,13 @@ The full dataset (`Belege_aus_D.csv`, 109,297 records) is distributed as a zip a
 nextflow run main.nf -profile test,docker --outdir results
 ```
 
-The `test` profile points to `test_data/sample.csv` and `assets/default_mapping.jsonld` so no other parameters are needed.
+The `test` profile points to `data/sample.csv` and `assets/default_mapping.jsonld` so no other parameters are needed.
 
-### Full dataset run
+### Custom input run
 
 ```bash
-# Unzip dataset if not already done
-unzip Belege_aus_D.zip
-
 nextflow run main.nf -profile docker \
-    --input Belege_aus_D.csv \
+    --input path/to/your.csv \
     --outdir results
 ```
 
@@ -70,48 +58,9 @@ nextflow run main.nf -profile docker -params-file params.yaml
 
 ```yaml
 # params.yaml
-input: "./Belege_aus_D.csv"
+input: "./data.csv"
 mapping_schema: "./assets/default_mapping.jsonld"
 outdir: "./results"
-```
-
-## Pipeline data flow
-
-```mermaid
-sequenceDiagram
-    participant User
-    participant NF as Nextflow
-    participant CS as Column Standardise
-    participant BA as BiodivPortal Annotate
-    participant TC as Taxonomy Classify
-    participant OD as Outlier Detect
-    participant PC as Provisional Concepts
-    participant RT as RDF Transform
-    participant CR as Collect Reports
-
-    User->>NF: --input CSV, --mapping_schema
-    NF->>CS: raw CSV
-    CS-->>NF: standardised.csv + column_mapping.json
-
-    par Parallel processing
-        NF->>BA: standardised.csv
-        BA-->>NF: annotated.jsonld + unresolved_terms.csv
-    and
-        NF->>TC: standardised.csv
-        TC-->>NF: taxonomy_resolved.csv
-    and
-        NF->>OD: standardised.csv
-        OD-->>NF: quality_report.json + flagged_records.csv
-    end
-
-    NF->>PC: unresolved_terms.csv
-    PC-->>NF: provisional_concepts.json
-
-    NF->>RT: standardised.csv + annotations + taxonomy + schema
-    RT-->>NF: output.ttl + output.jsonld + rdf_report.json
-
-    NF->>CR: all reports
-    CR-->>NF: pipeline_summary.json
 ```
 
 ## Execution profiles
@@ -120,7 +69,7 @@ Multiple profiles can be combined: `-profile test,docker`. They load in order, s
 
 | Profile       | Description                                                        |
 | ------------- | ------------------------------------------------------------------ |
-| `test`        | Uses `test_data/sample.csv` (109 records). No other params needed. |
+| `test`        | Uses the bundled mock CSV in `data/`. No other params needed.      |
 | `docker`      | Run module containers with Docker                                  |
 | `singularity` | Run module containers with Singularity                             |
 | `podman`      | Run module containers with Podman                                  |
@@ -138,14 +87,4 @@ nextflow run main.nf -profile docker --input data.csv --outdir results -resume
 
 ```bash
 nextflow run main.nf -profile docker --input data.csv --outdir results -bg > pipeline.log 2>&1
-```
-
-Or use `screen` / `tmux` for a detached session.
-
-## Nextflow memory
-
-If Nextflow requests too much JVM memory, set:
-
-```bash
-export NXF_OPTS='-Xms1g -Xmx4g'
 ```

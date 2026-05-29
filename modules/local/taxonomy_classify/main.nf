@@ -2,7 +2,7 @@ process TAXONOMY_CLASSIFY {
     tag "taxonomy"
     label 'process_low'
 
-    container 'biodiv/wp3-taxonomy-classifier:latest'
+    container 'biodivpipeline/placeholder:0.1' // TODO: replace with module team's container
 
     input:
     path csv
@@ -13,15 +13,14 @@ process TAXONOMY_CLASSIFY {
 
     script:
     """
-    # WP3: Land Taxonomy Classifier — resolve taxon names to GBIF/WFO IDs
-    # Stub: copy input and add placeholder resolved columns
+    # Stub — module team replaces this script with the real implementation.
+    # Emits minimal valid outputs matching the channel contract.
 
-    head -1 ${csv} | sed 's/\$/ ,"gbif_key","wfo_id","taxonomy_confidence"/' > taxonomy_resolved.csv
-    tail -n +2 ${csv} | sed 's/\$/ ,"","","0.0"/' >> taxonomy_resolved.csv
+    cp ${csv} taxonomy_resolved.csv
 
     cat <<-VERSIONS > versions.yml
     "${task.process}":
-        taxonomy_classifier: 0.1.0
+        stub: "0.0.0"
     VERSIONS
     """
 }

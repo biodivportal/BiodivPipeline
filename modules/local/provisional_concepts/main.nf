@@ -2,7 +2,7 @@ process PROVISIONAL_CONCEPTS {
     tag "concepts"
     label 'process_single'
 
-    container 'biodiv/wp5-provisional-concepts:latest'
+    container 'biodivpipeline/placeholder:0.1' // TODO: replace with module team's container
 
     input:
     path unresolved_csv
@@ -13,22 +13,14 @@ process PROVISIONAL_CONCEPTS {
 
     script:
     """
-    # WP5: Provisional Concept Identification & Registration
-    # Detect unresolved terms, register in BiodivPortal as provisional
-    # Stub: pass through with empty registrations
+    # Stub — module team replaces this script with the real implementation.
+    # Emits minimal valid outputs matching the channel contract.
 
-    cat <<-CONCEPTS > provisional_concepts.json
-    {
-        "unresolved_input": "${unresolved_csv}",
-        "registered": [],
-        "failed": [],
-        "status": "stub"
-    }
-    CONCEPTS
+    echo '{}' > provisional_concepts.json
 
     cat <<-VERSIONS > versions.yml
     "${task.process}":
-        provisional_concepts: 0.1.0
+        stub: "0.0.0"
     VERSIONS
     """
 }

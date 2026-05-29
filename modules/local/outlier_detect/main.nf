@@ -2,7 +2,7 @@ process OUTLIER_DETECT {
     tag "outlier"
     label 'process_low'
 
-    container 'biodiv/wp4-outlier-detection:latest'
+    container 'biodivpipeline/placeholder:0.1' // TODO: replace with module team's container
 
     input:
     path csv
@@ -14,26 +14,15 @@ process OUTLIER_DETECT {
 
     script:
     """
-    # WP4: Outlier & Data-Quality Detection
-    # Statistical (IQR, z-score, DBSCAN) + LLM-assisted checks
-    # Stub: generate empty quality report
+    # Stub — module team replaces this script with the real implementation.
+    # Emits minimal valid outputs matching the channel contract.
 
-    cat <<-REPORT > quality_report.json
-    {
-        "total_records": \$(tail -n +2 ${csv} | wc -l),
-        "outliers_detected": 0,
-        "methods": ["IQR", "z-score", "isolation_forest", "dbscan", "llm"],
-        "flags": [],
-        "status": "stub"
-    }
-    REPORT
-
-    # Flagged records: header + severity column
-    head -1 ${csv} | sed 's/\$/ ,"outlier_flag","severity_score","explanation"/' > flagged_records.csv
+    echo '{}' > quality_report.json
+    : > flagged_records.csv
 
     cat <<-VERSIONS > versions.yml
     "${task.process}":
-        outlier_detection: 0.1.0
+        stub: "0.0.0"
     VERSIONS
     """
 }

@@ -2,6 +2,7 @@ process BIODIV_ANNOTATE {
     tag "annotate"
     label 'process_single'
 
+    // container 'biodivpipeline/placeholder:0.1' // TODO: replace with module team's container
 
     input:
     path csv

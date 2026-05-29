@@ -1,0 +1,44 @@
+nextflow_process {
+
+    name "Test BIODIV_ANNOTATE"
+    script "../main.nf"
+    process "BIODIV_ANNOTATE"
+    tag "module"
+
+    test("annotates records") {
+
+        when {
+            process {
+                """
+                input[0] = file("$projectDir/test_data/sample.csv")
+                """
+            }
+        }
+
+        then {
+            assert process.success
+
+            def annotations = path(process.out.annotations[0])
+            def unresolved = path(process.out.unresolved[0])
+            def versions = path(process.out.versions[0])
+
+            assert annotations.exists()
+            assert unresolved.exists()
+            assert versions.exists()
+
+            assert annotations.text.contains('"@context"')
+            assert annotations.text.contains('"@graph"')
+            assert annotations.text.contains('"record_id"')
+            assert annotations.text.contains('"annotations"')
+
+            assert unresolved.text.contains("source_field")
+            assert unresolved.text.contains("original_term")
+            assert unresolved.text.contains("normalized_term")
+            assert unresolved.text.contains("suggested_category")
+            assert unresolved.text.contains("record_ids")
+
+            assert versions.text.contains("BIODIV_ANNOTATE")
+            assert versions.text.contains("annotate_biodiv")
+        }
+    }
+}

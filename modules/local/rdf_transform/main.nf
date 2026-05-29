@@ -2,7 +2,7 @@ process RDF_TRANSFORM {
     tag "rdf"
     label 'process_low'
 
-    container 'biodiv/wp7-rdf-transform:latest'
+    container 'biodivpipeline/placeholder:0.1' // TODO: replace with module team's container
 
     input:
     path csv
@@ -18,40 +18,16 @@ process RDF_TRANSFORM {
 
     script:
     """
-    # WP7: RDF Matching & Transformation
-    # Transform tabular records into RDF triples using expert mapping schema
-    # Stub: generate minimal valid Turtle
+    # Stub — module team replaces this script with the real implementation.
+    # Emits minimal valid outputs matching the channel contract.
 
-    cat <<-TTL > output.ttl
-    @prefix dwc: <http://rs.tdwg.org/dwc/terms/> .
-    @prefix dcterms: <http://purl.org/dc/terms/> .
-
-    # Stub output — real transformation pending WP7 service
-    TTL
-
-    cat <<-JSONLD > output.jsonld
-    {
-        "@context": {
-            "dwc": "http://rs.tdwg.org/dwc/terms/",
-            "dcterms": "http://purl.org/dc/terms/"
-        },
-        "@graph": [],
-        "status": "stub"
-    }
-    JSONLD
-
-    cat <<-REPORT > rdf_report.json
-    {
-        "input_records": \$(tail -n +2 ${csv} | wc -l),
-        "triples_generated": 0,
-        "mapping_schema": "${mapping_schema}",
-        "status": "stub"
-    }
-    REPORT
+    : > output.ttl
+    echo '{"@context": {}, "@graph": []}' > output.jsonld
+    echo '{}' > rdf_report.json
 
     cat <<-VERSIONS > versions.yml
     "${task.process}":
-        rdf_transform: 0.1.0
+        stub: "0.0.0"
     VERSIONS
     """
 }
