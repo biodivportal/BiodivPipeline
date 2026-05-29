@@ -1,3 +1,6 @@
+"""Shared pytest fixtures: a `client` for the FastAPI app (with lifespan so
+ontologies load), the path to `examples/`, and a `requires_karma` marker that
+skips tests needing a real Karma JAR + Java runtime."""
 from pathlib import Path
 
 import pytest

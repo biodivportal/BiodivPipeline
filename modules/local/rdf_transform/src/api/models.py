@@ -1,3 +1,5 @@
+"""Pydantic response schemas for the RDF transform API (see routes.py)."""
+
 from pydantic import BaseModel
 
 

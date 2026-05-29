@@ -1,3 +1,8 @@
+"""API-level tests for the FastAPI routes: the health and /schemas
+endpoints, /transform's output-format validation, and the normalisation of
+Swagger UI placeholder values so they never reach the Karma subprocess."""
+
+
 def test_health(client):
     response = client.get("/")
     assert response.status_code == 200

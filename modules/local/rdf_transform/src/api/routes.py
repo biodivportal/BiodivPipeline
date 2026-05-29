@@ -1,3 +1,8 @@
+"""HTTP layer of the RDF transform service: defines the FastAPI endpoints
+(health, /schemas, /transform, /validate). Validates and normalises incoming
+requests, delegates the heavy lifting to src/core (Karma runner, model
+validator) and shapes the response. Response schemas live in models.py."""
+
 import asyncio
 import subprocess
 import tempfile
