@@ -30,6 +30,28 @@ MAX_ROWS = 3000
 WAIT_BETWEEN_REQUESTS = 0
 MAX_WORKERS = 5
 
+ONTOLOGY_CONFIG_PATH = "modules/local/biodiv_annotate/bin/ontology_config.json"
+
+def load_ontology_config(path):
+    # load recommender output.sjon and build a field -> ontology mapping
+    # only using fields "use" and "review" and if "skip" we use no filter (gotta discuss that)
+    try:
+        with open(path, encoding="utf-8") as f:
+            raw = json.load(f)
+    except FileNotFoundError:
+        print(f"[warn] Ontology config not found at {path!r}, annotating without ontology filter.", flush=True)
+        return {}
+
+    mapping = {}
+    for field, cfg in raw.items():
+        ontology = cfg.get("ontology")
+        decision = cfg.get("decision", "use")
+        if ontology and decision != "skip":
+            mapping[field] = ontology
+
+    return mapping
+FIELD_ONTOLOGY = load_ontology_config(ONTOLOGY_CONFIG_PATH)
+
 
 # columns contain the most useful text for ontology annotation
 # technical fields like image links, etc are skipped for now
@@ -52,7 +74,7 @@ def get_ontology_name(url):
         return ""
     return url.rstrip("/").split("/")[-1]
 
-def ask_annotator(text, retries=3):
+def ask_annotator(text, ontology=None, retries=3):
     # send one text value to BiodivPortal Annotator
     # The response is JSON-LD, but we can read it like normal JSON
     # retry because the API can sometimes timeout
@@ -62,6 +84,9 @@ def ask_annotator(text, retries=3):
         "whole_word_only": "true",
         "exclude_numbers": "true",
     }
+
+    if ontology:
+        params["ontologies"] = ontology
 
     last_error = None
 
@@ -158,15 +183,16 @@ def normalize_term(value):
     return value
 
 
-def annotate_term(term, api_key):    
+def annotate_term(term, api_key, ontology=None):    
 # Annotate a single unique term via the BiodivPortal API
 # Returns the annotation result or error information
     try:
-        api_result = ask_annotator(term)
+        api_result = ask_annotator(term, ontology=ontology)
 
         result = {
             "term": term,
             "api_result": api_result,
+            "ontology_filter": ontology,
         }
 
     # If the API request fails, we keep the term in unresolved output
@@ -176,6 +202,7 @@ def annotate_term(term, api_key):
             "term": term,
             "api_result": [],
             "error": f"api_error: {e}",
+            "ontology_filter": ontology,
         }    
 
     except Exception as e:
@@ -183,6 +210,7 @@ def annotate_term(term, api_key):
             "term": term,
             "api_result": [],
             "error": f"unexpected_error: {e}",
+            "ontology_filter": ontology,
         }
 
     time.sleep(WAIT_BETWEEN_REQUESTS)
@@ -229,7 +257,13 @@ def annotate_unique_terms(terms, api_key):
 
     with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
         future_to_key = {
-            executor.submit(annotate_term, data["term"], api_key): key
+            executor.submit(
+                annotate_term,
+                data["term"],
+                api_key,
+                # derive field name from the "field::value" key
+                FIELD_ONTOLOGY.get(key.split("::")[0]),
+            ): key
             for key, data in terms.items()
         }
 
@@ -304,6 +338,7 @@ def annotate_records(rows, terms, term_results):
                     "normalized_term": occurrence.get("normalized_term", term),
                     "term": term,
                     "reason": reason,
+                    "ontology_filter": result.get("ontology_filter", ""),
                     "suggested_category":guess_category(field),
                     "row_context": row,
 
@@ -377,6 +412,7 @@ def save_unresolved(rows):
         "normalized_term": row["normalized_term"],
         "suggested_category": row.get("suggested_category", ""),
         "reason": row["reason"],
+        "ontology_filter": row.get("ontology_filter", ""),
         "count": 0,
         "record_ids": set(),
 
@@ -404,6 +440,7 @@ def save_unresolved(rows):
                 "normalized_term",
                 "suggested_category",
                 "reason",
+                "ontology_filter",
                 "count",
                 "record_ids",
                 "example_FullNameCache",
