@@ -1,0 +1,28 @@
+# Nextflow
+.nextflow*
+work/
+results/
+.lineage/
+null/
+
+# Data (too large for git — download separately)
+Belege_aus_D.csv
+
+# OS
+.DS_Store
+
+# Python
+*.pyc
+__pycache__/
+.venv/
+*.egg-info/
+
+# Testing
+testing/
+testing*
+
+# IDE
+.vscode/
+
+# Docker
+*.tar

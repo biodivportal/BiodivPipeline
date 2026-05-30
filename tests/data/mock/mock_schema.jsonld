@@ -1,0 +1,13 @@
+{
+  "@context": {
+    "dwc": "http://rs.tdwg.org/dwc/terms/",
+    "ex": "https://example.org/biodivpipeline/"
+  },
+  "mappings": [
+    { "source": "record_id", "target": "@id" },
+    { "source": "scientific_name", "target": "dwc:scientificName" },
+    { "source": "country", "target": "dwc:country" },
+    { "source": "decimal_latitude", "target": "dwc:decimalLatitude" },
+    { "source": "decimal_longitude", "target": "dwc:decimalLongitude" }
+  ]
+}
