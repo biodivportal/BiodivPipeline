@@ -2,14 +2,13 @@ process BIODIV_ANNOTATE {
     tag "annotate"
     label 'process_single'
 
-    // container 'biodivpipeline/placeholder:0.1' // TODO: replace with module team's container
-
     input:
     path csv
 
     output:
     path "annotated.jsonld",     emit: annotations
     path "unresolved_terms.csv", emit: unresolved
+    path "enriched.csv",         emit: enriched
     path "versions.yml",         emit: versions
 
     script:
@@ -20,11 +19,14 @@ process BIODIV_ANNOTATE {
         --input ${csv} \\
         --out-json annotated.jsonld \\
         --out-unresolved unresolved_terms.csv \\
+        --out-enriched-csv enriched.csv \\
         --max-rows ${params.max_rows ?: 30}
 
     cat <<-VERSIONS > versions.yml
     "${task.process}":
         annotate_biodiv: "0.1.0"
+        python: \$(python --version | sed 's/Python //')
+        requests: \$(python -c "import requests; print(requests.__version__)")
     VERSIONS
     """
 }

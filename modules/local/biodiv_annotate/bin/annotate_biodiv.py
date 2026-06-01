@@ -20,6 +20,8 @@ API_URL = "https://data.biodivportal.gfbio.org/annotator"
 INPUT_CSV = "data/Belege_aus_D.csv"
 OUT_JSON = "results/annotation/annotated.jsonld"
 OUT_UNRESOLVED = "results/annotation/unresolved_terms.csv"
+OUT_ENRICHED_CSV = "results/annotation/enriched.csv"
+
 
 # prevents crash if results folder does not exist
 os.makedirs("results/annotation", exist_ok=True)
@@ -465,11 +467,48 @@ def save_unresolved(rows):
 
             writer.writerow(item)
 
+def save_enriched_csv(rows, annotated_records, out_path):
+    if not rows:
+        return
+
+    # Build lookup: record_id -> {field: first_uri}
+    uri_lookup = {}
+    for record in annotated_records:
+        record_id = record["record_id"]
+        field_uri = {}
+        for ann in record["annotations"]:
+            field = ann["source_field"]
+            if field not in field_uri and ann.get("class_id"):
+                field_uri[field] = ann["class_id"]
+        uri_lookup[record_id] = field_uri
+
+    # Building output columns: insert _URI right after each annotated field
+    original_fields = list(rows[0].keys())
+    output_fields = []
+    for col in original_fields:
+        output_fields.append(col)
+        if col in FIELDS_TO_CHECK:
+            output_fields.append(f"{col}_URI")
+
+    with open(out_path, "w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=output_fields)
+        writer.writeheader()
+
+        for row in rows:
+            record_id = row.get("HerbariumID")
+            uris = uri_lookup.get(record_id, {})
+            out_row = dict(row)
+            for field in FIELDS_TO_CHECK:
+                if field in original_fields:
+                    out_row[f"{field}_URI"] = uris.get(field, "")
+            writer.writerow(out_row)
+
 def parse_args():
     parser = argparse.ArgumentParser(description="Annotate biodiversity CSV records with BiodivPortal.")
     parser.add_argument("--input", default=INPUT_CSV)
     parser.add_argument("--out-json", default=OUT_JSON)
     parser.add_argument("--out-unresolved", default=OUT_UNRESOLVED)
+    parser.add_argument("--out-enriched-csv", default="results/annotation/enriched.csv")
     parser.add_argument("--max-rows", type=int, default=MAX_ROWS)
     return parser.parse_args()
 
@@ -523,6 +562,16 @@ if __name__ == "__main__":
 
     print("Writing Unresolved CSV...", flush=True)
     save_unresolved(unresolved_terms)
+
+    OUT_ENRICHED_CSV = args.out_enriched_csv
+
+    out_enriched_dir = os.path.dirname(OUT_ENRICHED_CSV)
+    if out_enriched_dir:
+        os.makedirs(out_enriched_dir, exist_ok=True)
+
+    print("Writing enriched CSV...", flush=True)
+    save_enriched_csv(rows, annotated, OUT_ENRICHED_CSV)
+    print("Saved:", OUT_ENRICHED_CSV)
 
     save_time = time.perf_counter() - save_start
 

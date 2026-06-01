@@ -20,10 +20,12 @@ nextflow_process {
 
             def annotations = path(process.out.annotations[0])
             def unresolved = path(process.out.unresolved[0])
+            def enriched = path(process.out.enriched[0])
             def versions = path(process.out.versions[0])
 
             assert annotations.exists()
             assert unresolved.exists()
+            assert enriched.exists()
             assert versions.exists()
 
             assert annotations.text.contains('"@context"')
@@ -36,6 +38,9 @@ nextflow_process {
             assert unresolved.text.contains("normalized_term")
             assert unresolved.text.contains("suggested_category")
             assert unresolved.text.contains("record_ids")
+
+            assert enriched.text.contains("HerbariumID")
+            assert enriched.text.contains("_URI")
 
             assert versions.text.contains("BIODIV_ANNOTATE")
             assert versions.text.contains("annotate_biodiv")
