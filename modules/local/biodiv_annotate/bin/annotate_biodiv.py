@@ -9,7 +9,6 @@ import unicodedata
 import argparse
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-
 def get_api_key():
     api_key = os.environ.get("BIODIV_API_KEY") 
     if not api_key:
@@ -18,7 +17,7 @@ def get_api_key():
 
 API_URL = "https://data.biodivportal.gfbio.org/annotator"
 
-INPUT_CSV = "data/sample.csv"
+INPUT_CSV = "data/Belege_aus_D.csv"
 OUT_JSON = "results/annotation/annotated.jsonld"
 OUT_UNRESOLVED = "results/annotation/unresolved_terms.csv"
 
@@ -26,9 +25,9 @@ OUT_UNRESOLVED = "results/annotation/unresolved_terms.csv"
 os.makedirs("results/annotation", exist_ok=True)
 
 
-MAX_ROWS = 3000
+MAX_ROWS = 100000
 WAIT_BETWEEN_REQUESTS = 0
-MAX_WORKERS = 5
+MAX_WORKERS = 10
 
 ONTOLOGY_CONFIG_PATH = "modules/local/biodiv_annotate/bin/ontology_config.json"
 
@@ -297,10 +296,16 @@ def guess_category(field):
         return "expedition_or_note"
     return "unknown"
 
+
+
 def annotate_records(rows, terms, term_results):
+    row_lookup = {
+        row["HerbariumID"]: row
+        for row in rows}
+
     records = {}
     unresolved = []
-
+    
     for row in rows:
         record_id = row.get("HerbariumID")
 
@@ -319,10 +324,7 @@ def annotate_records(rows, terms, term_results):
             record_id = occurrence["record_id"]
             field = occurrence["source_field"]
 
-            row = next(
-                r for r in rows
-                if r.get("HerbariumID") == record_id
-            )
+            row = row_lookup.get(record_id)
 
             records[record_id]["source_fields"][field] = term
 
@@ -506,11 +508,13 @@ if __name__ == "__main__":
 
     print("Building annotated records...", flush=True)
 
+    annotate_start = time.perf_counter()
     annotated, unresolved_terms = annotate_records(
         rows,
         terms,
         term_results,
         )
+    annotate_time = time.perf_counter() - annotate_start
 
     save_start = time.perf_counter()
 
@@ -538,5 +542,6 @@ if __name__ == "__main__":
     print("Unresolved terms:", count_unique_unresolved(unresolved_terms))
     print("Saved:", OUT_JSON)
     print("Saved:", OUT_UNRESOLVED)
+    print(f"Annotation processing time: {annotate_time:.2f}s")
     print(f"Runtime: {minutes}m {seconds:.2f}s")
     print(f"Saving time: {save_time:.2f}s")
