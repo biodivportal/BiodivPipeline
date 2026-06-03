@@ -26,3 +26,8 @@ testing*
 
 # Docker
 *.tar
+
+
+.env.nf-test/
+.nf-test.log
+nf-test

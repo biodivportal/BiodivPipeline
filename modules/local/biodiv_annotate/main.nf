@@ -1,8 +1,6 @@
 process BIODIV_ANNOTATE {
     tag "annotate"
-    label 'process_low'
-
-    container 'biodivpipeline/placeholder:0.1' // TODO: replace with module team's container
+    label 'process_single'
 
     input:
     path csv
@@ -10,19 +8,25 @@ process BIODIV_ANNOTATE {
     output:
     path "annotated.jsonld",     emit: annotations
     path "unresolved_terms.csv", emit: unresolved
+    path "enriched.csv",         emit: enriched
     path "versions.yml",         emit: versions
 
     script:
     """
-    # Stub — module team replaces this script with the real implementation.
-    # Emits minimal valid outputs matching the channel contract.
+    export BIODIV_API_KEY="${params.biodiv_api_key}"
 
-    echo '{"@context": {}, "@graph": []}' > annotated.jsonld
-    : > unresolved_terms.csv
+    python ${moduleDir}/bin/annotate_biodiv.py \\
+        --input ${csv} \\
+        --out-json annotated.jsonld \\
+        --out-unresolved unresolved_terms.csv \\
+        --out-enriched-csv enriched.csv \\
+        --max-rows ${params.max_rows ?: 30}
 
     cat <<-VERSIONS > versions.yml
     "${task.process}":
-        stub: "0.0.0"
+        annotate_biodiv: "0.1.0"
+        python: \$(python --version | sed 's/Python //')
+        requests: \$(python -c "import requests; print(requests.__version__)")
     VERSIONS
     """
 }
