@@ -3,8 +3,6 @@ import csv
 import json
 import time
 import requests
-from dotenv import load_dotenv
-load_dotenv()
 import unicodedata
 import argparse
 from concurrent.futures import ThreadPoolExecutor, as_completed
