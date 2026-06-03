@@ -17,7 +17,7 @@ def get_api_key():
 
 API_URL = "https://data.biodivportal.gfbio.org/annotator"
 
-INPUT_CSV = "data/Belege_aus_D.csv"
+INPUT_CSV = "data/sample.csv"
 OUT_JSON = "results/annotation/annotated.jsonld"
 OUT_UNRESOLVED = "results/annotation/unresolved_terms.csv"
 OUT_ENRICHED_CSV = "results/annotation/enriched.csv"
