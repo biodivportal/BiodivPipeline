@@ -3,8 +3,6 @@ import csv
 import json
 import time
 import requests
-from dotenv import load_dotenv
-load_dotenv()
 import unicodedata
 import argparse
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -17,7 +15,7 @@ def get_api_key():
 
 API_URL = "https://data.biodivportal.gfbio.org/annotator"
 
-INPUT_CSV = "data/Belege_aus_D.csv"
+INPUT_CSV = "data/sample.csv"
 OUT_JSON = "results/annotation/annotated.jsonld"
 OUT_UNRESOLVED = "results/annotation/unresolved_terms.csv"
 OUT_ENRICHED_CSV = "results/annotation/enriched.csv"
