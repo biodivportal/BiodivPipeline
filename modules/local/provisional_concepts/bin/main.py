@@ -1,16 +1,28 @@
+#!/usr/bin/env python3
 import argparse
 import json
+from pathlib import Path
+
+from ingest import load_ontology_config, read_unresolved_csv
 
 def main():
-    parser = argparse.ArgumentParser(description="Resolve provisional concepts")
+    default_ontology_config =  Path(__file__).parent / "ontology_config.json"
+
+    parser = argparse.ArgumentParser(description="Ingest unresolved terms and ontology config.")
     parser.add_argument("--input", required=True, help="Path to input unresolved CSV")
     parser.add_argument("--output", required=True, help="Path to output JSON")
+    parser.add_argument("--ontology-config", default=default_ontology_config, help="Path to ontology config JSON")
     args = parser.parse_args()
 
-    concepts = {}
-    
+    config = load_ontology_config(args.ontology_config)
+    unresolved_rows = read_unresolved_csv(args.input)
+
+    # Emit empty result for nextflow
+    output_data = {
+        "provisional_concepts": []
+    }
     with open(args.output, "w", encoding="utf-8") as f:
-        json.dump(concepts, f, indent=2)
+        json.dump(output_data, f, indent=2)
 
 if __name__ == "__main__":
     main()
