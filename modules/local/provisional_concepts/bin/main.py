@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 from ingest import load_ontology_config, read_unresolved_csv
+from gbif import species_match
 
 def main():
     default_ontology_config =  Path(__file__).parent / "ontology_config.json"
@@ -14,12 +15,18 @@ def main():
     parser.add_argument("--ontology-config", default=default_ontology_config, help="Path to ontology config JSON")
     args = parser.parse_args()
 
+    # data ingestion
     config = load_ontology_config(args.ontology_config)
     unresolved_rows = read_unresolved_csv(args.input)
 
-    # Emit empty result for nextflow
+    # primitive species matching
+    match = []
+    for row in unresolved_rows:
+        match.append(species_match(row))
+
+    # Emitting output from gbif now 
     output_data = {
-        "provisional_concepts": []
+        "provisional_concepts": match
     }
     with open(args.output, "w", encoding="utf-8") as f:
         json.dump(output_data, f, indent=2)
