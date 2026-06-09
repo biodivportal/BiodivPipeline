@@ -1,6 +1,7 @@
 import csv
 import json
 
+
 def load_ontology_config(config_path):
     """Reads the ontology config JSON file."""
     try:
@@ -10,15 +11,20 @@ def load_ontology_config(config_path):
         print(f"Error reading ontology config: {e}")
         return {}
 
+
 def read_unresolved_csv(csv_path):
     """Reads the unresolved CSV file, keeping only plant name terms also ignoreing stop list"""
-    
+
     # At this stage we only check these columns
     allowed_fields = {"NameCache", "Genus", "FullNameCache", "Family"}
 
     # This should likely be changed, a stop word in only one column should not ommit the whole row
-    stoplist = ["keine", "indet.", "!indet.",]
-    
+    stoplist = [
+        "keine",
+        "indet.",
+        "!indet.",
+    ]
+
     filtered_rows = []
 
     try:
