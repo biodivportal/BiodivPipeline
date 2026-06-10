@@ -39,7 +39,7 @@ EMPTY_TAXONOMY = {
 
 def extract_infraspecific_epithets(term):
     """Extracts infraspecific epithets from the source name. See DwC"""
-    extracted = EMPTY_TAXONOMY.copy()
+    extracted = {}
 
     if not term:
         return extracted
@@ -123,14 +123,14 @@ def score(row, ontology_config):
     source_taxonomy = extract_source_taxonomy(row)
     target_rank = get_target_rank(source_field, source_taxonomy)
 
-    if target_rank == "unkown":
+    if target_rank == "unknown":
         return {
             **row,
             "source_field": source_field,
             "original_term": source_term,
             "source_taxonomy": source_taxonomy,
             "proposed_concept_name": None,
-            "proposed_concept_rank": "unkown",
+            "proposed_concept_rank": "unknown",
             "gbif_taxonomy": {
                 "family": None,
                 "genus": None,
