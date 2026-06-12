@@ -1,6 +1,6 @@
 name: Build Service Image
 
-# Build + publish the runtime service image (FastAPI + Karma JAR +
+# Build + publish the runtime service image (FastAPI + Morph-KGC +
 # OBOE ontology) to GitHub Container Registry. Consumed by:
 #   - the nf-core module under nextflow/main.nf
 #   - any other pipeline that wants to talk to the WP8 service
@@ -49,10 +49,8 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          # The Dockerfile defaults to KARMA_BUILD_STAGE=karma-from-url,
-          # which downloads the published Karma JAR. That's exactly what
-          # we want here too — no Maven build inside the service-image
-          # workflow.
+          # Pure-Python image — no build args, no Maven/JVM. The Dockerfile
+          # just pip-installs Morph-KGC and the FastAPI app.
           push: true
           tags: |
             ${{ steps.img.outputs.name }}:v${{ github.event.inputs.version }}

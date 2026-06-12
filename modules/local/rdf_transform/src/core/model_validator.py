@@ -1,11 +1,14 @@
-"""Validate a Karma R2RML mapping model against the loaded ontologies.
+"""Validate an RML mapping against the loaded ontologies.
 
 Three checks, layered from cheap to substantive:
 
-  L1 — Turtle syntactic validity (`rdflib.Graph().parse()` succeeds).
-  L2 — Karma structural sanity (the file declares a `km-dev:R2RMLMapping`
-       with a `km-dev:sourceName`; rules out random Turtle uploads).
-  L3 — ontology-term alignment: every IRI the model references in a
+  L1 — RDF syntactic validity (`rdflib.Graph().parse()` succeeds for the
+       declared serialization — Turtle or JSON-LD).
+  L2 — RML structural sanity (the file declares at least one triples map:
+       a `rml:subjectMap` plus a logical source). Rules out random RDF
+       uploads. Accepts both the modern RML (w3id) and legacy RML (mmlab)
+       / R2RML (rr) vocabularies.
+  L3 — ontology-term alignment: every IRI the mapping references in a
        namespace owned by a loaded ontology must be a term declared by
        that ontology. Flags typos and references to renamed / removed
        upstream classes.
@@ -13,7 +16,7 @@ Three checks, layered from cheap to substantive:
 L1 and L2 failures set `valid=false` and short-circuit further checks
 (no point doing alignment on a file we can't parse). L3 findings also
 set `valid=false` so a single boolean answers "should I run /transform
-against this model?".
+against this mapping?".
 """
 from __future__ import annotations
 
@@ -23,8 +26,21 @@ from rdflib import Graph, URIRef
 
 from src.core.ontology_loader import LoadedOntologies, term_namespace
 
-KARMA_R2RML_MAPPING = URIRef("http://isi.edu/integration/karma/dev#R2RMLMapping")
-KARMA_SOURCE_NAME = URIRef("http://isi.edu/integration/karma/dev#sourceName")
+# A triples map is identified structurally by a subject map + a logical
+# source. We accept all three vocabularies a Schema Editor might emit:
+# modern RML (w3id), legacy RML (mmlab) and R2RML (rr).
+_SUBJECT_MAP_PREDICATES = (
+    URIRef("http://w3id.org/rml/subjectMap"),
+    URIRef("http://semweb.mmlab.be/ns/rml#subjectMap"),
+    URIRef("http://www.w3.org/ns/r2rml#subjectMap"),
+)
+_LOGICAL_SOURCE_PREDICATES = (
+    URIRef("http://w3id.org/rml/logicalSource"),
+    URIRef("http://w3id.org/rml/source"),
+    URIRef("http://semweb.mmlab.be/ns/rml#logicalSource"),
+    URIRef("http://semweb.mmlab.be/ns/rml#source"),
+    URIRef("http://www.w3.org/ns/r2rml#logicalTable"),
+)
 
 
 @dataclass
@@ -33,41 +49,49 @@ class ValidationResult:
     issues: list[str] = field(default_factory=list)
 
 
-def validate_model(model_bytes: bytes, ontologies: LoadedOntologies) -> ValidationResult:
-    """Run L1+L2+L3 over `model_bytes` and return a structured result."""
-    # L1 — Turtle parse.
+def validate_model(
+    model_bytes: bytes,
+    ontologies: LoadedOntologies,
+    mapping_format: str = "turtle",
+) -> ValidationResult:
+    """Run L1+L2+L3 over `model_bytes` and return a structured result.
+
+    `mapping_format` is the rdflib parse format ("turtle" or "json-ld").
+    """
+    # L1 — RDF parse.
     graph = Graph()
     try:
-        graph.parse(data=model_bytes, format="turtle")
+        graph.parse(data=model_bytes, format=mapping_format)
     except Exception as exc:
         return ValidationResult(
             valid=False,
-            issues=[f"[L1] Turtle parse failed: {exc}"],
+            issues=[f"[L1] {mapping_format} parse failed: {exc}"],
         )
 
     issues: list[str] = []
 
-    # L2 — Karma structural sanity. The model must declare exactly one
-    # km-dev:R2RMLMapping resource (Karma puts one per file), and that
-    # resource must carry a km-dev:sourceName.
-    mappings = list(graph.subjects(predicate=URIRef("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"),
-                                   object=KARMA_R2RML_MAPPING))
-    if not mappings:
+    # L2 — RML structural sanity. A usable mapping needs at least one
+    # subject map and at least one logical source declaration.
+    has_subject_map = any(
+        any(graph.subject_objects(p)) for p in _SUBJECT_MAP_PREDICATES
+    )
+    has_logical_source = any(
+        any(graph.subject_objects(p)) for p in _LOGICAL_SOURCE_PREDICATES
+    )
+    if not has_subject_map:
         issues.append(
-            "[L2] No `km-dev:R2RMLMapping` resource found — this does not "
-            "look like a Karma R2RML mapping model."
+            "[L2] No `rml:subjectMap` found — this does not look like an "
+            "RML mapping."
         )
-    else:
-        without_source = [m for m in mappings if not any(graph.objects(m, KARMA_SOURCE_NAME))]
-        if without_source:
-            issues.append(
-                f"[L2] {len(without_source)} `km-dev:R2RMLMapping` resource(s) "
-                "have no `km-dev:sourceName` — Karma needs this to bind data."
-            )
+    if not has_logical_source:
+        issues.append(
+            "[L2] No logical source (`rml:logicalSource`/`rml:source`) found "
+            "— the mapping declares no data source to bind."
+        )
 
-    # If L2 failed outright (no Karma mapping resource at all), L3 won't
-    # yield anything useful — bail.
-    if not mappings:
+    # If it isn't an RML mapping at all, L3 alignment won't yield anything
+    # useful — bail.
+    if not has_subject_map:
         return ValidationResult(valid=False, issues=issues)
 
     # L3 — ontology-term alignment. Walk every IRI referenced by the
@@ -76,7 +100,7 @@ def validate_model(model_bytes: bytes, ontologies: LoadedOntologies) -> Validati
     if ontologies.is_empty:
         issues.append(
             "[L3] No ontologies are loaded; skipping ontology-alignment check. "
-            "Set KARMA_ONTOLOGIES_DIR or drop .owl files into the configured "
+            "Set ONTOLOGIES_DIR or drop .owl files into the configured "
             "directory to enable L3."
         )
         return ValidationResult(valid=not issues, issues=issues)

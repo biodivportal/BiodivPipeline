@@ -1,13 +1,12 @@
 """Shared pytest fixtures: a `client` for the FastAPI app (with lifespan so
-ontologies load), the path to `examples/`, and a `requires_karma` marker that
-skips tests needing a real Karma JAR + Java runtime."""
+ontologies load), the path to `examples/`, and a `requires_morph` marker that
+skips tests needing the Morph-KGC engine (which requires Python >= 3.10)."""
 from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
 
 from main import app
-from src.core import karma_runner
 
 EXAMPLES = Path(__file__).resolve().parents[1] / "examples"
 
@@ -20,16 +19,17 @@ def client():
         yield c
 
 
-def _karma_available() -> bool:
+def _morph_available() -> bool:
+    # morph-kgc imports cleanly only on Python >= 3.10 (uses `X | Y` syntax),
+    # so attempt the real import rather than just locating the spec.
     try:
-        karma_runner._resolve_jar()
-        karma_runner._resolve_java()
-    except FileNotFoundError:
+        import morph_kgc  # noqa: F401
+    except Exception:
         return False
     return True
 
 
-requires_karma = pytest.mark.skipif(
-    not _karma_available(),
-    reason="Requires Karma JAR (lib/karma-offline-*-shaded.jar) and a working Java runtime",
+requires_morph = pytest.mark.skipif(
+    not _morph_available(),
+    reason="Requires morph-kgc (Python >= 3.10)",
 )

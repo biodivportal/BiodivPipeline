@@ -8,7 +8,7 @@ description: |
 keywords:
   - rdf
   - biodiversity
-  - karma
+  - rml
   - oboe
   - darwin core
   - transformation
@@ -19,12 +19,12 @@ input:
       description: 'Groovy Map with sample id, e.g. [ id: ''sample1'' ]'
   - dataset:
       type: file
-      description: Tabular input — CSV, TSV, JSON or XML.
-      pattern: "*.{csv,tsv,json,xml}"
+      description: Tabular input — CSV, TSV or JSON.
+      pattern: "*.{csv,tsv,json}"
   - schema:
       type: file
-      description: Karma R2RML mapping model produced by the WP7 Schema Editor.
-      pattern: "*.{ttl}"
+      description: RML mapping (Turtle or JSON-LD) produced by the WP7 Schema Editor.
+      pattern: "*.{ttl,jsonld}"
 
 output:
   - rdf:

@@ -1,10 +1,10 @@
-// nf-core module: transform a tabular dataset + Karma R2RML model into RDF
+// nf-core module: transform a tabular dataset + RML mapping into RDF
 // via the WP8 RDF Matching and Transformation Service.
 //
 // We use the service's own container image (published to GHCR by the
 // `Build Service Image` workflow). Inside the container we start the
 // FastAPI app on localhost:8000, hit /validate as a pre-flight check
-// (refusing to transform if the model is broken or drifted from OBOE),
+// (refusing to transform if the mapping is broken or drifted from OBOE),
 // then call /transform for the actual work. The REST detour is
 // intentional: it's the same path the WP7 Schema Editor and external
 // pipeline consumers use, so /transform errors look identical no matter
@@ -12,9 +12,8 @@
 //
 // Tunables via `task.ext`:
 //   output_format    'turtle' (default) | 'ntriples' | 'jsonld'
-//   delimiter        'COMMA' (default) | 'TAB' | ';' | …
-//   source_type      'CSV' (default) | 'JSON' | 'XML'
-//   source_name      'source' (default)
+//   delimiter        'COMMA' (default) | 'TAB' | ';' | …  (tabular input)
+//   source_type      'CSV' (default) | 'JSON'
 //   skip_validate    false (default). Set true to bypass /validate.
 
 process RDF_TRANSFORM {
@@ -35,13 +34,12 @@ process RDF_TRANSFORM {
     def output_format = task.ext.output_format ?: 'turtle'
     def delimiter     = task.ext.delimiter     ?: 'COMMA'
     def source_type   = task.ext.source_type   ?: 'CSV'
-    def source_name   = task.ext.source_name   ?: 'source'
     def skip_validate = task.ext.skip_validate ?: false
     ext = output_format == 'jsonld'
             ? 'jsonld'
             : (output_format == 'ntriples' ? 'nt' : 'ttl')
     """
-    # ── Start the service on localhost (it owns the JVM lifecycle) ────────
+    # ── Start the service on localhost ───────────────────────────────────
     uvicorn main:app --host 127.0.0.1 --port 8000 \\
         --app-dir /app --log-level warning &
     SERVICE_PID=\$!
@@ -71,7 +69,6 @@ or [print(f'  {i}', file=sys.stderr) for i in r['issues']] or 1))"
         -F "mapping_schema=@${schema}" \\
         -F "source_type=${source_type}" \\
         -F "delimiter=${delimiter}" \\
-        -F "source_name=${source_name}" \\
         -F "output_format=${output_format}" \\
         -o "${meta.id}.${ext}"
 

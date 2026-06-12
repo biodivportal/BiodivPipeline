@@ -40,7 +40,10 @@ _STD_NAMESPACES: frozenset[str] = frozenset({
     "http://www.w3.org/2003/11/swrl#",
     "http://www.w3.org/2003/11/swrlb#",
     "http://www.w3.org/ns/r2rml#",
-    "http://isi.edu/integration/karma/dev#",
+    "http://w3id.org/rml/",
+    "http://semweb.mmlab.be/ns/rml#",
+    "http://semweb.mmlab.be/ns/ql#",
+    "https://w3id.org/function/ontology#",
 })
 
 
@@ -75,7 +78,9 @@ def term_namespace(iri: str) -> str | None:
 
 
 def _default_dir() -> Path:
-    explicit = os.environ.get("KARMA_ONTOLOGIES_DIR")
+    # ONTOLOGIES_DIR is the current name; KARMA_ONTOLOGIES_DIR is accepted as
+    # a fallback for older deployments.
+    explicit = os.environ.get("ONTOLOGIES_DIR") or os.environ.get("KARMA_ONTOLOGIES_DIR")
     if explicit:
         return Path(explicit)
     return Path(__file__).resolve().parents[2] / "examples" / "ontologies"

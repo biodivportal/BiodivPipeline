@@ -1,6 +1,6 @@
-"""API-level tests for the FastAPI routes: the health and /schemas
-endpoints, /transform's output-format validation, and the normalisation of
-Swagger UI placeholder values so they never reach the Karma subprocess."""
+"""API-level tests for the FastAPI routes: health, /schemas, /transform's
+output-format validation and mapping-format detection, and that /transform
+wires the upload through to the Morph-KGC runner correctly."""
 
 
 def test_health(client):
@@ -12,7 +12,9 @@ def test_health(client):
 def test_list_schema_formats(client):
     response = client.get("/schemas")
     assert response.status_code == 200
-    assert "karma-r2rml-ttl" in response.json()["formats"]
+    formats = response.json()["formats"]
+    assert "rml-turtle" in formats
+    assert "rml-jsonld" in formats
 
 
 def test_transform_rejects_unknown_output_format(client):
@@ -28,57 +30,47 @@ def test_transform_rejects_unknown_output_format(client):
     assert "Unsupported output_format" in response.json()["detail"]
 
 
-def test_strip_placeholder_normalises_swagger_defaults():
-    """Swagger UI submits literal 'string' and 0 for unset optional fields.
-    The route handler must collapse those to None before calling Karma."""
-    from src.api.routes import _strip_placeholder, _strip_int_placeholder
+def test_detect_mapping_format():
+    """Turtle by default; JSON-LD by extension or explicit override."""
+    from src.api.routes import _detect_mapping_format
 
-    assert _strip_placeholder(None) is None
-    assert _strip_placeholder("") is None
-    assert _strip_placeholder("string") is None
-    assert _strip_placeholder("UTF-8") == "UTF-8"
-    assert _strip_placeholder("string ") == "string "  # real value with trailing space, leave alone
-
-    assert _strip_int_placeholder(None) is None
-    assert _strip_int_placeholder(0) is None
-    assert _strip_int_placeholder(1) == 1
-    assert _strip_int_placeholder(42) == 42
+    assert _detect_mapping_format("model.ttl", None) == "turtle"
+    assert _detect_mapping_format("model.rml.ttl", None) == "turtle"
+    assert _detect_mapping_format(None, None) == "turtle"
+    assert _detect_mapping_format("model.jsonld", None) == "json-ld"
+    assert _detect_mapping_format("model.json", None) == "json-ld"
+    # explicit override wins over the extension
+    assert _detect_mapping_format("model.ttl", "json-ld") == "json-ld"
+    assert _detect_mapping_format("model.jsonld", "turtle") == "turtle"
 
 
-def test_transform_does_not_forward_swagger_placeholders_to_karma(client, monkeypatch):
-    """End-to-end: a POST that mirrors the curl block Swagger UI generates
-    when the user only edits the file inputs must not pass --encoding=string
-    etc. through to the Karma subprocess."""
-    captured: dict = {}
+def test_transform_passes_upload_through_to_runner(client, monkeypatch):
+    """The route must forward the dataset/mapping bytes and the detected
+    mapping format to run_morph, and serialize the returned graph."""
+    from rdflib import Graph
+    captured = {}
 
-    def fake_run_karma(**kwargs):
+    def fake_run_morph(**kwargs):
         captured.update(kwargs)
-        from src.core.karma_runner import KarmaResult
-        return KarmaResult(rdf="", stdout="", stderr="")
+        from src.core.morph_runner import MorphResult
+        g = Graph()
+        g.parse(data="@prefix ex: <http://example.org/> . ex:s ex:p ex:o .",
+                format="turtle")
+        return MorphResult(graph=g, triples=len(g))
 
-    monkeypatch.setattr("src.api.routes.run_karma", fake_run_karma)
+    monkeypatch.setattr("src.api.routes.run_morph", fake_run_morph)
 
     response = client.post(
         "/transform",
         files={
-            "dataset": ("d.csv", b"a\tb\n1\t2\n", "text/csv"),
-            "mapping_schema": ("m.ttl", b"@prefix ex: <http://example.org/> .", "text/turtle"),
+            "dataset": ("d.json", b'[{"a":"1"}]', "application/json"),
+            "mapping_schema": ("m.jsonld", b"{}", "application/ld+json"),
         },
-        data={
-            "delimiter": "TAB",
-            "source_name": "source",
-            "source_type": "CSV",
-            "output_format": "turtle",
-            "encoding": "string",
-            "text_qualifier": "string",
-            "selection": "string",
-            "header_index": "0",
-            "data_index": "0",
-        },
+        data={"source_type": "JSON", "output_format": "turtle"},
     )
-    assert response.status_code == 200
-    assert captured["encoding"] is None
-    assert captured["text_qualifier"] is None
-    assert captured["selection"] is None
-    assert captured["header_index"] is None
-    assert captured["data_index"] is None
+
+    assert response.status_code == 200, response.text
+    assert captured["source_type"] == "JSON"
+    assert captured["mapping_format"] == "json-ld"  # detected from .jsonld
+    assert captured["dataset_bytes"] == b'[{"a":"1"}]'
+    assert "ex:p" in response.text or "http://example.org/p" in response.text
