@@ -2,7 +2,7 @@
 
 This is the one-stop reference for WP2–WP7 teams implementing their module in the BiodivPipeline.
 
-You do not need to understand Nextflow to contribute. You own one folder. You write one script (or build one container). WP1 handles the rest.
+You own one folder. You write one script (or build one container). WP1 handles the rest.
 
 ---
 
@@ -15,7 +15,7 @@ modules/local/<your_module>/
     └── your_script.py
 ```
 
-You never touch:
+No need to touch:
 
 - `main.nf` at the repo root
 - `workflows/biodivpipeline.nf`

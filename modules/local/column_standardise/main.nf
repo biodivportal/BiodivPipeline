@@ -22,7 +22,7 @@ process COLUMN_STANDARDISE {
 
     cat <<-VERSIONS > versions.yml
     "${task.process}":
-        stub: "0.0.0"
+        stub: "4.2.0"
     VERSIONS
     """
 }

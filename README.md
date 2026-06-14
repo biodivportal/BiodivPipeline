@@ -39,7 +39,7 @@ BiodivPipeline/
 ├── workflows/biodivpipeline.nf  # Workflow DAG
 ├── modules/local/               # Pipeline modules (one per work package)
 ├── conf/                        # Nextflow config profiles
-├── assets/                      # Static files (default mapping schema)
+├── assets/                      # Static files (e. g. default mapping schema)
 ├── data/                        # Input datasets (raw + test sample)
 ├── subworkflows/                # nf-core shared utilities
 └── docs/                        # Documentation
@@ -50,5 +50,8 @@ BiodivPipeline/
 - [Usage](docs/usage.md) — how to run, parameters, profiles
 - [Output](docs/output.md) — output directory reference
 - [Contributing](docs/CONTRIBUTING.md) — git conventions, branch model, module structure
+- [Linting](docs/linting_guidelines.md) — Explainer on our linting configuration
+- [Resource Monitoring](docs/resource_monitoring.md) - Decision Record regarding automatic monitoring of resources used by the pipeline
+- [Testing Guidelines](docs/test_guidelines.md) - Which tests should contributors provide for their components?
 
 Built on the [nf-core](https://nf-co.re) framework — see [`CITATIONS.md`](CITATIONS.md).
