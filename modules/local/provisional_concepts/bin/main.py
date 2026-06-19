@@ -32,7 +32,7 @@ def main():
     # Emitting output for gbif scoring now
     output_data = {"provisional_concepts": match}
     with open(args.output, "w", encoding="utf-8") as f:
-        json.dump(output_data, f, indent=2)
+        json.dump(output_data, f, indent=2, ensure_ascii=False)
 
 
 if __name__ == "__main__":

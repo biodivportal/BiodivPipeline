@@ -7,7 +7,7 @@ DOUBT_REGEX = re.compile(
 )
 # Find infraspecific epithets
 INFRASPECIFIC_REGEX = re.compile(
-    r"(?<!\S)(var\.|subsp\.|ssp\.|f\.|nothovar\.|nothosubsp\.|subvar\.|subf\.|sbf\.|v\.)\s+([a-zA-Z-]+)"
+    r"(?<!\S)(var\.|subsp\.|ssp\.|f\.|nothovar\.|nothosubsp\.|subvar\.|subf\.|sbf\.|v\.)\s+([a-zA-Z-]+)", re.IGNORECASE
 )
 
 # GBIF Backbone normalises following this map (name_lookup doesn't!)
@@ -89,6 +89,7 @@ def extract_source_taxonomy(row):
         clean_words = term_to_parse.split()
 
         if len(clean_words) > 0 and not taxonomy["genus"]:
+            # Don't overwritte if input contains genus
             taxonomy["genus"] = clean_words[0]
         if len(clean_words) > 1:
             taxonomy["species"] = f"{clean_words[0]} {clean_words[1]}"
@@ -124,6 +125,7 @@ def score(row, ontology_config):
     target_rank = get_target_rank(source_field, source_taxonomy)
 
     if target_rank == "unknown":
+        tax = EMPTY_TAXONOMY.copy()
         return {
             **row,
             "source_field": source_field,
@@ -131,16 +133,7 @@ def score(row, ontology_config):
             "source_taxonomy": source_taxonomy,
             "proposed_concept_name": None,
             "proposed_concept_rank": "unknown",
-            "gbif_taxonomy": {
-                "family": None,
-                "genus": None,
-                "species": None,
-                "subspecies": None,
-                "variety": None,
-                "subvariety": None,
-                "form": None,
-                "subforma": None,
-            },
+            "gbif_taxonomy": tax,
             "gbif_match_score": 0.0,
             "ontology_inclusion_score": 0.0,
             "proposed_action": "DISCARD",
@@ -159,7 +152,7 @@ def score(row, ontology_config):
     usage = gbif_match.get("usage", {})
     gbif_rank = usage.get("rank", "unknown").lower()
     if gbif_rank == "form":
-        gbif_rank == "forma"
+        gbif_rank = "forma"
 
     gbif_classification = gbif_match.get("classification", None)
     gbif_taxonomy = extract_gbif_taxonomy(gbif_classification)
