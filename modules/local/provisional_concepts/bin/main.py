@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 
 from ingest import load_ontology_config, read_unresolved_csv
-from scorer import score
+from resolvers.plant_taxons import score
 
 
 def main():

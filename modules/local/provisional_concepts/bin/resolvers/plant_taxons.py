@@ -1,4 +1,4 @@
-from gbif import species_match
+from clients.gbif_client import species_match
 import re
 
 # Find author annotation pointing to non classified entries
