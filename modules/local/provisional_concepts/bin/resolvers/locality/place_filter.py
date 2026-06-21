@@ -1,4 +1,3 @@
-# # from clients.geonames_client import # your function
 
 # def filter_placenames(field):
 #     """ Uses the geonames client to clean the string
