@@ -176,3 +176,17 @@ python modules/local/provisional_concepts/bin/main.py \
     --input results/annotation/unresolved_terms.csv \
     --output results/provisional_concepts.json
 ```
+
+### Geonames local
+
+The local GeoNames resolver automatically handles the downloading and unpacking of administrative region maps and country datasets (defaulting to Germany `DE` on first load).
+
+If you want to pre-download or add additional countries, you can run the script directly from the repository root:
+
+```bash
+# Default: download Germany (DE) data
+.venv/bin/python3 modules/local/provisional_concepts/bin/clients/local_geonames.py
+
+# Download specific countries (e.g. Austria (AT) and Switzerland (CH))
+.venv/bin/python3 modules/local/provisional_concepts/bin/clients/local_geonames.py AT CH
+```

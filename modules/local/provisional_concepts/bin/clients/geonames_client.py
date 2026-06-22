@@ -1,9 +1,11 @@
 """
-This script should just run words/strings through geonames and return the results, the logic is in the locality package
+Client for geonames, uses local geonames dataset and fallsback to the API through geocoder
+The local results might not match the geonames API
 """
 from geopy.geocoders import GeoNames
 from geopy.exc import GeocoderTimedOut
 import time
+from clients.local_geonames import LocalGeoNames
 
 MAX_RETRIES = 3
 
@@ -12,6 +14,12 @@ def get_country_code(country_name, username):
     # convert country name to ISO code
     if not country_name:
         return None
+
+    local_geocoder = LocalGeoNames()
+    result = local_geocoder.geocode(country_name)
+    if result:
+        return result.raw.get("countryCode")
+
     try:
         geolocator = GeoNames(username=username)
         result = geolocator.geocode(country_name)
@@ -23,6 +31,11 @@ def get_country_code(country_name, username):
 
 
 def search(query, username, country_code=None):
+    local_geocoder = LocalGeoNames()
+    local_results = local_geocoder.geocode(query, exactly_one=False, country=country_code)
+    if local_results:
+        return local_results
+
     geolocator = GeoNames(username=username)
     for attempt in range(MAX_RETRIES):
         try:
