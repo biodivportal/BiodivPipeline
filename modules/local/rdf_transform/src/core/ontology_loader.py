@@ -12,16 +12,20 @@ import os
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from rdflib import OWL, RDF, Graph, URIRef
+from rdflib import OWL, RDF, RDFS, Graph, URIRef
 
 logger = logging.getLogger(__name__)
 
+# Term declarations we index. OWL.* covers OWL ontologies (e.g. OBOE);
+# RDFS.Class + RDF.Property cover RDFS-style vocabularies such as Darwin Core,
+# whose classes are typed rdfs:Class and properties rdf:Property.
 _TERM_TYPES: tuple[URIRef, ...] = (
     OWL.Class,
     OWL.DatatypeProperty,
     OWL.ObjectProperty,
     OWL.AnnotationProperty,
     OWL.NamedIndividual,
+    RDFS.Class,
     RDF.Property,
 )
 
@@ -83,7 +87,7 @@ def _default_dir() -> Path:
     explicit = os.environ.get("ONTOLOGIES_DIR") or os.environ.get("KARMA_ONTOLOGIES_DIR")
     if explicit:
         return Path(explicit)
-    return Path(__file__).resolve().parents[2] / "examples" / "ontologies"
+    return Path(__file__).resolve().parents[2] / "ontologies"
 
 
 def load_ontologies_from_dir(path: Path | str | None = None) -> LoadedOntologies:

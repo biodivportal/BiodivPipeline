@@ -1,7 +1,7 @@
 """Tests for the /validate endpoint and its building blocks.
 
 Layered:
-- ontology_loader against the real OBOE file in examples/ontologies/
+- ontology_loader against the real ontologies in ontologies/
 - model_validator on synthetic + real RML inputs
 - POST /validate end-to-end through TestClient
 """
@@ -11,14 +11,14 @@ import pytest
 
 from src.core.model_validator import validate_model
 from src.core.ontology_loader import LoadedOntologies, load_ontologies_from_dir
-from tests.conftest import EXAMPLES
+from tests.conftest import EXAMPLES, ONTOLOGIES
 
 RML_MAPPING = EXAMPLES / "plant_height_vegetative_raw-model_oboe.rml.ttl"
 
 
 @pytest.fixture(scope="module")
 def real_ontologies() -> LoadedOntologies:
-    return load_ontologies_from_dir(EXAMPLES / "ontologies")
+    return load_ontologies_from_dir(ONTOLOGIES)
 
 
 @pytest.fixture
@@ -32,6 +32,20 @@ def test_loader_picks_up_oboe(real_ontologies):
     assert "oboe.owl" in real_ontologies.sources
     assert "http://ecoinformatics.org/oboe/oboe.1.2/oboe-core.owl#" in real_ontologies.namespaces
     assert "http://ecoinformatics.org/oboe/oboe.1.2/oboe-core.owl#Observation" in real_ontologies.defined
+
+
+def test_loader_picks_up_darwin_core(real_ontologies):
+    assert "darwin-core.ttl" in real_ontologies.sources
+    assert "http://rs.tdwg.org/dwc/terms/" in real_ontologies.namespaces
+    # a DwC class (rdfs:Class) and a DwC property (rdf:Property) are indexed
+    assert "http://rs.tdwg.org/dwc/terms/Occurrence" in real_ontologies.defined
+    assert "http://rs.tdwg.org/dwc/terms/scientificName" in real_ontologies.defined
+
+
+def test_loader_picks_up_abcd(real_ontologies):
+    assert "abcd_concepts.owl" in real_ontologies.sources
+    assert "http://rs.tdwg.org/abcd/terms/" in real_ontologies.namespaces
+    assert "http://rs.tdwg.org/abcd/terms/Accession" in real_ontologies.defined
 
 
 def test_loader_returns_empty_for_missing_dir(tmp_path):
@@ -84,6 +98,33 @@ def test_validator_flags_oboe_typo(real_ontologies, real_mapping_bytes):
     assert any("MeasuredValeu" in i for i in l3)
 
 
+# A minimal RML mapping that references Darwin Core terms (a class + a
+# property) — used to prove L3 now validates against the DwC namespace too.
+_DWC_MAPPING = b"""
+@prefix rml: <http://w3id.org/rml/> .
+@prefix dwc: <http://rs.tdwg.org/dwc/terms/> .
+<#TM> a rml:TriplesMap ;
+    rml:logicalSource [ rml:source "d.csv" ; rml:referenceFormulation rml:CSV ] ;
+    rml:subjectMap [ rml:template "http://example.org/{id}" ; rml:class dwc:Occurrence ] ;
+    rml:predicateObjectMap [ rml:predicate dwc:scientificName ;
+                             rml:objectMap [ rml:reference "name" ] ] .
+"""
+
+
+def test_validator_accepts_valid_dwc_terms(real_ontologies):
+    result = validate_model(_DWC_MAPPING, real_ontologies)
+    assert result.valid, result.issues
+
+
+def test_validator_flags_dwc_typo(real_ontologies):
+    """A typo in a Darwin Core term must surface as an [L3] issue."""
+    bad = _DWC_MAPPING.replace(b"dwc:Occurrence", b"dwc:Occrrence")
+    result = validate_model(bad, real_ontologies)
+    assert not result.valid
+    l3 = [i for i in result.issues if i.startswith("[L3]")]
+    assert any("Occrrence" in i for i in l3), result.issues
+
+
 def test_validator_warns_when_no_ontologies_loaded(real_mapping_bytes):
     """If the operator forgot to mount ontologies, L3 should surface a clear
     info message rather than silently passing the mapping."""
@@ -122,6 +163,6 @@ def test_health_lists_loaded_ontologies(client):
     assert response.status_code == 200
     body = response.json()
     assert body["status"] == "ok"
-    # In the test harness the lifespan runs against the real examples/ontologies/
+    # In the test harness the lifespan runs against the real ontologies/
     # dir, so OBOE must appear.
     assert "oboe.owl" in body["ontologies"]

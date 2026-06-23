@@ -4,8 +4,9 @@ A FastAPI microservice that turns tabular biodiversity records (CSV /
 TSV / JSON) into RDF using an [RML](https://rml.io/) mapping produced by
 the WP7 Schema Editor. The transformation engine is
 [Morph-KGC](https://github.com/morph-kgc/morph-kgc) (a maintained,
-pure-Python RML engine). Output aligns with OBOE 1.2 by default. Part of
-the BiodivPipeline WP8 work-package, developed with InfAI and the BGBM.
+pure-Python RML engine). The output vocabulary is whatever the mapping
+defines — the shipped example targets OBOE 1.2. Part of the BiodivPipeline
+WP8 work-package, developed with InfAI and the BGBM.
 
 > **Why RML instead of Karma?** The previous version drove the archived
 > Web-Karma JAR over a JVM subprocess. RML is the open, maintained
@@ -20,12 +21,20 @@ the BiodivPipeline WP8 work-package, developed with InfAI and the BGBM.
 
 ```bash
 docker run --rm -p 8000:8000 --name rdf-transform \
-  ghcr.io/matteodrso/rdf-matching-and-transformation-service:latest
+  ghcr.io/biodivportal/rdf-matching-and-transformation-service:latest
 ```
 
-Pulls the published image on first run, Swagger UI at
-http://127.0.0.1:8000/docs. To build the image locally instead, clone and
-`docker build -t sp-wp8 .` (pure Python, no build args needed).
+Swagger UI then at http://127.0.0.1:8000/docs. (Requires the image to be
+published and public first — see
+[Service image](#service-image--nf-core-module).) If port 8000 is already in
+use, map another, e.g. `-p 8001:8000`, and use that port in the URLs below.
+
+To build and run the image locally instead (pure Python, no build args):
+
+```bash
+docker build -t rdf-transform .
+docker run --rm -p 8000:8000 rdf-transform
+```
 
 ## `POST /transform`
 
@@ -83,9 +92,9 @@ Pre-flight check for an RML mapping. Catches three classes of problem
   and a logical source)? Accepts the modern RML (w3id), legacy RML
   (mmlab) and R2RML (rr) vocabularies.
 - **L3** — does every IRI the mapping references in a loaded ontology's
-  namespace (OBOE today) actually exist there? Catches typos like
-  `oboe-core:Observatoin` and references to renamed/removed upstream
-  classes.
+  namespace (OBOE, Darwin Core and ABCD today) actually exist there? Catches
+  typos like `oboe-core:Observatoin` and references to renamed/removed
+  upstream classes.
 
 ```bash
 curl -X POST http://127.0.0.1:8000/validate \
@@ -96,9 +105,9 @@ curl -X POST http://127.0.0.1:8000/validate \
 Any finding sets `valid: false` and lists the issues with an `[L1]` /
 `[L2]` / `[L3]` prefix. Reference ontologies are loaded once at service
 start from `$ONTOLOGIES_DIR` (default `/app/ontologies` in the container,
-`examples/ontologies/` locally); drop additional `.owl` / `.ttl` files in
-there to extend L3 coverage (e.g. Darwin Core, ABCD, BiodivOntology once
-the upstream artefacts are available).
+`ontologies/` locally); drop additional `.owl` / `.ttl` files in there to
+extend L3 coverage (OBOE, Darwin Core and ABCD ship today; BiodivOntology
+follows once a clean RDF artefact is available).
 
 ## Engine: Morph-KGC + RML
 
@@ -121,7 +130,7 @@ model (`…_oboe.ttl`) is kept alongside for comparison only.
 (FastAPI + Morph-KGC + OBOE) and pushes it to GitHub Container Registry.
 Trigger from the GitHub UI: **Actions → Build Service Image → Run
 workflow**, give it a version like `0.1.0`, and the workflow publishes
-both `ghcr.io/matteodrso/rdf-matching-and-transformation-service:v0.1.0`
+both `ghcr.io/biodivportal/rdf-matching-and-transformation-service:v0.1.0`
 (immutable) and `…:latest` (floating). Manual-only.
 
 GHCR packages are private by default. On the first publish, go to the
@@ -143,7 +152,7 @@ the task if the mapping has drifted from OBOE (override with
 Morph-KGC requires **Python ≥ 3.10** (the runtime image pins 3.11):
 
 ```bash
-python3.11 -m venv venv && source venv/bin/activate
+python3.11 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 pytest                                    # ~2 s
 uvicorn main:app --reload                 # local server on :8000
@@ -185,6 +194,7 @@ validated by `/validate` once wired up.
 │   ├── api/                                # routes + pydantic models
 │   └── core/morph_runner.py                # Morph-KGC RML materialization
 ├── examples/                               # InfAI sample + RML mapping + ground truth
+├── ontologies/                             # reference ontologies for /validate L3 (OBOE, Darwin Core, ABCD)
 ├── tests/                                  # pytest
 └── nextflow/                               # nf-core module
 ```

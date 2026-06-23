@@ -39,11 +39,39 @@ def test_transform_matches_ground_truth(client, dataset_name, source_type, delim
 
     assert response.status_code == 200, response.text
     assert response.headers["content-type"].startswith("text/turtle")
+    # downloads land as transform.ttl, not a generic .txt
+    assert "transform.ttl" in response.headers.get("content-disposition", "")
 
     got = Graph().parse(data=response.text, format="turtle")
     want = Graph().parse(source=str(GROUND_TRUTH), format="nt")
 
     assert len(got) == len(want)
+    assert to_isomorphic(got) == to_isomorphic(want)
+
+
+@requires_morph
+def test_transform_accepts_jsonld_mapping(client):
+    """The RML mapping may be uploaded as JSON-LD (same graph as the Turtle
+    mapping) and must produce the same RDF."""
+    # Re-serialize the Turtle RML mapping to JSON-LD on the fly.
+    mapping_jsonld = Graph().parse(source=str(MAPPING), format="turtle").serialize(
+        format="json-ld"
+    )
+    dataset = EXAMPLES / "plant_height_vegetative_raw_germany_20.json"
+
+    with dataset.open("rb") as ds:
+        response = client.post(
+            "/transform",
+            files={
+                "dataset": (dataset.name, ds, "application/json"),
+                "mapping_schema": ("mapping.jsonld", mapping_jsonld, "application/ld+json"),
+            },
+            data={"source_type": "JSON", "output_format": "turtle"},
+        )
+
+    assert response.status_code == 200, response.text
+    got = Graph().parse(data=response.text, format="turtle")
+    want = Graph().parse(source=str(GROUND_TRUTH), format="nt")
     assert to_isomorphic(got) == to_isomorphic(want)
 
 

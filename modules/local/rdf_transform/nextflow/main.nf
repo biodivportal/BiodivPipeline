@@ -20,7 +20,7 @@ process RDF_TRANSFORM {
     tag "${meta.id}"
     label 'process_low'
 
-    container "ghcr.io/matteodrso/rdf-matching-and-transformation-service:latest"
+    container "ghcr.io/biodivportal/rdf-matching-and-transformation-service:latest"
 
     input:
     tuple val(meta), path(dataset), path(schema)

@@ -33,6 +33,16 @@ _FORMAT_TO_RDFLIB = {
     "jsonld": "json-ld",
 }
 
+# File extension for the Content-Disposition download name, so browsers /
+# Swagger save `transform.ttl` rather than a generic `.txt`.
+_FORMAT_TO_EXT = {
+    "turtle": "ttl",
+    "ttl": "ttl",
+    "nt": "nt",
+    "ntriples": "nt",
+    "jsonld": "jsonld",
+}
+
 
 def _detect_mapping_format(filename: Optional[str], override: Optional[str]) -> str:
     """Decide whether the uploaded RML mapping is Turtle or JSON-LD.
@@ -116,7 +126,15 @@ async def transform(
 
     content = result.graph.serialize(format=_FORMAT_TO_RDFLIB[fmt])
 
-    return Response(content=content, media_type=_FORMAT_TO_MEDIA[fmt])
+    return Response(
+        content=content,
+        media_type=_FORMAT_TO_MEDIA[fmt],
+        # `inline` (not `attachment`) so Swagger UI still renders the body in
+        # the browser; the filename is only used when the user saves it.
+        headers={
+            "Content-Disposition": f'inline; filename="transform.{_FORMAT_TO_EXT[fmt]}"'
+        },
+    )
 
 
 @router.post("/validate", response_model=ValidateResponse)

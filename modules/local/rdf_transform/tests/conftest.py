@@ -9,6 +9,7 @@ from fastapi.testclient import TestClient
 from main import app
 
 EXAMPLES = Path(__file__).resolve().parents[1] / "examples"
+ONTOLOGIES = Path(__file__).resolve().parents[1] / "ontologies"
 
 
 @pytest.fixture

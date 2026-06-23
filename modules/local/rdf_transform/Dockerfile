@@ -6,7 +6,7 @@
 # library; there is no JVM and no Karma JAR to build or trim any more. Build
 # with a plain:
 #
-#   docker build -t sp-wp8 .
+#   docker build -t rdf-transform .
 #
 # Morph-KGC needs Python >= 3.10; we pin 3.11.
 
@@ -27,8 +27,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Reference ontologies for /validate L3 (alignment check). The loader
 # filters by extension, so the README.md sitting alongside is harmless.
-# Drop more .owl/.ttl files into examples/ontologies/ to extend coverage.
-COPY examples/ontologies /app/ontologies
+# Drop more .owl/.ttl files into ontologies/ to extend coverage.
+COPY ontologies /app/ontologies
 
 COPY main.py ./
 COPY src ./src
