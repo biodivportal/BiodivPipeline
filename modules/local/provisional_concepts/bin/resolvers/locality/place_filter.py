@@ -11,7 +11,7 @@
 #     locations = dict()
 #     return (field_short, locations)
 from concurrent.futures import ThreadPoolExecutor
-from clients.geonames_client import search, get_country_code, load_local_data
+from clients.geonames_client import search, get_country_code #load_local_data
 from pathlib import Path
 import re
 
@@ -55,13 +55,13 @@ def is_geographic(raw):
 
 def pick_best(results, query):
     # prefer city (P) over region (A) over terrain (T), higher population wins
-    # valid = [r for r in results if is_geographic(r.raw) and is_valid_match(query, r.raw)]
-    valid = [r for r in results if is_geographic(r) and is_valid_match(query, r)]
+    valid = [r for r in results if is_geographic(r.raw) and is_valid_match(query, r.raw)]
+    # valid = [r for r in results if is_geographic(r) and is_valid_match(query, r)]
     if not valid:
         return None
     order = {"P": 0, "A": 1, "T": 2}
-    # valid.sort(key=lambda r: (order.get(r.raw.get("fcl"), 9), -int(r.raw.get("population", 0))))
-    valid.sort(key=lambda r: (order.get(r.get("fcl"), 9), -r.get("population", 0)))
+    valid.sort(key=lambda r: (order.get(r.raw.get("fcl"), 9), -int(r.raw.get("population", 0))))
+    # valid.sort(key=lambda r: (order.get(r.raw.get("fcl"), 9), -r.raw.get("population", 0)))
     return valid[0]
 
 
@@ -93,7 +93,7 @@ MAX_WORKERS = 10
 
 def filter_placenames(field, username=None, country_name=None):
     # load local GeoNames data
-    load_local_data(Path(__file__).parent.parent.parent / "data" / "DE.txt")
+    # load_local_data(Path(__file__).parent.parent.parent / "data" / "DE.txt")
 
     # get country code from country name
     country_code = get_country_code(country_name, username) if country_name else None
@@ -114,12 +114,12 @@ def filter_placenames(field, username=None, country_name=None):
         hit = pick_best(results, chunk_clean)
         if hit:
             return chunk_clean, {
-                "name": hit.get("name"),
-                "uri": f"https://sws.geonames.org/{hit.get('geonameId')}/",
-                "feature_class": hit.get("fcl"),
-                "country_code": hit.get("countryCode"),
-                "lat": hit.get("lat"),
-                "lng": hit.get("lng"),
+                "name": hit.raw.get("name"),
+                "uri": f"https://sws.geonames.org/{hit.raw.get('geonameId')}/",
+                "feature_class": hit.raw.get("fcl"),
+                "country_code": hit.raw.get("countryCode"),
+                "lat": hit.raw.get("lat"),
+                "lng": hit.raw.get("lng"),
             }
 
         # try word by word
@@ -129,12 +129,12 @@ def filter_placenames(field, username=None, country_name=None):
             hit = pick_best(results, token)
             if hit:
                 return token, {
-                    "name": hit.get("name"),
-                    "uri": f"https://sws.geonames.org/{hit.get('geonameId')}/",
-                    "feature_class": hit.get("fcl"),
-                    "country_code": hit.get("countryCode"),
-                    "lat": hit.get("lat"),
-                    "lng": hit.get("lng"),
+                    "name": hit.raw.get("name"),
+                    "uri": f"https://sws.geonames.org/{hit.raw.get('geonameId')}/",
+                    "feature_class": hit.raw.get("fcl"),
+                    "country_code": hit.raw.get("countryCode"),
+                    "lat": hit.raw.get("lat"),
+                    "lng": hit.raw.get("lng"),
                 }
         return None, None
 
