@@ -1,5 +1,6 @@
 # Nextflow
 .nextflow*
+.nf-test/
 work/
 results/
 .lineage/
