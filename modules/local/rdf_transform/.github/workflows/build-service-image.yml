@@ -1,5 +1,20 @@
 name: Build Service Image
 
+# ⚠️ MONOREPO NOTE: This workflow only runs when this module lives in its OWN
+# repository (named `rdf-matching-and-transformation-service`). GitHub Actions
+# only discovers workflows under the repository-root `.github/workflows/` — a
+# copy nested at `modules/local/rdf_transform/.github/workflows/` inside the
+# BiodivPipeline monorepo is NEVER triggered. Two things also assume the
+# standalone repo and would need fixing if you move this to the monorepo root:
+#   - `github.repository` would resolve to `<owner>/BiodivPipeline`, so the
+#     image would publish as `ghcr.io/<owner>/biodivpipeline`, not the
+#     `…/rdf-matching-and-transformation-service` name that the README and
+#     nextflow/main.nf pull from.
+#   - `context: .` below would point at the monorepo root, not this module dir,
+#     so the Dockerfile would not be found.
+# Keep building the image from the standalone repo, or adapt all three before
+# relocating this file.
+#
 # Build + publish the runtime service image (FastAPI + Morph-KGC +
 # OBOE ontology) to GitHub Container Registry. Consumed by:
 #   - the nf-core module under nextflow/main.nf
