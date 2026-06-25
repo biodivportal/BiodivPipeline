@@ -1,0 +1,2 @@
+task_id	name	status	exit	duration	realtime	cpus	%cpu	memory	%mem	rss	vmem	peak_rss	peak_vmem	rchar	wchar
+1	TAXONOMY_CLASSIFY (taxonomy)	FAILED	2	119ms	47ms	2	-	6 GB	-	-	-	-	-	-	-
