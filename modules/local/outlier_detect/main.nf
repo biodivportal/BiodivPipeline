@@ -2,7 +2,7 @@ process OUTLIER_DETECT {
     tag "outlier"
     label 'process_low'
 
-    container 'biodivpipeline/placeholder:0.1' // TODO: replace with module team's container
+    container 'outlier-detect:latest'
 
     input:
     path csv
