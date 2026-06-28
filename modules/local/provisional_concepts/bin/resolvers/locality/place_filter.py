@@ -122,7 +122,7 @@ def filter_placenames(field, username=None, country_name=None):
                 "lng": hit.raw.get("lng"),
             }
 
-        # try word by word
+        # try word by word - stop at first match
         tokens = tokenize_chunk(chunk_clean)
         for token in tokens:
             results = search(token, username, country_code)
@@ -137,6 +137,7 @@ def filter_placenames(field, username=None, country_name=None):
                     "lng": hit.raw.get("lng"),
                 }
         return None, None
+
 
     with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
         futures = {executor.submit(process_chunk, chunk): chunk for chunk in chunks}

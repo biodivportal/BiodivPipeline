@@ -9,7 +9,45 @@ from clients.local_geonames import LocalGeoNames
 
 MAX_RETRIES = 3
 
+# cache to avoid repeat lookups
+_cache = {}
 
+def search(query, username=None, country_code=None):
+    # check cache first
+    cache_key = (query.lower(), country_code)
+    if cache_key in _cache:
+        return _cache[cache_key]
+    
+    # search local data first, fallback to API if nothing found
+    local_geocoder = LocalGeoNames()
+    local_results = local_geocoder.geocode(query, exactly_one=False, country=country_code)
+    if local_results:
+        _cache[cache_key] = local_results
+        return local_results
+    if not username:
+        _cache[cache_key] = []
+        return []
+    geolocator = GeoNames(username=username)
+    for attempt in range(MAX_RETRIES):
+        try:
+            results = geolocator.geocode(query, exactly_one=False, country=country_code)
+            _cache[cache_key] = results or []
+            return results or []
+        except GeocoderTimedOut:
+            if attempt < MAX_RETRIES - 1:
+                time.sleep(2 ** attempt)
+            else:
+                print(f"[error] GeoNames timed out for '{query}'")
+                _cache[cache_key] = []
+                return []
+        except Exception as e:
+            if attempt < MAX_RETRIES - 1:
+                time.sleep(2 ** attempt)
+            else:
+                print(f"[error] GeoNames failed for '{query}': {e}")
+                _cache[cache_key] = []
+                return []
+            
 def get_country_code(country_name, username=None):
     # convert country name to ISO code, tries local first then API
     if not country_name:
@@ -28,31 +66,31 @@ def get_country_code(country_name, username=None):
         return None
 
 
-def search(query, username=None, country_code=None):
-    # search local data first, fallback to API if nothing found
-    local_geocoder = LocalGeoNames()
-    local_results = local_geocoder.geocode(query, exactly_one=False, country=country_code)
-    if local_results:
-        return local_results
-    if not username:
-        return []
-    geolocator = GeoNames(username=username)
-    for attempt in range(MAX_RETRIES):
-        try:
-            results = geolocator.geocode(query, exactly_one=False, country=country_code)
-            return results or []
-        except GeocoderTimedOut:
-            if attempt < MAX_RETRIES - 1:
-                time.sleep(2 ** attempt)
-            else:
-                print(f"[error] GeoNames timed out for '{query}'")
-                return []
-        except Exception as e:
-            if attempt < MAX_RETRIES - 1:
-                time.sleep(2 ** attempt)
-            else:
-                print(f"[error] GeoNames failed for '{query}': {e}")
-                return []
+# def search(query, username=None, country_code=None):
+#     # search local data first, fallback to API if nothing found
+#     local_geocoder = LocalGeoNames()
+#     local_results = local_geocoder.geocode(query, exactly_one=False, country=country_code)
+#     if local_results:
+#         return local_results
+#     if not username:
+#         return []
+#     geolocator = GeoNames(username=username)
+#     for attempt in range(MAX_RETRIES):
+#         try:
+#             results = geolocator.geocode(query, exactly_one=False, country=country_code)
+#             return results or []
+#         except GeocoderTimedOut:
+#             if attempt < MAX_RETRIES - 1:
+#                 time.sleep(2 ** attempt)
+#             else:
+#                 print(f"[error] GeoNames timed out for '{query}'")
+#                 return []
+#         except Exception as e:
+#             if attempt < MAX_RETRIES - 1:
+#                 time.sleep(2 ** attempt)
+#             else:
+#                 print(f"[error] GeoNames failed for '{query}': {e}")
+#                 return []
 
 
 # ---- Previous implementation v1 - local DE.txt with in-memory index ----

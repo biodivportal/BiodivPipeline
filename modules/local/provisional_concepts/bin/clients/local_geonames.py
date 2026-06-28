@@ -144,33 +144,119 @@ def load_data():
             print(f"Error loading the Geonames data: {e}")
             pass
 
+# 73 seec for 100
+# def local_lookup(query, country_code=None):
+#     load_data()
+#     if not query:
+#         return []
 
+#     q_lower = query.lower()
+#     choices = list(_lookup_dict.keys())
+
+#     matches = process.extract(
+#         q_lower, choices, scorer=fuzz.partial_ratio, limit=100, score_cutoff=80.0
+#     )
+
+#     records = []
+#     for matched_key, score, _ in matches:
+#         for r in _lookup_dict[matched_key]:
+#             r_score = r.copy()
+#             r_score["_score"] = score
+#             records.append(r_score)
+
+#     records.sort(key=lambda r: (-r["_score"], -int(r.get("population", 0))))
+
+#     if country_code:
+#         records = [
+#             r
+#             for r in records
+#             if r.get("countryCode", "").upper() == country_code.upper()
+#         ]
+
+#     return records
+
+# 48.2 sec for 100
+# def local_lookup(query, country_code=None):
+#     load_data()
+#     if not query:
+#         return []
+
+#     q_lower = query.lower()
+
+#     # try exact match first - instant lookup
+#     if q_lower in _lookup_dict:
+#         records = _lookup_dict[q_lower]
+#         if country_code:
+#             records = [r for r in records if r.get("countryCode", "").upper() == country_code.upper()]
+#         if records:
+#             records = sorted(records, key=lambda r: -int(r.get("population", 0)))
+#             return records
+
+#     # fallback to rapidfuzz for fuzzy matching (handles typos/umlauts)
+#     choices = list(_lookup_dict.keys())
+#     matches = process.extract(
+#         q_lower, choices, scorer=fuzz.partial_ratio, limit=100, score_cutoff=80.0
+#     )
+
+#     records = []
+#     for matched_key, score, _ in matches:
+#         for r in _lookup_dict[matched_key]:
+#             r_score = r.copy()
+#             r_score["_score"] = score
+#             records.append(r_score)
+
+#     records.sort(key=lambda r: (-r["_score"], -int(r.get("population", 0))))
+
+#     if country_code:
+#         records = [
+#             r
+#             for r in records
+#             if r.get("countryCode", "").upper() == country_code.upper()
+#         ]
+
+#     return records
+
+# 9 secs for 100, 93 sec for 1k, 964/1000
 def local_lookup(query, country_code=None):
     load_data()
     if not query:
         return []
 
     q_lower = query.lower()
+
+    # 1. exact match first - instant
+    if q_lower in _lookup_dict:
+        records = _lookup_dict[q_lower]
+        if country_code:
+            records = [r for r in records if r.get("countryCode", "").upper() == country_code.upper()]
+        if records:
+            return sorted(records, key=lambda r: -int(r.get("population", 0)))
+
+    # 2. substring match - faster than rapidfuzz
+    records = []
+    seen = set()
+    for key, rows in _lookup_dict.items():
+        if q_lower in key or key in q_lower:
+            for r in rows:
+                rid = r.get("geonameId")
+                if rid not in seen:
+                    seen.add(rid)
+                    if not country_code or r.get("countryCode","").upper() == country_code.upper():
+                        records.append(r)
+    
+    if records:
+        return sorted(records, key=lambda r: -int(r.get("population", 0)))
+
+    # 3. rapidfuzz only as last resort
     choices = list(_lookup_dict.keys())
-
-    matches = process.extract(
-        q_lower, choices, scorer=fuzz.partial_ratio, limit=100, score_cutoff=80.0
-    )
-
+    matches = process.extract(q_lower, choices, scorer=fuzz.partial_ratio, limit=100, score_cutoff=80.0)
     records = []
     for matched_key, score, _ in matches:
         for r in _lookup_dict[matched_key]:
             r_score = r.copy()
             r_score["_score"] = score
             records.append(r_score)
-
     records.sort(key=lambda r: (-r["_score"], -int(r.get("population", 0))))
-
     if country_code:
-        records = [
-            r
-            for r in records
-            if r.get("countryCode", "").upper() == country_code.upper()
-        ]
-
+        records = [r for r in records if r.get("countryCode","").upper() == country_code.upper()]
     return records

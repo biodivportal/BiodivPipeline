@@ -1,3 +1,5 @@
 pygbif
 geopy
 rapidfuzz
+openai
+python-dotenv
