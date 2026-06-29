@@ -12,7 +12,7 @@ A modular nf-core / Nextflow pipeline scaffold that orchestrates pluggable modul
 # Run with the bundled mock dataset
 nextflow run main.nf -profile test --outdir results
 
-# Run with your own input
+# Run with your own input (TODO: This profile does not work yet with the unfinished modules; more precise: with the placeholder docker dependencies)
 nextflow run main.nf -profile docker \
     --input path/to/biodiv.csv \
     --outdir results

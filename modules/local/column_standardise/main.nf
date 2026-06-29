@@ -2,7 +2,7 @@ process COLUMN_STANDARDISE {
     tag "column_std"
     label 'process_single'
 
-    container 'biodivpipeline/placeholder:0.1' // TODO: replace with module team's container
+     // container 'biodivpipeline/placeholder:0.1' // TODO: replace with module team's container
 
     input:
     path csv

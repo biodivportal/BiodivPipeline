@@ -22,7 +22,7 @@ master ← dev ← wp1-fix-docker
 nextflow run main.nf -profile test --outdir results
 ```
 
-All 7 modules must show `✔`. See [docs/module-workflow.md](module-workflow.md) for module-specific implementation instructions.
+All 7 modules must show `✔`. See [docs/module-integration-guide.md](module-integration-guide.md) for module-specific implementation instructions.
 
 ## Pull request process
 
