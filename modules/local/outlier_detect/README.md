@@ -176,6 +176,41 @@ Example usage: run in the main directory the following command:
 python -m app.main_with_cli detect-csv --file input.csv --output output.csv
 ```
 
+## Testing with Nextflow
+
+Run steps 1-3 in the outlier_detect directory:
+1. Start docker
+```bash
+docker compose up -d
+```
+
+2. Verify the Ollama is downloaded
+```bash
+docker exec -it ollama-service ollama list
+```
+
+If the list is empty, run
+```bash
+docker exec -it ollama-service ollama pull llama3.2:3b
+```
+
+3. Build the image
+```bash
+docker build -t outlier-detect:latest .
+```
+
+Run steps 4 and 5 in the root directory BiodivPipeline/
+
+4. Clear the Nextflow Cache
+```bash
+rm -rf .nf-test/
+```
+
+5. Run the test
+```bash
+nf-test test modules/local/outlier_detect/tests/main.nf.test
+```
+
 ## Supported Input Formats
 
 The API accepts:
