@@ -13,7 +13,6 @@ process BIODIV_ANNOTATE {
 
     script:
     """
-    export BIODIV_API_KEY="${params.biodiv_api_key}"
 
     python ${moduleDir}/bin/annotate_biodiv.py \\
         --input ${csv} \\
