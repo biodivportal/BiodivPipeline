@@ -43,12 +43,6 @@
                     "description": "Path to RDF mapping schema file (JSON-LD or Turtle). If not provided, a default stub mapping is used.",
                     "fa_icon": "fas fa-project-diagram"
                 },
-                "biodiv_api_key": {
-                    "type": "string",
-                    "description": "API key for the BiodivPortal annotation service.",
-                    "fa_icon": "fas fa-key",
-                    "hidden": true
-                },
                 "max_rows": {
                     "type": "integer",
                     "minimum": 1,
