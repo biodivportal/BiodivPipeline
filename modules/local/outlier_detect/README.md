@@ -22,7 +22,7 @@ The detection pipeline processes biodiversity specimen records through multiple 
 ## Project Structure
 
 ```
-.
+Taxonomy-Classifier-and-Outlier-Detection/
 ├── app/
 │   ├── __init__.py
 │   ├── cli_functions.py                 # CLI functions in
@@ -77,7 +77,7 @@ The detection pipeline processes biodiversity specimen records through multiple 
 ## Prerequisites
 
 - Python 3.13
-- Docker and Docker Compose (optional)
+- Docker and Docker Compose
 - Ollama (for LLM detection)
 
 ---
@@ -269,14 +269,13 @@ Accepts biodiversity records directly as file upload. The JSON should be in the 
   "enable_quality": true,
   "enable_semantic": true,
   "enable_llm": false,
-  "llm_provider": "none",
 }
 ```
 
 **Parameters:**
 - `file` (required): JSON file upload
 - `enable_llm` (default: false): Enable LLM-based semantic analysis
-- `llm_provider` (default: "none"): LLM provider ("ollama")
+- `use_ollama` (default: false): Whether Ollama or OpenAI is used
 - `download_csv` (default: false): Return results as CSV download
 - `enable_semantic` (default: true): Enable semantic rule checking
 - `enable_quality` (default: true): Enable rule-based quality checks (checks for missing columns)
@@ -335,7 +334,7 @@ Accepts CSV file uploads and processes them in configurable chunks.
 **Query Parameters:**
 - `file` (required): CSV file upload
 - `enable_llm` (default: false): Enable LLM analysis
-- `llm_provider` (default: "none"): LLM provider ("ollama")
+- `use_ollama` (default: false): Whether Ollama or OpenAI is used
 - `chunksize` (default: 1000): Records per chunk
 - `max_records` (optional): Maximum total records to process
 - `max_llm_records` (default: 25): Maximum records to send to LLM

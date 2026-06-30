@@ -15,7 +15,7 @@ process OUTLIER_DETECT {
     script:
     """
     export OLLAMA_URL="http://127.0.0.1:11434"
-    python ${projectDir}/modules/local/outlier_detect/app/main_with_cli.py detect-csv --file $csv --output flagged_records.csv --enable-llm --llm-provider ollama
+    python ${projectDir}/modules/local/outlier_detect/app/main_with_cli.py detect-csv --file $csv --output flagged_records.csv --enable-llm
 
     cat <<-VERSIONS > versions.yml
     "${task.process}":
