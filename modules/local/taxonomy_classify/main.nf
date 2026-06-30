@@ -1,8 +1,9 @@
 process TAXONOMY_CLASSIFY {
+    secret 'OPENAI_API_KEY'
     tag "taxonomy"
     label 'process_low'
 
-    container 'biodivpipeline/placeholder:0.1' // TODO: replace with module team's container
+    container 'taxonomy-classify:0.1'   // your built image name
 
     input:
     path csv
@@ -13,14 +14,12 @@ process TAXONOMY_CLASSIFY {
 
     script:
     """
-    # Stub — module team replaces this script with the real implementation.
-    # Emits minimal valid outputs matching the channel contract.
-
-    cp ${csv} taxonomy_resolved.csv
-
+    python /app/classify.py --input ${csv} --output taxonomy_resolved.csv
+    
     cat <<-VERSIONS > versions.yml
     "${task.process}":
-        stub: "0.0.0"
+        python: \$(python --version | sed 's/Python //')
+        taxonomy_classify: "0.1"
     VERSIONS
     """
 }

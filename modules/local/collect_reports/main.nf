@@ -2,7 +2,7 @@ process COLLECT_REPORTS {
     tag "reports"
     label 'process_single'
 
-    container 'biodivpipeline/placeholder:0.1' // TODO: replace with module team's container
+    // container 'biodivpipeline/placeholder:0.1' // TODO: replace with module team's container
 
     input:
     path quality_report
