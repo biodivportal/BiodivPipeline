@@ -12,13 +12,13 @@ from urllib.parse import quote
 
 import requests
 
-
 OLS_BASE_URL = "https://www.ebi.ac.uk/ols4/api"
 ONTOLOGY = "envo"
 REQUEST_TIMEOUT = 30
 
-CLIENT_DIR = Path(__file__).parent
-CACHE_PATH = CLIENT_DIR / "envo_relevant_terms.json"
+REPO_ROOT = Path(__file__).parent.parent
+DATA_DIR   = REPO_ROOT / "data"
+CACHE_PATH = DATA_DIR / "envo_relevant_terms.json"
 
 RELEVANT_ROOT_IRIS = {
     # broad environmental concepts
@@ -30,7 +30,7 @@ RELEVANT_ROOT_IRIS = {
     "http://purl.obolibrary.org/obo/ENVO_01000617", # lentic water body
     "http://purl.obolibrary.org/obo/ENVO_00000022", # river
     "http://purl.obolibrary.org/obo/ENVO_00000023", # stream
-    
+
     # terrestrial environments
     "http://purl.obolibrary.org/obo/ENVO_01001886", # landform
     "http://purl.obolibrary.org/obo/ENVO_00000191", # solid astronomical body part
@@ -42,10 +42,9 @@ RELEVANT_ROOT_IRIS = {
     # materials
     "http://purl.obolibrary.org/obo/ENVO_00001998",# soil
     "http://purl.obolibrary.org/obo/ENVO_00002007",# sediment
-    
+
     # human influenced environments
     "http://purl.obolibrary.org/obo/ENVO_01000951",# cultivated environment
-    
 }
 
 def encode_iri(iri: str) -> str:
@@ -85,7 +84,6 @@ def get_descendants(root_iri: str) -> List[Dict[str, Any]]:
 
 def semantic_search(text: str, rows: int = 10) -> List[Dict[str, Any]]:
 # Search ENVO and return raw OLS search results
-
     response = requests.get(
         f"{OLS_BASE_URL}/search",
         params={
@@ -115,6 +113,7 @@ def simplify_term(term: Dict[str, Any], root_iri: str) -> Dict[str, Any]:
 
 def build_envo_cache(cache_path: Path = CACHE_PATH) -> List[Dict[str, Any]]:
 # Builds a local cache containing all relevant ENVO terms
+    cache_path.parent.mkdir(parents=True, exist_ok=True)
     all_terms: Dict[str, Dict[str, Any]] = {}
 
     for root_iri in RELEVANT_ROOT_IRIS:
@@ -124,7 +123,6 @@ def build_envo_cache(cache_path: Path = CACHE_PATH) -> List[Dict[str, Any]]:
             iri = term.get("iri")
             if not iri:
                 continue
-
             all_terms[iri] = simplify_term(term, root_iri)
 
     cached_terms = list(all_terms.values())
@@ -133,61 +131,38 @@ def build_envo_cache(cache_path: Path = CACHE_PATH) -> List[Dict[str, Any]]:
         json.dump(cached_terms, file, indent=2, ensure_ascii=False)
 
     print(f"Saved {len(cached_terms)} ENVO terms to {cache_path}")
-
     return cached_terms
 
 
 def load_envo_cache(cache_path: Path = CACHE_PATH) -> List[Dict[str, Any]]:
-# Load the local relevant ENVO cache.
+# Load the local relevant ENVO cache and build if missing
     if not cache_path.exists():
         return build_envo_cache(cache_path)
 
     with open(cache_path, "r", encoding="utf-8") as file:
         return json.load(file)
 
-
-def search_cached_envo(
-    term: str,
-    cache_path: Path = CACHE_PATH,
-) -> List[Dict[str, Any]]:
-
-# Search only inside the locally cached relevant ENVO terms
+def tree_search(term, cache_path=CACHE_PATH):
+# search against labels and synonyms i local cache
     query = term.lower().strip()
-    cache = load_envo_cache(cache_path)
+    matches = []
 
-    matches: List[Dict[str, Any]] = []
-
-    for entry in cache:
+    for entry in load_envo_cache(cache_path):
         label = (entry.get("label") or "").lower()
-        synonyms = [
-            synonym.lower()
-            for synonym in entry.get("synonyms", [])
-            if isinstance(synonym, str)
-        ]
+        synonyms = [s.lower() for s in entry.get("synonyms", []) if isinstance(s, str)]
 
         if query == label or query in label or query in synonyms:
             matches.append(entry)
 
     return matches
 
-
-def tree_search(term: str) -> List[Dict[str, Any]]:
+#def tree_search(term: str) -> List[Dict[str, Any]]:
 # Search inside the locally cached relevant ENVO tree
-    return search_cached_envo(term)
+#    return search_cached_envo(term)
 
-
-if __name__ == "__main__":
-    # Build/update cache once.
-    # build_envo_cache()
-
-    # Simple smoke test.
-    term = "tidal creek"
-    matches = tree_search(term)
-
-    print(f"\nFound {len(matches)} cached ENVO matches")
-    print(f"Search term: {term}\n")
-
-    for index, match in enumerate(matches, start=1):
-        print(f"[{index}/{len(matches)}] {match.get('label')}")
-        print(match.get("iri"))
-        print()
+# if __name__ == "__main__":
+#     term = "tidal creek"
+#     matches = tree_search(term)
+#     print(f"tree_search('{term}'): {len(matches)} match(es)")
+#     for m in matches:
+#         print(f"  {m['label']} — {m['iri']}")
