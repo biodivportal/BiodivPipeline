@@ -92,6 +92,9 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 MAX_WORKERS = 10
 
 def filter_placenames(field, username=None, country_name=None):
+    if not field:
+        return "", {}
+
     # load local GeoNames data
     # load_local_data(Path(__file__).parent.parent.parent / "data" / "DE.txt")
 

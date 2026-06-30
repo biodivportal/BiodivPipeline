@@ -85,41 +85,17 @@ def query_llm(
             time.sleep(1)
 
 
-def split_text(text):
-    prompt = f"""You are an expert botanical data parser. Split the location description into country, location, environment, and rest.
-Rules:
-- country: The country name if explicitly mentioned in the text, otherwise an empty string.
-- location: Geographic placenames, administrative areas, cities, districts, or landmarks.
-- environment: Terms describing the habitat or environment the plant was found in (e.g., Fichtenwald, auf Muschelkalk, sandige Krautfluren, Krautige Straßenböschung, Bahngelände). Keep this strictly to environment/habitat terms.
-- rest: Everything else, including collection dates, collectors, collection numbers, elevations/altitudes, grid references (e.g. TK 8432/3), or botanical garden cultivation notes (e.g., cult. hort. bot. Berol.).
-Example 1: 'Germany: Mittelrhein-Gebiet, Namedyer Werth nördl. Andernach, in Hochstaudenbeständen am Leinpfad. 27.08.1988, Leg.: R. Wisskirchen 913.' -> {{"country": "Germany", "location": "Mittelrhein-Gebiet, Namedyer Werth nördl. Andernach, Leinpfad", "environment": "in Hochstaudenbeständen", "rest": "27.08.1988, Leg.: R. Wisskirchen 913."}}
-Example 2: 'Germany: Hessen, Limburger Becken, Runkel-Steeden, Bahngelände in Kerkerbach. 08.05.1983, Leg.: H. Kalheber 83-1812. ex herb. / ded. : ex Herbarium Heinz Kalheber.' -> {{"country": "Germany", "location": "Hessen, Limburger Becken, Runkel-Steeden, Kerkerbach", "environment": "Bahngelände", "rest": "08.05.1983, Leg.: H. Kalheber 83-1812. ex herb. / ded. : ex Herbarium Heinz Kalheber."}}
-Input to parse: '{text}'"""
-    schema = {
-        "type": "object",
-        "properties": {
-            "country": {"type": "string"},
-            "location": {"type": "string"},
-            "environment": {"type": "string"},
-            "rest": {"type": "string"},
-        },
-        "required": ["country", "location", "environment", "rest"],
-    }
-    return query_llm(
-        prompt=prompt,
-        system_instruction="You are a data parser. Always return JSON matching the schema.",
-        schema=schema,
-    )
-
-
 if __name__ == "__main__":
     print("Testing LLM Client...")
-    test_text = "Germany: Hessen, Limburger Becken, Runkel-Steeden, Bahngelände in Kerkerbach. 08.05.1983, Leg.: H. Kalheber 83-1812. ex herb. / ded. : ex Herbarium Heinz Kalheber."
+    test_prompt = "Say hello!"
 
     try:
-        result = split_text(test_text)
+        result = query_llm(
+            prompt=test_prompt,
+            system_instruction="You are a helpful assistant.",
+        )
         print("Success! Result:")
-        print(json.dumps(result, indent=2, ensure_ascii=False))
+        print(result)
     except Exception as e:
         print(f"\nTest run failed: {e}")
         print(
