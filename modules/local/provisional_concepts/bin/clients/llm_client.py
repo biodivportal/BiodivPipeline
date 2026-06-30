@@ -49,7 +49,7 @@ def query_llm(
     max_retries=3,
     use_json_mode=True,
 ):
-    base_url = os.environ.get("LLM_BASE_URL", "http://localhost:1234/v1")
+    base_url = os.environ.get("LLM_BASE_URL", None)
     api_key = os.environ.get("LLM_API_KEY", "lm-studio")
     model = os.environ.get("LLM_MODEL", "google/gemma-4-e4b")
     reasoning_effort = os.environ.get("LLM_REASONING_EFFORT")
