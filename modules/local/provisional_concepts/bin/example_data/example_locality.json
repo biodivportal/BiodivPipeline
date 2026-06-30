@@ -1,0 +1,29 @@
+{
+  "source_field": "Locality",
+  "original_term": "Germany, Hessen, Darmstadt, Wiese am Waldrand bei 120m",
+  "example_HerbariumID": "HERB-100293",
+  "locationURI": "URI",
+  "locationName": "Darmstandt",
+  "proposed_concept_name": "meadow",
+  "proposed_action": "REGISTER",
+  "ontology_inclusion_score": 0.85,
+  "explanation": "Location near: Darmstadt[from geonames]'Wiese am Waldrand' matched semantically to ENVO term 'meadow' (ENVO_00000109) with 85% confidence.",
+  
+  "locality_metadata": {
+    "geonamedata": "The json returned from geonames API",
+    "text_cleaning": {
+      "_comment": "Not sure we want this! or how good we can get the cleaning",
+      "stripped_altitudes": ["120m"],
+      "stripped_coordinates": [],
+      "cleaned_environmental_descriptor": "Wiese am Waldrand"
+    },
+    "envo_resolution": {
+      "_comment": "again just depends on the ENVO output, it's prolly fine to add other matches with their confidence",
+      "matched_term_label": "meadow",
+      "matched_term_id": "ENVO_00000109",
+      "matched_term_uri": "http://purl.obolibrary.org/obo/ENVO_00000109",
+      "similarity_score": 0.85,
+      "ols_match_type": "EMBEDDING_SEARCH"
+    }
+  }
+}
