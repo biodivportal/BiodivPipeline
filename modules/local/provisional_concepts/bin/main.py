@@ -20,11 +20,38 @@ def main():
         default=default_ontology_config,
         help="Path to ontology config JSON",
     )
+    parser.add_argument(
+        "--allowed-fields",
+        nargs="*",
+        help="Space-separated list of whitelisted columns to process",
+    )
+    parser.add_argument(
+        "--species",
+        action="store_true",
+        help="Process taxonomic/species columns",
+    )
+    parser.add_argument(
+        "--localities",
+        action="store_true",
+        help="Process geographic/locality columns",
+    )
     args = parser.parse_args()
+
+    allowed_fields = None
+    if args.allowed_fields is not None:
+        allowed_fields = set(args.allowed_fields)
+
+    if args.species or args.localities:
+        if allowed_fields is None:
+            allowed_fields = set()
+        if args.species:
+            allowed_fields.update({"NameCache", "Genus", "FullNameCache", "Family"})
+        if args.localities:
+            allowed_fields.update({"Locality", "FundortUNdOeko"})
 
     # data ingestion
     config = load_ontology_config(args.ontology_config)
-    unresolved_rows = read_unresolved_csv(args.input)
+    unresolved_rows = read_unresolved_csv(args.input, allowed_fields=allowed_fields)
 
     # score and match species
     match = [score(row, config) for row in unresolved_rows]

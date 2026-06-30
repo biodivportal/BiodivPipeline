@@ -12,11 +12,20 @@ def load_ontology_config(config_path):
         return {}
 
 
-def read_unresolved_csv(csv_path):
-    """Reads the unresolved CSV file, keeping only plant name terms also ignoreing stop list"""
+def read_unresolved_csv(csv_path, allowed_fields=None):
+    """Reads the unresolved CSV file, keeping whitelisted fields and ignoring stop list"""
 
-    # At this stage we only check these columns
-    allowed_fields = {"NameCache", "Genus", "FullNameCache", "Family"}
+    if allowed_fields is None:
+        allowed_fields = {
+            "NameCache",
+            "Genus",
+            "FullNameCache",
+            "Family",
+            "Locality",
+            "FundortUNdOeko",
+        }
+    else:
+        allowed_fields = set(allowed_fields)
 
     # This should likely be changed, a stop word in only one column should not ommit the whole row
     stoplist = [
