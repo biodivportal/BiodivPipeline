@@ -1,0 +1,19 @@
+nextflow_process {
+    name "Test OUTLIER_DETECT"
+    script "../main.nf"
+    process "OUTLIER_DETECT"
+
+    test("Detects a small sample of outliers.") {
+        when {
+            process {
+                """
+                input[0] = file("${projectDir}/modules/local/outlier_detect/tests/input.csv")
+                """
+            }
+        }
+        then {
+            assert process.success
+            assert path(process.out.flagged[0]).exists()
+        }
+    }
+}

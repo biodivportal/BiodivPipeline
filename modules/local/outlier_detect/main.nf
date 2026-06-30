@@ -2,27 +2,25 @@ process OUTLIER_DETECT {
     tag "outlier"
     label 'process_low'
 
-    // container 'biodivpipeline/placeholder:0.1' // TODO: replace with module team's container
+    container 'outlier-detect:latest'
+    containerOptions '--network host'
 
     input:
     path csv
 
     output:
-    path "quality_report.json", emit: report
     path "flagged_records.csv", emit: flagged
     path "versions.yml",        emit: versions
 
     script:
     """
-    # Stub — module team replaces this script with the real implementation.
-    # Emits minimal valid outputs matching the channel contract.
-
-    echo '{}' > quality_report.json
-    : > flagged_records.csv
+    export OLLAMA_URL="http://127.0.0.1:11434"
+    python ${projectDir}/modules/local/outlier_detect/app/main_with_cli.py detect-csv --file $csv --output flagged_records.csv --enable-llm
 
     cat <<-VERSIONS > versions.yml
     "${task.process}":
-        stub: "0.0.0"
+        python: \$(python --version 2>&1 | sed 's/Python //')
+        outlier_detect: "0.1"
     VERSIONS
     """
 }
