@@ -4,7 +4,8 @@ import json
 from pathlib import Path
 
 from ingest import load_ontology_config, read_unresolved_csv
-from resolvers.plant_taxons import score
+from resolvers.plant_taxons import score as score_taxon
+from resolvers.locality import score as score_locality
 
 
 def main():
@@ -35,6 +36,11 @@ def main():
         action="store_true",
         help="Process geographic/locality columns",
     )
+    parser.add_argument(
+        "--limit",
+        type=int,
+        help="Limit the number of rows processed",
+    )
     args = parser.parse_args()
 
     allowed_fields = None
@@ -52,9 +58,20 @@ def main():
     # data ingestion
     config = load_ontology_config(args.ontology_config)
     unresolved_rows = read_unresolved_csv(args.input, allowed_fields=allowed_fields)
+    if args.limit is not None:
+        unresolved_rows = unresolved_rows[:args.limit]
 
-    # score and match species
-    match = [score(row, config) for row in unresolved_rows]
+    # score and match records (species vs environment/locality)
+    taxon_fields = {"NameCache", "Genus", "FullNameCache", "Family"}
+    locality_fields = {"Locality", "FundortUNdOeko"}
+
+    match = []
+    for row in unresolved_rows:
+        sf = row.get("source_field")
+        if sf in taxon_fields:
+            match.append(score_taxon(row, config))
+        elif sf in locality_fields:
+            match.append(score_locality(row, config))
 
     # Emitting output for gbif scoring now
     output_data = {"provisional_concepts": match}
