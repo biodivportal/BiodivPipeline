@@ -2,6 +2,8 @@ process BIODIV_ANNOTATE {
     tag "annotate"
     label 'process_single'
 
+    secret 'BIODIV_API_KEY' // BiodivPortal API key; injected into the task env (works for the local executor too)
+
     input:
     path csv
 

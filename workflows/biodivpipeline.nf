@@ -34,7 +34,11 @@ workflow BIODIVPIPELINE {
 
     def ch_standardised = COLUMN_STANDARDISE.out.csv
 
-    BIODIV_ANNOTATE( ch_standardised )
+    // WP2 (annotation) and WP3 (taxonomy) resolve against the ORIGINAL BGBM column
+    // names (HerbariumID, FullNameCache, Genus, Family, ...). WP6 renames those columns
+    // in its standardised output, so the annotation branch consumes the raw input
+    // directly. WP6's standardised CSV feeds the outlier + RDF branches.
+    BIODIV_ANNOTATE( ch_input )
     ch_versions = ch_versions.mix(BIODIV_ANNOTATE.out.versions)
 
     // Only for demo purposes we gie some of the annotation output to the
@@ -48,8 +52,16 @@ workflow BIODIVPIPELINE {
     OUTLIER_DETECT( ch_standardised )
     ch_versions = ch_versions.mix(OUTLIER_DETECT.out.versions)
 
-    PROVISIONAL_CONCEPTS( BIODIV_ANNOTATE.out.unresolved )
-    ch_versions = ch_versions.mix(PROVISIONAL_CONCEPTS.out.versions)
+    // WP5 can be skipped (runs on the host, needs extra deps + an LLM key). When
+    // skipped, feed COLLECT_REPORTS an empty placeholder instead of its output.
+    def ch_concepts
+    if (params.skip_provisional_concepts) {
+        ch_concepts = channel.fromPath("${projectDir}/assets/NO_FILE")
+    } else {
+        PROVISIONAL_CONCEPTS( BIODIV_ANNOTATE.out.unresolved )
+        ch_versions = ch_versions.mix(PROVISIONAL_CONCEPTS.out.versions)
+        ch_concepts = PROVISIONAL_CONCEPTS.out.concepts
+    }
 
     RDF_TRANSFORM(
         ch_standardised,
@@ -60,10 +72,10 @@ workflow BIODIVPIPELINE {
     ch_versions = ch_versions.mix(RDF_TRANSFORM.out.versions)
 
     COLLECT_REPORTS(
-      //   OUTLIER_DETECT.out.report,
+        OUTLIER_DETECT.out.flagged,
         RDF_TRANSFORM.out.report,
         COLUMN_STANDARDISE.out.mapping,
-        PROVISIONAL_CONCEPTS.out.concepts
+        ch_concepts
     )
 
     //
@@ -80,8 +92,6 @@ workflow BIODIVPIPELINE {
     emit:
     rdf_turtle   = RDF_TRANSFORM.out.rdf_turtle       // channel: path to Turtle RDF output
     rdf_jsonld   = RDF_TRANSFORM.out.rdf_jsonld        // channel: path to JSON-LD RDF output
-    // TODO
-    // quality      = OUTLIER_DETECT.out.report            // channel: path to quality report
     flagged      = OUTLIER_DETECT.out.flagged           // channel: path to flagged records
     taxonomy     = TAXONOMY_CLASSIFY.out.resolved       // channel: path to resolved taxonomy
     summary      = COLLECT_REPORTS.out.summary           // channel: path to pipeline summary
