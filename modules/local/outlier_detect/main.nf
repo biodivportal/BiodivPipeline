@@ -3,7 +3,7 @@ process OUTLIER_DETECT {
     label 'process_low'
 
     container 'outlier-detect:latest'
-    containerOptions '--network host'
+    containerOptions "--network host --env-file ${moduleDir}/.env"
 
     input:
     path csv
@@ -15,7 +15,16 @@ process OUTLIER_DETECT {
     script:
     """
     export OLLAMA_URL="http://127.0.0.1:11434"
-    python ${projectDir}/modules/local/outlier_detect/app/main_with_cli.py detect-csv --file $csv --output flagged_records.csv --enable-llm
+    
+    if [ -f "${moduleDir}/.env" ]; then
+        echo "Loading local environment from ${moduleDir}/.env"
+        # 2. Extract and export the keys dynamically into the container
+        export \$(grep -v '^#' "${moduleDir}/.env" | xargs)
+    else
+        echo "WARNING: No .env file found at ${moduleDir}/.env"
+    fi
+    
+    python /app/app/main_with_cli.py detect-csv --file $csv --output flagged_records.csv --enable-llm
 
     cat <<-VERSIONS > versions.yml
     "${task.process}":

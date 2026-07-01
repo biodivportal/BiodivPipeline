@@ -60,7 +60,7 @@ workflow BIODIVPIPELINE {
     ch_versions = ch_versions.mix(RDF_TRANSFORM.out.versions)
 
     COLLECT_REPORTS(
-        OUTLIER_DETECT.out.report,
+        OUTLIER_DETECT.out.flagged,
         RDF_TRANSFORM.out.report,
         COLUMN_STANDARDISE.out.mapping,
         PROVISIONAL_CONCEPTS.out.concepts
@@ -80,7 +80,7 @@ workflow BIODIVPIPELINE {
     emit:
     rdf_turtle   = RDF_TRANSFORM.out.rdf_turtle       // channel: path to Turtle RDF output
     rdf_jsonld   = RDF_TRANSFORM.out.rdf_jsonld        // channel: path to JSON-LD RDF output
-    quality      = OUTLIER_DETECT.out.report            // channel: path to quality report
+    //quality      = OUTLIER_DETECT.out.report            // channel: path to quality report
     flagged      = OUTLIER_DETECT.out.flagged           // channel: path to flagged records
     taxonomy     = TAXONOMY_CLASSIFY.out.resolved       // channel: path to resolved taxonomy
     summary      = COLLECT_REPORTS.out.summary           // channel: path to pipeline summary
