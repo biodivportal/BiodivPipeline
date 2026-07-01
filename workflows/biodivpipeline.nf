@@ -34,7 +34,11 @@ workflow BIODIVPIPELINE {
 
     def ch_standardised = COLUMN_STANDARDISE.out.csv
 
-    BIODIV_ANNOTATE( ch_standardised )
+    // WP2 (annotation) and WP3 (taxonomy) resolve against the ORIGINAL BGBM column
+    // names (HerbariumID, FullNameCache, Genus, Family, ...). WP6 renames those columns
+    // in its standardised output, so the annotation branch consumes the raw input
+    // directly. WP6's standardised CSV feeds the outlier + RDF branches.
+    BIODIV_ANNOTATE( ch_input )
     ch_versions = ch_versions.mix(BIODIV_ANNOTATE.out.versions)
 
     // Only for demo purposes we gie some of the annotation output to the
