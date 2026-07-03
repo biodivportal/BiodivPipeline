@@ -9,6 +9,7 @@ include { TAXONOMY_CLASSIFY    } from '../modules/local/taxonomy_classify/main'
 include { OUTLIER_DETECT       } from '../modules/local/outlier_detect/main'
 include { PROVISIONAL_CONCEPTS } from '../modules/local/provisional_concepts/main'
 include { RDF_TRANSFORM        } from '../modules/local/rdf_transform/main'
+include { ASSEMBLE_DATASET     } from '../modules/local/assemble_dataset/main'
 include { COLLECT_REPORTS      } from '../modules/local/collect_reports/main'
 include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 
@@ -71,12 +72,26 @@ workflow BIODIVPIPELINE {
     )
     ch_versions = ch_versions.mix(RDF_TRANSFORM.out.versions)
 
-    COLLECT_REPORTS(
-        OUTLIER_DETECT.out.flagged,
-        RDF_TRANSFORM.out.report,
-        COLUMN_STANDARDISE.out.mapping,
-        ch_concepts
+    // Output (i): assemble the single quality-annotated, taxonomically resolved
+    // dataset by joining the annotated records with taxonomy resolution + quality
+    // flags (Lastenheft Requirement 1).
+    ASSEMBLE_DATASET(
+        ch_enriched,
+        TAXONOMY_CLASSIFY.out.resolved,
+        OUTLIER_DETECT.out.flagged
     )
+    ch_versions = ch_versions.mix(ASSEMBLE_DATASET.out.versions)
+
+    // Output (iii): collect per-step quality reports into one summary.
+    COLLECT_REPORTS(
+        COLUMN_STANDARDISE.out.mapping,
+        BIODIV_ANNOTATE.out.unresolved,
+        TAXONOMY_CLASSIFY.out.resolved,
+        OUTLIER_DETECT.out.flagged,
+        ch_concepts,
+        RDF_TRANSFORM.out.report
+    )
+    ch_versions = ch_versions.mix(COLLECT_REPORTS.out.versions)
 
     //
     // Collate software versions
@@ -90,10 +105,12 @@ workflow BIODIVPIPELINE {
         )
 
     emit:
+    final_dataset = ASSEMBLE_DATASET.out.dataset        // channel: path to unified quality-annotated + taxonomically resolved dataset
     rdf_turtle   = RDF_TRANSFORM.out.rdf_turtle       // channel: path to Turtle RDF output
     rdf_jsonld   = RDF_TRANSFORM.out.rdf_jsonld        // channel: path to JSON-LD RDF output
     flagged      = OUTLIER_DETECT.out.flagged           // channel: path to flagged records
     taxonomy     = TAXONOMY_CLASSIFY.out.resolved       // channel: path to resolved taxonomy
+    report       = COLLECT_REPORTS.out.report            // channel: path to human-readable quality report
     summary      = COLLECT_REPORTS.out.summary           // channel: path to pipeline summary
     versions     = ch_versions                           // channel: [ path(versions.yml) ]
 }
