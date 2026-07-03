@@ -31,11 +31,19 @@ The three deliverables mandated by Requirement 1 of the Lastenheft:
 
 ### `final_dataset/final_dataset.csv`
 
-The annotated records joined with taxonomy resolution (`gbif_key`, `wfo_id`, `confidence`, …) and a per-record quality summary (`quality_issue_count`, `quality_max_severity`, `quality_issues`). Records are joined on the herbarium accession, regardless of whether upstream modules label the id column `HerbariumID` or `record_id`.
+The annotated records joined with the taxonomy-resolution columns and the per-record
+quality columns emitted by the outlier module. Records are joined on the herbarium
+accession — the assembler auto-detects the id column (`HerbariumID` / `record_id` / `id`)
+and falls back to row-position alignment for modules that emit no id column. The exact
+appended column names track whatever the taxonomy and outlier modules currently produce,
+so the dataset stays valid as those schemas evolve.
 
 ### `reports/pipeline_summary.{json,md}`
 
-An aggregation of every module's output into one report: columns mapped, unresolved annotation terms, taxa resolved (with mean confidence), quality flags grouped by severity and issue type, provisional concepts registered, and RDF triple counts. The `.json` is machine-readable; the `.md` is a human-readable overview.
+An aggregation of every module's output into one report: columns mapped (and flagged for
+review), unresolved annotation terms, taxa resolved (with mean confidence), records
+flagged by the outlier module grouped by severity, provisional concepts registered, and
+RDF triple counts. The `.json` is machine-readable; the `.md` is a human-readable overview.
 
 ## Pipeline information
 
