@@ -2,10 +2,44 @@ import os
 import json
 import time
 import re
+from collections import deque
 from dotenv import load_dotenv
 from openai import OpenAI
 
 load_dotenv()
+
+
+class RateLimiter:
+    def __init__(self):
+        self.requests = deque()
+        try:
+            self.max_requests = int(os.environ.get("LLM_RPM", "15"))
+        except ValueError:
+            self.max_requests = 15
+
+    def wait_if_needed(self):
+        if self.max_requests <= 0:
+            return
+
+        now = time.time()
+        while self.requests and now - self.requests[0] > 60:
+            self.requests.popleft()
+
+        if len(self.requests) >= self.max_requests:
+            sleep_time = 60 - (now - self.requests[0])
+            if sleep_time > 0:
+                print(
+                    f"[Rate Limiter] Rate limit of {self.max_requests} RPM reached. Sleeping for {sleep_time:.2f} seconds..."
+                )
+                time.sleep(sleep_time)
+                now = time.time()
+                while self.requests and now - self.requests[0] > 60:
+                    self.requests.popleft()
+
+        self.requests.append(time.time())
+
+
+_rate_limiter = RateLimiter()
 
 
 def _prepare_messages(prompt, system_instruction, schema=None, use_json_mode=True):
@@ -27,10 +61,7 @@ def _prepare_response_format(schema, use_json_mode=True):
         return None
     return {
         "type": "json_schema",
-        "json_schema": {
-            "name": "parsed_locality",
-            "schema": schema
-        }
+        "json_schema": {"name": "parsed_locality", "schema": schema},
     }
 
 
@@ -76,12 +107,15 @@ def query_llm(
 
     for attempt in range(max_retries):
         try:
+            _rate_limiter.wait_if_needed()
             response = client.chat.completions.create(**kwargs)
             text = response.choices[0].message.content
             return _parse_and_validate_json(text, schema)
         except Exception as e:
             raw_response = text if "text" in locals() else "No text response"
-            print(f"[LLM Client Warning] Attempt {attempt + 1} failed to parse JSON. Raw text:\n{raw_response}\nError: {e}")
+            print(
+                f"[LLM Client Warning] Attempt {attempt + 1} failed to parse JSON. Raw text:\n{raw_response}\nError: {e}"
+            )
             if attempt == max_retries - 1:
                 raise RuntimeError(
                     f"Failed to obtain valid JSON from LLM after {max_retries} attempts. Last error: {e}"
