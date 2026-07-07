@@ -2,11 +2,14 @@ from .cleaner import split_locality_label
 from .place_filter import filter_placenames
 from .envo_matching import match_envo
 
-def score(row, config=None):
+
+def _score_row(row, config=None, llm_split=None):
     source_field = row.get("source_field", "")
     original_term = row.get("original_term", "")
 
-    llm_split = split_locality_label(original_term)
+    if llm_split is None:
+        llm_split = split_locality_label([original_term])[0]
+
     location_text = llm_split.get("location", "").strip()
     clean_locality = llm_split.get("environment", "").strip()
 
@@ -36,7 +39,9 @@ def score(row, config=None):
 
     explanation_parts = []
     if geonames_data:
-        loc_names = ", ".join([loc.get("name", "") for loc in geonames_data if loc.get("name")])
+        loc_names = ", ".join(
+            [loc.get("name", "") for loc in geonames_data if loc.get("name")]
+        )
         explanation_parts.append(f"Location near: {loc_names} [from geonames].")
 
     if best_similarity >= 0.82:
@@ -56,23 +61,23 @@ def score(row, config=None):
                 f"No matching ENVO term found above threshold (highest match was '{matched_label}' with {best_similarity*100:.1f}% confidence). Suggested to register new concept."
             )
         else:
-            explanation_parts.append("No matching ENVO term found. Suggested to register new concept.")
+            explanation_parts.append(
+                "No matching ENVO term found. Suggested to register new concept."
+            )
 
     envo_resolution = {
         "matched_term_label": matched_label,
         "matched_term_id": matched_obo_id,
         "matched_term_uri": matched_iri,
         "similarity_score": best_similarity,
-        "ols_match_type": envo_result.get("method")
+        "ols_match_type": envo_result.get("method"),
     }
 
     locality_metadata = {
         "geonamedata": geonames_data,
-        "text_cleaning": {
-            "cleaned_environmental_descriptor": clean_locality
-        },
+        "text_cleaning": {"cleaned_environmental_descriptor": clean_locality},
         "llm_split": llm_split,
-        "envo_resolution": envo_resolution
+        "envo_resolution": envo_resolution,
     }
 
     return {
@@ -86,5 +91,15 @@ def score(row, config=None):
         "proposed_action": proposed_action,
         "ontology_inclusion_score": ontology_inclusion_score,
         "explanation": " ".join(explanation_parts),
-        "locality_metadata": locality_metadata
+        "locality_metadata": locality_metadata,
     }
+
+
+def score(rows, config=None):
+    if not rows:
+        return []
+    original_terms = [r.get("original_term", "") for r in rows]
+    llm_splits = split_locality_label(original_terms)
+    return [
+        _score_row(r, config, llm_split=split) for r, split in zip(rows, llm_splits)
+    ]

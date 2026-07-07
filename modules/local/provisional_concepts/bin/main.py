@@ -59,19 +59,20 @@ def main():
     config = load_ontology_config(args.ontology_config)
     unresolved_rows = read_unresolved_csv(args.input, allowed_fields=allowed_fields)
     if args.limit is not None:
-        unresolved_rows = unresolved_rows[:args.limit]
+        unresolved_rows = unresolved_rows[: args.limit]
 
     # score and match records (species vs environment/locality)
     taxon_fields = {"NameCache", "Genus", "FullNameCache", "Family"}
     locality_fields = {"Locality", "FundortUNdOeko"}
 
-    match = []
-    for row in unresolved_rows:
-        sf = row.get("source_field")
-        if sf in taxon_fields:
-            match.append(score_taxon(row, config))
-        elif sf in locality_fields:
-            match.append(score_locality(row, config))
+    taxon_rows = [r for r in unresolved_rows if r.get("source_field") in taxon_fields]
+    locality_rows = [
+        r for r in unresolved_rows if r.get("source_field") in locality_fields
+    ]
+
+    match = [score_taxon(r, config) for r in taxon_rows]
+    if locality_rows:
+        match.extend(score_locality(locality_rows, config))
 
     # Emitting output for gbif scoring now
     output_data = {"provisional_concepts": match}
