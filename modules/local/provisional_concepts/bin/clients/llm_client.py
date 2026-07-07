@@ -41,6 +41,11 @@ class RateLimiter:
 
 _rate_limiter = RateLimiter()
 
+try:
+    LLM_BATCH_SIZE = int(os.environ.get("LLM_BATCH_SIZE", "10"))
+except ValueError:
+    LLM_BATCH_SIZE = 10
+
 
 def _prepare_messages(prompt, system_instruction, schema=None, use_json_mode=True):
     messages = []
