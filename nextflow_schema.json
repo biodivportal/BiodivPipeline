@@ -60,6 +60,27 @@
                     "description": "Model name sent to the OpenAI-compatible LLM endpoint used by taxonomy_classify (WP3), e.g. gpt-4o-mini or deepseek-chat.",
                     "default": "gpt-4o-mini",
                     "fa_icon": "fas fa-robot"
+                },
+                "skip_provisional_concepts": {
+                    "type": "boolean",
+                    "description": "Skip the provisional_concepts (WP5) module.",
+                    "fa_icon": "fas fa-forward"
+                },
+                "provisional_concepts_localities": {
+                    "type": "boolean",
+                    "description": "Also run the ENVO/locality resolution path in provisional_concepts (WP5). Requires the LLM_API_KEY secret.",
+                    "fa_icon": "fas fa-map-marker-alt"
+                },
+                "provisional_concepts_llm_base_url": {
+                    "type": "string",
+                    "description": "Base URL for the OpenAI-compatible LLM endpoint used by provisional_concepts (WP5). Empty uses the default OpenAI endpoint.",
+                    "fa_icon": "fas fa-link"
+                },
+                "provisional_concepts_llm_model": {
+                    "type": "string",
+                    "description": "Model name sent to the OpenAI-compatible LLM endpoint used by provisional_concepts (WP5).",
+                    "default": "gpt-4o-mini",
+                    "fa_icon": "fas fa-robot"
                 }
             }
         },
@@ -203,6 +224,33 @@
                     "description": "Display hidden parameters in the help message (only works when --help or --help_full are provided)."
                 }
             }
+        },
+        "max_job_request_options": {
+            "title": "Max job request options",
+            "type": "object",
+            "fa_icon": "fab fa-acquisitions-incorporated",
+            "description": "Legacy maximum resource limits, kept for compatibility with configs that set them (e.g. conf/test.config).",
+            "help_text": "These legacy `max_*` parameters cap the resources any single job can request. They are retained for backwards compatibility with profiles that still set them; the pipeline itself relies on `resourceLimits`. Declared here so they do not trigger 'unrecognised parameter' warnings.",
+            "properties": {
+                "max_cpus": {
+                    "type": "integer",
+                    "description": "Maximum number of CPUs that can be requested for any single job.",
+                    "fa_icon": "fas fa-microchip",
+                    "hidden": true
+                },
+                "max_memory": {
+                    "type": "string",
+                    "description": "Maximum amount of memory that can be requested for any single job (e.g. '6.GB').",
+                    "fa_icon": "fas fa-memory",
+                    "hidden": true
+                },
+                "max_time": {
+                    "type": "string",
+                    "description": "Maximum amount of time that can be requested for any single job (e.g. '6.h').",
+                    "fa_icon": "far fa-clock",
+                    "hidden": true
+                }
+            }
         }
     },
     "allOf": [
@@ -217,6 +265,9 @@
         },
         {
             "$ref": "#/$defs/generic_options"
+        },
+        {
+            "$ref": "#/$defs/max_job_request_options"
         }
     ]
 }
