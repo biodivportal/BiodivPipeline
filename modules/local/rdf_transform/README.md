@@ -1,21 +1,22 @@
 # RDF Matching and Transformation Service
 
 A FastAPI microservice that turns tabular biodiversity records (CSV /
-TSV / JSON) into RDF using an [RML](https://rml.io/) mapping produced by
-the WP7 Schema Editor. The transformation engine is
+TSV / JSON) into RDF using an [RML](https://rml.io/) mapping — typically
+emitted by the WP7 Schema Editor, but any valid RML mapping works. The
+transformation engine is
 [Morph-KGC](https://github.com/morph-kgc/morph-kgc) (a maintained,
-pure-Python RML engine). The output vocabulary is whatever the mapping
-defines — the shipped example targets OBOE 1.2. Part of the BiodivPipeline
-WP8 work-package, developed with InfAI and the BGBM.
+pure-Python RML engine). The service is vocabulary-agnostic: nothing in
+the code is tied to a particular ontology — the target vocabulary is
+whatever the mapping references (OBOE, Darwin Core, ABCD, …). The shipped
+example targets OBOE 1.2, but only because that is what its mapping says.
+Part of the BiodivPipeline WP8 work-package, developed with InfAI and the
+BGBM.
 
 > **Why RML instead of Karma?** The previous version drove the archived
 > Web-Karma JAR over a JVM subprocess. RML is the open, maintained
-> standard that does the same job (a declarative "column X → RDF
-> property Y" mapping); Morph-KGC consumes it directly into an
-> `rdflib.Graph`. No Java, no vendor lock-in — the same RML mapping also
-> runs on other engines (SDM-RDFizer, RMLMapper). The RML mapping in
-> `examples/` is verified to produce RDF isomorphic to the original
-> Karma output.
+> equivalent — no Java, no vendor lock-in, and the same mapping also runs
+> on other engines (SDM-RDFizer, RMLMapper). The `examples/` mapping is
+> verified to produce RDF isomorphic to the original Karma output.
 
 ## Quick start
 
@@ -26,9 +27,7 @@ docker run --rm -p 8000:8000 --name rdf-transform \
 
 Swagger UI then at http://127.0.0.1:8000/docs. (Requires the image to be
 published and public first — see
-[Service image](#service-image--nf-core-module).) If port 8000 is already in
-use, map another, e.g. `-p 8001:8000`, and use that port in the URLs below.
-
+[Service image](#service-image--nf-core-module).) 
 To build and run the image locally instead (pure Python, no build args):
 
 ```bash
@@ -44,7 +43,7 @@ RML mapping). Optional:
 | field           | default  | notes                                          |
 | --------------- | -------- | ---------------------------------------------- |
 | `source_type`   | `CSV`    | `CSV` / `TSV` / `JSON`                          |
-| `delimiter`     | `COMMA`  | `COMMA`, `TAB`, `;` — tabular input only        |
+| `delimiter`     | `COMMA`  | `COMMA`, `TAB`, `SEMICOLON`/`;`, `PIPE`/`\|` — tabular input only |
 | `output_format` | `turtle` | `turtle`, `ntriples`, `jsonld`                 |
 | `mapping_format`| (auto)   | `turtle` or `json-ld`; auto-detected from name |
 
@@ -54,7 +53,8 @@ wrote is irrelevant. Any-delimiter tabular input is normalised to a comma
 CSV before materialization. The mapping may be **Turtle or JSON-LD** —
 both are just serializations of the same RML graph.
 
-Example against the InfAI sample under `examples/`:
+Example against the InfAI sample under `examples/` (the sample `.csv` is
+tab-separated, hence `delimiter=TAB`):
 
 ```bash
 curl -X POST http://127.0.0.1:8000/transform \
@@ -106,19 +106,14 @@ Any finding sets `valid: false` and lists the issues with an `[L1]` /
 `[L2]` / `[L3]` prefix. Reference ontologies are loaded once at service
 start from `$ONTOLOGIES_DIR` (default `/app/ontologies` in the container,
 `ontologies/` locally); drop additional `.owl` / `.ttl` files in there to
-extend L3 coverage (OBOE, Darwin Core and ABCD ship today; BiodivOntology
-follows once a clean RDF artefact is available).
+extend L3 coverage (OBOE, Darwin Core and ABCD ship today).
 
-## Engine: Morph-KGC + RML
+## Mapping functions (FNML)
 
-The transformation runs [Morph-KGC](https://github.com/morph-kgc/morph-kgc)
-in-process. It consumes an RML mapping (the open
-[KG-Construct](https://kg-construct.github.io/) standard, a superset of
-R2RML that also maps CSV/JSON/XML) and returns an `rdflib.Graph`, which
-the route serializes to the requested format. Transformations (e.g. the
-`UnitName → QUDT IRI` uppercasing in the sample) are expressed with RML's
-FNML functions — the sample uses the built-in `concat` + `toUpperCase`,
-so no custom code ships in the mapping.
+In-mapping transformations (e.g. the `UnitName → QUDT IRI` uppercasing in
+the sample) are expressed with RML's FNML functions — the sample uses
+`concat` (a Morph-KGC built-in) and GREL's `toUpperCase`, so no custom
+code ships in the mapping.
 
 The sample mapping `examples/plant_height_vegetative_raw-model_oboe.rml.ttl`
 is the reference for what the Schema Editor must emit; the original Karma
@@ -126,8 +121,13 @@ model (`…_oboe.ttl`) is kept alongside for comparison only.
 
 ## Service image + nf-core module
 
+> **Note:** This section is provisional — it can only be finalised once the
+> service is integrated into the WP1 nf-core pipeline. Image tags, the GHCR
+> path and the module wiring below may still change.
+
 `.github/workflows/build-service-image.yml` builds the runtime image
-(FastAPI + Morph-KGC + OBOE) and pushes it to GitHub Container Registry.
+(FastAPI + Morph-KGC + the reference ontologies) and pushes it to GitHub
+Container Registry.
 Trigger from the GitHub UI: **Actions → Build Service Image → Run
 workflow**, give it a version like `0.1.0`, and the workflow publishes
 both `ghcr.io/biodivportal/rdf-matching-and-transformation-service:v0.1.0`
@@ -145,7 +145,8 @@ pre-flight check, then hits `/transform` for the actual work. Same code
 path the WP7 Schema Editor and any HTTP consumer goes through, so error
 responses look identical no matter who's calling. The pre-flight aborts
 the task if the mapping has drifted from OBOE (override with
-`task.ext.skip_validate = true`).
+`task.ext.skip_validate = true`). It emits the transformed RDF alongside
+the raw `/validate` response (`validate.json`) and a `versions.yml` stamp.
 
 ## Local development
 
@@ -154,7 +155,7 @@ Morph-KGC requires **Python ≥ 3.10** (the runtime image pins 3.11):
 ```bash
 python3.11 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-pytest                                    # ~2 s
+pytest                                    # ~2 s (unit); adds E2E if morph-kgc present
 uvicorn main:app --reload                 # local server on :8000
 ```
 
@@ -164,9 +165,9 @@ self-skip if `morph-kgc` can't be imported (e.g. on Python 3.9).
 ## Pipeline context
 
 ```
-Input data ──► WP1 nf-core pipeline ──────────────────► Output (RDF)
-                                  ▲   ▲   ▲   ▲   ▲   ▲
-                                 WP2 WP3 WP4 WP5 WP6 WP7 WP8 (this repo)
+Input data ──► WP1 nf-core pipeline ──────────────────────────► Output (RDF)
+                                    ▲   ▲   ▲   ▲   ▲   ▲   ▲
+                                   WP2 WP3 WP4 WP5 WP6 WP7 WP8 (this repo)
 ```
 
 WP8 consumes the standardised, quality-checked dataset from WP2–WP6 and
@@ -178,10 +179,11 @@ consumers (NFDI knowledge graph).
 Primary: [OBOE 1.2](http://ecoinformatics.org/oboe/oboe.1.2/) — each row
 becomes an `ObservationCollection` with `Observation` → `Measurement` →
 `MeasuredValue` of an `Entity` (taxon, Catalogue of Life URI) for a
-`Characteristic` (trait, TOP Thesaurus) in a `Unit` (QUDT). Secondary
-alignment targets per the Lastenheft — Darwin Core RDF, ABCD,
-BiodivOntology — are modelled in the WP7 cross-walks and will be
-validated by `/validate` once wired up.
+`Characteristic` (trait, TOP Thesaurus) in a `Unit` (QUDT).
+
+OBOE, Darwin Core and ABCD are loaded today and enforced by `/validate`
+L3. Per-file provenance and regeneration steps live in
+[`ontologies/README.md`](ontologies/README.md).
 
 ## Repo layout
 
@@ -192,9 +194,9 @@ validated by `/validate` once wired up.
 ├── main.py                                 # uvicorn entrypoint
 ├── src/
 │   ├── api/                                # routes + pydantic models
-│   └── core/morph_runner.py                # Morph-KGC RML materialization
+│   └── core/                               # Morph-KGC RML materialization
 ├── examples/                               # InfAI sample + RML mapping + ground truth
-├── ontologies/                             # reference ontologies for /validate L3 (OBOE, Darwin Core, ABCD)
+├── ontologies/                             # reference ontologies for /validate L3
 ├── tests/                                  # pytest
 └── nextflow/                               # nf-core module
 ```
