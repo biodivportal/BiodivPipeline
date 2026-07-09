@@ -53,6 +53,9 @@ wrote is irrelevant. Any-delimiter tabular input is normalised to a comma
 CSV before materialization. The mapping may be **Turtle or JSON-LD** —
 both are just serializations of the same RML graph.
 
+The response body is the materialized RDF itself; write it to a file with
+curl's `-o` (as below).
+
 Example against the InfAI sample under `examples/` (the sample `.csv` is
 tab-separated, hence `delimiter=TAB`):
 
