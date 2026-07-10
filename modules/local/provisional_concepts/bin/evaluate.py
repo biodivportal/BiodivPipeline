@@ -93,7 +93,7 @@ def evaluate():
                 from rapidfuzz import fuzz
                 import time
                 time.sleep(5)
-                split_result = split_locality_label(original_term)
+                split_result = split_locality_label([original_term])[0]
                 pred_location = split_result.get("location", "").strip()
                 pred_environment = split_result.get("environment", "").strip()
 
