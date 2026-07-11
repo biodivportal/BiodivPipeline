@@ -147,7 +147,7 @@ def rerank(query, candidates):
         return []
     pairs = [[query, build_rerank_text(c)] for c in candidates]
     scores = get_reranker().predict(pairs)
-    out = [{**c, "rerank_score": float(s)} for c, s in zip(candidates, scores)]
+    out = [{**c, "score": float(s), "rerank_score": float(s)} for c, s in zip(candidates, scores)]
     out.sort(key=lambda x: x["rerank_score"], reverse=True)
     return out
 
@@ -170,7 +170,7 @@ def match_envo(clean_field, threshold=EXISTENCE_THRESHOLD):
         return {
             "method": "embedding+rerank",
             "exists": False,
-            "matches": [],
+            "matches": reranked[:FINAL_TOP_K],
             "top_score": top_score,
             "query_en": query_en,
         }

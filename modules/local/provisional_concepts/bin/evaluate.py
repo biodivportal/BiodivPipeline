@@ -39,15 +39,12 @@ def normalize_uri(uri):
 
 
 def get_top_match_uri(match_result):
-    if not match_result:
+    if not match_result or not match_result.get("exists", False):
         return None
     matches = match_result.get("matches", [])
     if not matches:
         return None
-    top = matches[0]
-    if top.get("score", 0) < SCORE_THRESHOLD:
-        return None
-    return top.get("iri", "")
+    return matches[0].get("iri", "")
 
 
 def get_all_uris(match_result):

@@ -44,7 +44,7 @@ def _score_row(row, config=None, llm_split=None):
         )
         explanation_parts.append(f"Location near: {loc_names} [from geonames].")
 
-    if best_similarity >= 0.82:
+    if envo_result.get("exists", False):
         proposed_action = "DISCARD"
         ontology_inclusion_score = 0.0
         proposed_concept_name = matched_label
