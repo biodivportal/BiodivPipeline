@@ -117,7 +117,7 @@ def build_envo_embeddings(terms, cache_path=CACHE_PATH):
         show_progress_bar=True,
     )
     with open(cache_path, "wb") as f:
-        pickle.dump(emb, f)
+        pickle.dump({"model": MODEL_NAME, "count": len(terms), "embeddings": emb}, f)
     return emb
 
 def load_resources():
@@ -127,9 +127,14 @@ def load_resources():
     envo_terms = load_envo_cache(ENVO_PATH)
     if CACHE_PATH.exists():
         with open(CACHE_PATH, "rb") as f:
-            envo_embeddings = pickle.load(f)
-    else:
-        envo_embeddings = build_envo_embeddings(envo_terms)
+            cache = pickle.load(f)
+        # rebuild if out of date
+        if (isinstance(cache, dict)
+                and cache.get("model") == MODEL_NAME
+                and cache.get("count") == len(envo_terms)):
+            envo_embeddings = cache["embeddings"]
+            return
+    envo_embeddings = build_envo_embeddings(envo_terms)
 
 def embedding_search(query, top_k=RETRIEVE_K):
     load_resources()
