@@ -3,9 +3,8 @@ process PROVISIONAL_CONCEPTS {
     label 'process_single'
 
     secret 'WP5_LLM_API_KEY'
+    container 'ghcr.io/biodivportal/provisional-concepts:0.1'
 
-    //container 'ghcr.io/mitchell7970/wp5-provisional-concepts:demo'
-    container 'ghcr.io/dabauer/wp5:latest'
     input:
     path unresolved // resolves the csv :crossed_fingers:
     // Need to add ontologies once the recommender is implemented

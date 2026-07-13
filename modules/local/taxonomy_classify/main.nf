@@ -3,7 +3,7 @@ process TAXONOMY_CLASSIFY {
     tag "taxonomy"
     label 'process_low'
 
-    container 'ghcr.io/mitchell7970/wp3-taxonomy-classify:demo' // demo image (personal GHCR namespace); TODO(registry): move to ghcr.io/biodivportal/... when org publishing is available
+    container 'ghcr.io/biodivportal/taxonomy-classify:0.1'
 
     input:
     path csv
