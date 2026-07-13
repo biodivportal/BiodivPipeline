@@ -384,13 +384,11 @@ def annotate_records(rows, terms, term_results):
 
     unresolved_rows_for_wp5 = []
 
-    for record_id, unresolved_fields in wp5_by_record.items():
+    for record_id, unresolved_items in wp5_by_record.items():
         row = dict(row_lookup[record_id])
 
-        row["wp5_fields_to_resolve"] = json.dumps(
-            unresolved_fields,
-            ensure_ascii=False,
-        )
+        failed_fields = list(dict.fromkeys(item["source_field"] for item in unresolved_items))
+        row["unresolved_fields"] = ", ".join(failed_fields)
 
         unresolved_rows_for_wp5.append(row)
 
@@ -640,17 +638,15 @@ if __name__ == "__main__":
     print("Writing annotated JSON-LD...", flush=True)
     save_json(annotated)
 
-    print("Writing Unresolved CSV...", flush=True)
-    save_unresolved(unresolved_terms)
+    # print("Writing Unresolved CSV...", flush=True)
+    # save_unresolved(unresolved_terms)
 
-    print("Writing WP5 unresolved rows CSV...", flush=True)
-
+    print("Writing unresolved rows to unresolved_terms.csv...", flush=True)
     save_unresolved_rows_for_wp5(
         unresolved_rows_for_wp5,
-        OUT_UNRESOLVED_WP5,
+        OUT_UNRESOLVED,
     )
-
-    print("Saved:", OUT_UNRESOLVED_WP5)
+    print("Saved:", OUT_UNRESOLVED)
 
     OUT_ENRICHED_CSV = args.out_enriched_csv
 
