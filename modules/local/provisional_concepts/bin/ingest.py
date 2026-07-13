@@ -1,6 +1,50 @@
 import csv
 import json
 
+TAXON_FIELDS = {"Family", "Genus", "NameCache", "FullNameCache"}
+LOCALITY_FIELDS = {"Locality", "FundortUNdOeko"}
+FIELD_TO_KEY = {
+    "Family": "family",
+    "Genus": "genus",
+    "NameCache": "name",
+    "FullNameCache": "fullname",
+}
+
+
+def resolve_mapping(args):
+    """Resolves column mapping, layering CLI overrides on top of defaults and custom JSON configurations."""
+    # Default mappings (based on WP2 output)
+    mapping = {
+        "id": "HerbariumID",
+        "unresolved_term": "source_field",
+        "family_column": "Family",
+        "genus_column": "Genus",
+        "name_column": "NameCache",
+        "fullname_column": "FullNameCache",
+        "locality_column": ["Locality", "FundortUNdOeko"],
+        "country_column": "Country",
+    }
+
+    if getattr(args, "mapping", None):
+        with open(args.mapping, encoding="utf-8") as f:
+            mapping.update(json.load(f))
+
+    if getattr(args, "id_col", None):
+        mapping["id"] = args.id_col
+    if getattr(args, "unresolved_term_col", None):
+        mapping["unresolved_term"] = args.unresolved_term_col
+    if getattr(args, "family_col", None):
+        mapping["family_column"] = args.family_col
+    if getattr(args, "genus_col", None):
+        mapping["genus_column"] = args.genus_col
+    if getattr(args, "name_col", None):
+        mapping["name_column"] = args.name_col
+    if getattr(args, "fullname_col", None):
+        mapping["fullname_column"] = args.fullname_col
+    if getattr(args, "locality_col", None):
+        mapping["locality_column"] = args.locality_col
+    return mapping
+
 
 def load_ontology_config(config_path):
     """Reads the ontology config JSON file."""
@@ -12,42 +56,55 @@ def load_ontology_config(config_path):
         return {}
 
 
-def read_unresolved_csv(csv_path, allowed_fields=None):
-    """Reads the unresolved CSV file, keeping whitelisted fields and ignoring stop list"""
-
-    if allowed_fields is None:
-        allowed_fields = {
-            "NameCache",
-            "Genus",
-            "FullNameCache",
-            "Family",
-            "Locality",
-            "FundortUNdOeko",
-        }
-    else:
-        allowed_fields = set(allowed_fields)
-
-    # This should likely be changed, a stop word in only one column should not ommit the whole row
-    stoplist = [
-        "keine",
-        "indet.",
-        "!indet.",
-    ]
-
-    filtered_rows = []
-
+def read_unresolved_csv(csv_path, mapping, limit=None):
+    """Read a CSV into one record dict per row, picking columns via `mapping`.
+    """
+    id_col = mapping["id"]
+    unres_col = mapping.get("unresolved_term")
+    records = []
     try:
         with open(csv_path, "r", newline="", encoding="utf-8") as f:
             reader = csv.DictReader(f)
+            headers = reader.fieldnames or []
 
-            for row in reader:
-                source_field = row.get("source_field", "").strip()
-                original_term = row.get("original_term", "").strip()
-
-                if source_field in allowed_fields and original_term not in stoplist:
-                    filtered_rows.append(row)
-            return filtered_rows
-
+            for i, row in enumerate(reader):
+                if limit is not None and i >= limit:
+                    break
+                records.append(
+                    {
+                        "id": (row.get(id_col) or "").strip(),
+                        "unresolved_term": (
+                            (row.get(unres_col) or "").strip() if unres_col else ""
+                        ),
+                        "family_column": (row.get(mapping["family_column"]) or "").strip(),
+                        "genus_column": (row.get(mapping["genus_column"]) or "").strip(),
+                        "name_column": (row.get(mapping["name_column"]) or "").strip(),
+                        "fullname_column": (row.get(mapping["fullname_column"]) or "").strip(),
+                        "locality_column": [
+                            (row.get(col) or "").strip()
+                            for col in (
+                                mapping["locality_column"]
+                                if isinstance(mapping["locality_column"], list)
+                                else [mapping["locality_column"]]
+                            )
+                        ],
+                        "row": row,
+                    }
+                )
     except Exception as e:
-        print(f"Error reading unresolved CSV: {e}")
-        return []
+        print(f"Error reading CSV: {e}")
+    return records
+
+
+def split_resolvers(records):
+    taxon_rows = []
+    locality_rows = []
+
+    for rec in records:
+        field = rec.get("unresolved_term")
+        if not field or field in TAXON_FIELDS:
+            taxon_rows.append(rec)
+        if not field or field in LOCALITY_FIELDS:
+            locality_rows.append(rec)
+
+    return taxon_rows, locality_rows

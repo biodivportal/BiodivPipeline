@@ -77,12 +77,10 @@ def extract_source_taxonomy(row):
     """Extract the taxonomic classification of the row"""
     taxonomy = EMPTY_TAXONOMY.copy()
 
-    # will need update once WP2 returns full rows
-    taxonomy["family"] = row.get("example_Family", None)
-    taxonomy["genus"] = row.get("example_Genus", None)
+    taxonomy["family"] = row.get("family_column", None)
+    taxonomy["genus"] = row.get("genus_column", None)
 
-    # Prioritise name_cache (less likely to contain authorship)
-    term_to_parse = row.get("example_NameCache") or row.get("example_FullNameCache")
+    term_to_parse = row.get("name_column") or row.get("fullname_column")
 
     # TODO: Fails on hybrids
     if term_to_parse:
@@ -118,8 +116,8 @@ def score(row, ontology_config):
     """
     Scores and provides recommendation on whether to register an unresolved term as a provisional concept.
     """
-    source_field = row.get("source_field", "")
-    source_term = row.get("original_term", "")
+    source_field = row.get("unresolved_term") or "FullNameCache"
+    source_term = row["row"].get("original_term") or row.get("fullname_column") or ""
 
     source_taxonomy = extract_source_taxonomy(row)
     target_rank = get_target_rank(source_field, source_taxonomy)
@@ -141,8 +139,8 @@ def score(row, ontology_config):
         }
 
     fullname = (
-        row.get("example_FullNameCache") or source_term
-    )  # We want the fullname for GBIF, can fall back to higher rank if needed
+        row.get("fullname_column") or source_term
+    )
     gbif_match = species_match(source_taxonomy, fullname, target_rank)
 
     diagnostics = gbif_match.get("diagnostics", {})

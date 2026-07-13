@@ -4,8 +4,10 @@ from .envo_matching import match_envo
 
 
 def _score_row(row, config=None, llm_split=None):
-    source_field = row.get("source_field", "")
-    original_term = row.get("original_term", "")
+    source_field = row.get("unresolved_term") or "Locality"
+    
+    locality_cols = row.get("locality_column", [])
+    original_term = ", ".join(loc for loc in locality_cols)
 
     if llm_split is None:
         llm_split = split_locality_label([original_term])[0]
@@ -13,7 +15,8 @@ def _score_row(row, config=None, llm_split=None):
     location_text = llm_split.get("location", "").strip()
     clean_locality = llm_split.get("environment", "").strip()
 
-    _, geonames_matches = filter_placenames(location_text)
+    country_name = row["row"].get("Country") or row["row"].get("example_Country")
+    _, geonames_matches = filter_placenames(location_text, country_name=country_name)
     geonames_data = list(geonames_matches.values())
 
     envo_result = match_envo(clean_locality)
