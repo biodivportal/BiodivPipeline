@@ -50,6 +50,7 @@ workflow NFCORE_BIODIVPIPELINE {
     )
 
     emit:
+    final_dataset = BIODIVPIPELINE.out.final_dataset
     rdf_turtle = BIODIVPIPELINE.out.rdf_turtle
     summary    = BIODIVPIPELINE.out.summary
 }

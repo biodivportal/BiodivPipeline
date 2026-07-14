@@ -2,7 +2,7 @@ process BIODIV_ANNOTATE {
     tag "annotate"
     label 'process_single'
 
-    secret 'BIODIV_API_KEY' // BiodivPortal API key; injected into the task env (works for the local executor too)
+    secret 'WP2_BIODIV_API_KEY' // BiodivPortal API key; injected into the task env (works for the local executor too)
 
     input:
     path csv
@@ -15,6 +15,8 @@ process BIODIV_ANNOTATE {
 
     script:
     """
+    # The script reads BIODIV_API_KEY from the env; alias the WP2-scoped secret to it.
+    export BIODIV_API_KEY=\$WP2_BIODIV_API_KEY
 
     python ${moduleDir}/bin/annotate_biodiv.py \\
         --input ${csv} \\

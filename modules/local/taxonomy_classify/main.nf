@@ -1,5 +1,5 @@
 process TAXONOMY_CLASSIFY {
-    secret 'OPENAI_API_KEY'
+    secret 'WP3_OPENAI_API_KEY'
     tag "taxonomy"
     label 'process_low'
 
@@ -21,6 +21,7 @@ process TAXONOMY_CLASSIFY {
     # DeepSeek, or any OpenAI-compatible API (the demo points at DeepSeek via
     # conf/test.config). Running without --use-ollama routes through this client.
     ${llm_base_export}
+    export OPENAI_API_KEY=\$WP3_OPENAI_API_KEY
     export OPENAI_MODEL='${params.taxonomy_llm_model}'
     python /app/classify.py --input ${csv} --output taxonomy_resolved.csv
     
