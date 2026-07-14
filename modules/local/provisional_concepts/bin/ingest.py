@@ -16,7 +16,7 @@ def resolve_mapping(args):
     # Default mappings (based on WP2 output)
     mapping = {
         "id": "HerbariumID",
-        "unresolved_term": "source_field",
+        "unresolved_terms": "unresolved_fields",
         "family_column": "Family",
         "genus_column": "Genus",
         "name_column": "NameCache",
@@ -31,8 +31,8 @@ def resolve_mapping(args):
 
     if getattr(args, "id_col", None):
         mapping["id"] = args.id_col
-    if getattr(args, "unresolved_term_col", None):
-        mapping["unresolved_term"] = args.unresolved_term_col
+    if getattr(args, "unresolved_terms_col", None):
+        mapping["unresolved_terms"] = args.unresolved_terms_col
     if getattr(args, "family_col", None):
         mapping["family_column"] = args.family_col
     if getattr(args, "genus_col", None):
@@ -60,34 +60,38 @@ def read_unresolved_csv(csv_path, mapping, limit=None):
     """Read a CSV into one record dict per row, picking columns via `mapping`.
     """
     id_col = mapping["id"]
-    unres_col = mapping.get("unresolved_term")
+    unresolved_col = mapping.get("unresolved_terms")
+    locality_cols = mapping["locality_column"]
+    if not isinstance(locality_cols, list):
+        locality_cols = [locality_cols]
+
     records = []
     try:
         with open(csv_path, "r", newline="", encoding="utf-8") as f:
             reader = csv.DictReader(f)
-            headers = reader.fieldnames or []
-
             for i, row in enumerate(reader):
                 if limit is not None and i >= limit:
                     break
+
+                unresolved_val = row.get(unresolved_col) or "" if unresolved_col else ""
+                unresolved_terms = [f.strip() for f in unresolved_val.split(",") if f.strip()]
+
+                family = (row.get(mapping["family_column"]) or "").strip()
+                genus = (row.get(mapping["genus_column"]) or "").strip()
+                name = (row.get(mapping["name_column"]) or "").strip()
+                fullname = (row.get(mapping["fullname_column"]) or "").strip()
+
+                locality = [(row.get(col) or "").strip() for col in locality_cols]
+
                 records.append(
                     {
                         "id": (row.get(id_col) or "").strip(),
-                        "unresolved_term": (
-                            (row.get(unres_col) or "").strip() if unres_col else ""
-                        ),
-                        "family_column": (row.get(mapping["family_column"]) or "").strip(),
-                        "genus_column": (row.get(mapping["genus_column"]) or "").strip(),
-                        "name_column": (row.get(mapping["name_column"]) or "").strip(),
-                        "fullname_column": (row.get(mapping["fullname_column"]) or "").strip(),
-                        "locality_column": [
-                            (row.get(col) or "").strip()
-                            for col in (
-                                mapping["locality_column"]
-                                if isinstance(mapping["locality_column"], list)
-                                else [mapping["locality_column"]]
-                            )
-                        ],
+                        "unresolved_terms": unresolved_terms,
+                        "family": family,
+                        "genus": genus,
+                        "name": name,
+                        "fullname": fullname,
+                        "locality": locality,
                         "row": row,
                     }
                 )
@@ -101,10 +105,15 @@ def split_resolvers(records):
     locality_rows = []
 
     for rec in records:
-        field = rec.get("unresolved_term")
-        if not field or field in TAXON_FIELDS:
+        fields = rec.get("unresolved_terms")
+        if not fields:
             taxon_rows.append(rec)
-        if not field or field in LOCALITY_FIELDS:
+            locality_rows.append(rec)
+            continue
+
+        if any(f in TAXON_FIELDS for f in fields):
+            taxon_rows.append(rec)
+        if any(f in LOCALITY_FIELDS for f in fields):
             locality_rows.append(rec)
 
     return taxon_rows, locality_rows

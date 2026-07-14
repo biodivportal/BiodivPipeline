@@ -77,10 +77,10 @@ def extract_source_taxonomy(row):
     """Extract the taxonomic classification of the row"""
     taxonomy = EMPTY_TAXONOMY.copy()
 
-    taxonomy["family"] = row.get("family_column", None)
-    taxonomy["genus"] = row.get("genus_column", None)
+    taxonomy["family"] = row.get("family", None)
+    taxonomy["genus"] = row.get("genus", None)
 
-    term_to_parse = row.get("name_column") or row.get("fullname_column")
+    term_to_parse = row.get("name") or row.get("fullname")
 
     # TODO: Fails on hybrids
     if term_to_parse:
@@ -116,8 +116,16 @@ def score(row, ontology_config):
     """
     Scores and provides recommendation on whether to register an unresolved term as a provisional concept.
     """
-    source_field = row.get("unresolved_term") or "FullNameCache"
-    source_term = row["row"].get("original_term") or row.get("fullname_column") or ""
+    source_field = row.get("unresolved_terms") or "FullNameCache"
+    # currently run once for a specific species
+    if isinstance(source_field, list):
+        for f in ["FullNameCache", "NameCache", "Genus", "Family"]:
+            if f in source_field:
+                source_field = f
+                break
+        else:
+            source_field = "FullNameCache"
+    source_term = row["row"].get(source_field) or row.get("fullname") or ""
 
     source_taxonomy = extract_source_taxonomy(row)
     target_rank = get_target_rank(source_field, source_taxonomy)
@@ -139,7 +147,7 @@ def score(row, ontology_config):
         }
 
     fullname = (
-        row.get("fullname_column") or source_term
+        row.get("fullname") or source_term
     )
     gbif_match = species_match(source_taxonomy, fullname, target_rank)
 

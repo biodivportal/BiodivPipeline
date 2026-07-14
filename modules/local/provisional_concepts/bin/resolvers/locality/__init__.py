@@ -4,9 +4,18 @@ from .envo_matching import match_envo
 
 
 def _score_row(row, config=None, llm_split=None):
-    source_field = row.get("unresolved_term") or "Locality"
+    source_field = row.get("unresolved_terms") or "Locality"
+    # Currently checks only the locality column. The provided dataset doesn't seem to provide ENVO relevant information in the fundortundoeko column
+
+    if isinstance(source_field, list):
+        for f in ["Locality", "FundortUNdOeko"]:
+            if f in source_field:
+                source_field = f
+                break
+        else:
+            source_field = "Locality"
     
-    locality_cols = row.get("locality_column", [])
+    locality_cols = row.get("locality", [])
     original_term = ", ".join(loc for loc in locality_cols)
 
     if llm_split is None:

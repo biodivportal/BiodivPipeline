@@ -20,7 +20,7 @@ def parse_args():
     parser.add_argument("--limit", type=int, help="Limit the number of rows processed")
     parser.add_argument("--mapping", help="JSON file with column mappings (overrides defaults)")
     parser.add_argument("--id-col")
-    parser.add_argument("--unresolved-term-col")
+    parser.add_argument("--unresolved-terms-col")
     parser.add_argument("--family-col")
     parser.add_argument("--genus-col")
     parser.add_argument("--name-col")
@@ -41,6 +41,10 @@ def main():
     match = []
     match.extend([score_taxon(r, config) for r in taxon_rows])
     match.extend(score_locality(locality_rows, config))
+
+    for m in match:
+        if isinstance(m.get("unresolved_terms"), list):
+            m["unresolved_terms"] = ", ".join(m["unresolved_terms"])
 
     with open(args.output, "w", encoding="utf-8") as f:
         json.dump({"provisional_concepts": match}, f, indent=2, ensure_ascii=False)

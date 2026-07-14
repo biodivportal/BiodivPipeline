@@ -1,6 +1,6 @@
 {
  "id": "HerbariumID",
-  "unresolved_term": "source_field",
+  "unresolved_terms": "unresolved_fields",
   "family_column": "Family",
   "genus_column": "Genus",
   "name_column": "NameCache",
