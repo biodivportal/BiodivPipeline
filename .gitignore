@@ -1,5 +1,6 @@
 # Nextflow
 .nextflow*
+.nf-test/
 work/
 results/
 .lineage/
@@ -27,6 +28,13 @@ testing*
 # Docker
 *.tar
 
+# Secrets / scratch notes (never commit tokens)
+docs/notex.txt
+*.token
+.env
+
+# Local scratch / working notes (not part of delivery)
+.ddocs/
 
 .env.nf-test/
 .nf-test.log

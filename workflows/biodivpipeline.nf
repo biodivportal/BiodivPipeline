@@ -9,6 +9,7 @@ include { TAXONOMY_CLASSIFY    } from '../modules/local/taxonomy_classify/main'
 include { OUTLIER_DETECT       } from '../modules/local/outlier_detect/main'
 include { PROVISIONAL_CONCEPTS } from '../modules/local/provisional_concepts/main'
 include { RDF_TRANSFORM        } from '../modules/local/rdf_transform/main'
+include { ASSEMBLE_DATASET     } from '../modules/local/assemble_dataset/main'
 include { COLLECT_REPORTS      } from '../modules/local/collect_reports/main'
 include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 
@@ -34,7 +35,11 @@ workflow BIODIVPIPELINE {
 
     def ch_standardised = COLUMN_STANDARDISE.out.csv
 
-    BIODIV_ANNOTATE( ch_standardised )
+    // WP2 (annotation) and WP3 (taxonomy) resolve against the ORIGINAL BGBM column
+    // names (HerbariumID, FullNameCache, Genus, Family, ...). WP6 renames those columns
+    // in its standardised output, so the annotation branch consumes the raw input
+    // directly. WP6's standardised CSV feeds the outlier + RDF branches.
+    BIODIV_ANNOTATE( ch_input )
     ch_versions = ch_versions.mix(BIODIV_ANNOTATE.out.versions)
 
     // Only for demo purposes we gie some of the annotation output to the
@@ -48,8 +53,16 @@ workflow BIODIVPIPELINE {
     OUTLIER_DETECT( ch_standardised )
     ch_versions = ch_versions.mix(OUTLIER_DETECT.out.versions)
 
-    PROVISIONAL_CONCEPTS( BIODIV_ANNOTATE.out.unresolved )
-    ch_versions = ch_versions.mix(PROVISIONAL_CONCEPTS.out.versions)
+    // WP5 can be skipped (runs on the host, needs extra deps + an LLM key). When
+    // skipped, feed COLLECT_REPORTS an empty placeholder instead of its output.
+    def ch_concepts
+    if (params.skip_provisional_concepts) {
+        ch_concepts = channel.fromPath("${projectDir}/assets/NO_FILE")
+    } else {
+        PROVISIONAL_CONCEPTS( BIODIV_ANNOTATE.out.unresolved )
+        ch_versions = ch_versions.mix(PROVISIONAL_CONCEPTS.out.versions)
+        ch_concepts = PROVISIONAL_CONCEPTS.out.concepts
+    }
 
     RDF_TRANSFORM(
         ch_standardised,
@@ -59,12 +72,26 @@ workflow BIODIVPIPELINE {
     )
     ch_versions = ch_versions.mix(RDF_TRANSFORM.out.versions)
 
-    COLLECT_REPORTS(
-        OUTLIER_DETECT.out.report,
-        RDF_TRANSFORM.out.report,
-        COLUMN_STANDARDISE.out.mapping,
-        PROVISIONAL_CONCEPTS.out.concepts
+    // Output (i): assemble the single quality-annotated, taxonomically resolved
+    // dataset by joining the annotated records with taxonomy resolution + quality
+    // flags (Lastenheft Requirement 1).
+    ASSEMBLE_DATASET(
+        ch_enriched,
+        TAXONOMY_CLASSIFY.out.resolved,
+        OUTLIER_DETECT.out.flagged
     )
+    ch_versions = ch_versions.mix(ASSEMBLE_DATASET.out.versions)
+
+    // Output (iii): collect per-step quality reports into one summary.
+    COLLECT_REPORTS(
+        COLUMN_STANDARDISE.out.mapping,
+        BIODIV_ANNOTATE.out.unresolved,
+        TAXONOMY_CLASSIFY.out.resolved,
+        OUTLIER_DETECT.out.flagged,
+        ch_concepts,
+        RDF_TRANSFORM.out.report
+    )
+    ch_versions = ch_versions.mix(COLLECT_REPORTS.out.versions)
 
     //
     // Collate software versions
@@ -78,11 +105,12 @@ workflow BIODIVPIPELINE {
         )
 
     emit:
+    final_dataset = ASSEMBLE_DATASET.out.dataset        // channel: path to unified quality-annotated + taxonomically resolved dataset
     rdf_turtle   = RDF_TRANSFORM.out.rdf_turtle       // channel: path to Turtle RDF output
     rdf_jsonld   = RDF_TRANSFORM.out.rdf_jsonld        // channel: path to JSON-LD RDF output
-    quality      = OUTLIER_DETECT.out.report            // channel: path to quality report
     flagged      = OUTLIER_DETECT.out.flagged           // channel: path to flagged records
     taxonomy     = TAXONOMY_CLASSIFY.out.resolved       // channel: path to resolved taxonomy
+    report       = COLLECT_REPORTS.out.report            // channel: path to human-readable quality report
     summary      = COLLECT_REPORTS.out.summary           // channel: path to pipeline summary
     versions     = ch_versions                           // channel: [ path(versions.yml) ]
 }

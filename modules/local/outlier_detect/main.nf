@@ -2,27 +2,31 @@ process OUTLIER_DETECT {
     tag "outlier"
     label 'process_low'
 
-    container 'biodivpipeline/placeholder:0.1' // TODO: replace with module team's container
+    secret 'WP4_OPENAI_API_KEY' // dedicated key; WP4's LLM detector runs in OpenAI mode (kept separate from WP3's key)
+
+    container 'ghcr.io/mitchell7970/wp4-outlier-detect:demo' // demo image (personal GHCR namespace); TODO(registry): move to ghcr.io/biodivportal/... when org publishing is available
+    containerOptions '--network host'
 
     input:
     path csv
 
     output:
-    path "quality_report.json", emit: report
     path "flagged_records.csv", emit: flagged
     path "versions.yml",        emit: versions
 
     script:
     """
-    # Stub — module team replaces this script with the real implementation.
-    # Emits minimal valid outputs matching the channel contract.
+    # WP4's LLM detector runs in OpenAI mode (no --use_ollama), so it needs OPENAI_API_KEY.
+    # Alias the dedicated WP4 secret so it never collides with WP3's key.
+    export OPENAI_API_KEY=\$WP4_OPENAI_API_KEY
+    export OPENAI_MODEL='gpt-4o-mini'
 
-    echo '{}' > quality_report.json
-    : > flagged_records.csv
+    python /app/main_with_cli.py detect-csv --file $csv --output flagged_records.csv --enable-llm
 
     cat <<-VERSIONS > versions.yml
     "${task.process}":
-        stub: "0.0.0"
+        python: \$(python --version 2>&1 | sed 's/Python //')
+        outlier_detect: "0.1"
     VERSIONS
     """
 }

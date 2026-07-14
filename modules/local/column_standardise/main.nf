@@ -2,7 +2,7 @@ process COLUMN_STANDARDISE {
     tag "column_std"
     label 'process_single'
 
-    container 'biodivpipeline/placeholder:0.1' // TODO: replace with module team's container
+    container 'ghcr.io/mitchell7970/wp6-column-standardise:demo' // demo image (personal GHCR namespace); TODO(registry): move to ghcr.io/biodivportal/... when org publishing is available
 
     input:
     path csv
@@ -14,15 +14,22 @@ process COLUMN_STANDARDISE {
 
     script:
     """
-    # Stub — module team replaces this script with the real implementation.
-    # Emits minimal valid outputs matching the channel contract.
+    # WP6 ABCD Column Standardizer CLI.
+    # Its MappingPipeline resolves data/abcd.json + app/config/profiling_targets.json
+    # relative to the working directory, so we cd into the image's /app (where those
+    # files live) and write outputs back to the Nextflow task dir via \$OLDPWD.
+    work_dir=\$PWD
+    cd /app
+    python -m app.standardize \\
+        --input "\$work_dir/${csv}" \\
+        --out-csv "\$work_dir/standardised.csv" \\
+        --out-map "\$work_dir/column_mapping.json"
 
-    cp ${csv} standardised.csv
-    echo '{}' > column_mapping.json
+    cd "\$work_dir"
 
     cat <<-VERSIONS > versions.yml
     "${task.process}":
-        stub: "4.2.0"
+        column_standardise: \$(cd /app && python -m app.standardize --version | sed 's/.* //')
     VERSIONS
     """
 }

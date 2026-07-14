@@ -43,18 +43,23 @@
                     "description": "Path to RDF mapping schema file (JSON-LD or Turtle). If not provided, a default stub mapping is used.",
                     "fa_icon": "fas fa-project-diagram"
                 },
-                "biodiv_api_key": {
-                    "type": "string",
-                    "description": "API key for the BiodivPortal annotation service.",
-                    "fa_icon": "fas fa-key",
-                    "hidden": true
-                },
                 "max_rows": {
                     "type": "integer",
                     "minimum": 1,
                     "description": "Maximum number of input rows to process.",
                     "default": 50,
                     "fa_icon": "fas fa-list-ol"
+                },
+                "taxonomy_llm_base_url": {
+                    "type": "string",
+                    "description": "Base URL for the OpenAI-compatible LLM endpoint used by the taxonomy_classify (WP3) module. Empty uses the default OpenAI endpoint; set e.g. https://api.deepseek.com to use DeepSeek.",
+                    "fa_icon": "fas fa-link"
+                },
+                "taxonomy_llm_model": {
+                    "type": "string",
+                    "description": "Model name sent to the OpenAI-compatible LLM endpoint used by taxonomy_classify (WP3), e.g. gpt-4o-mini or deepseek-chat.",
+                    "default": "gpt-4o-mini",
+                    "fa_icon": "fas fa-robot"
                 }
             }
         },
