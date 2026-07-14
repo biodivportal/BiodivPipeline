@@ -116,8 +116,11 @@ def build_envo_embeddings(terms, cache_path=CACHE_PATH):
         normalize_embeddings=True,
         show_progress_bar=True,
     )
-    with open(cache_path, "wb") as f:
-        pickle.dump({"model": MODEL_NAME, "count": len(terms), "embeddings": emb}, f)
+    try:
+        with open(cache_path, "wb") as f:
+            pickle.dump({"model": MODEL_NAME, "count": len(terms), "embeddings": emb}, f)
+    except OSError as e:
+        print(f"Warning: Could not save embeddings cache to {cache_path} ({e}). Proceeding with in-memory embeddings.")
     return emb
 
 def load_resources():

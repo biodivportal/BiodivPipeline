@@ -27,6 +27,8 @@ def parse_args():
     parser.add_argument("--fullname-col")
     parser.add_argument("--locality-col", nargs="*")
     parser.add_argument("--country-col")
+    parser.add_argument("--skip-species", action="store_true", help="Skip resolving plant taxons/species")
+    parser.add_argument("--skip-localities", action="store_true", help="Skip resolving localities/environments")
     return parser.parse_args()
 
 
@@ -39,8 +41,10 @@ def main():
     taxon_rows, locality_rows = split_resolvers(records)
 
     match = []
-    match.extend([score_taxon(r, config) for r in taxon_rows])
-    match.extend(score_locality(locality_rows, config))
+    if not args.skip_species:
+        match.extend([score_taxon(r, config) for r in taxon_rows])
+    if not args.skip_localities:
+        match.extend(score_locality(locality_rows, config))
 
     for m in match:
         if isinstance(m.get("unresolved_terms"), list):

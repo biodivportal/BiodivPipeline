@@ -73,15 +73,23 @@ def _prepare_response_format(schema, use_json_mode=True):
 def _parse_and_validate_json(text, schema=None):
     match = re.search(r"(\{.*\})", text, re.DOTALL)
     if match:
-        return json.loads(match.group(1).strip())
-    return json.loads(text)
+        try:
+            return json.loads(match.group(1).strip())
+        except ValueError:
+            pass
+    try:
+        return json.loads(text)
+    except ValueError as e:
+        if schema is None:
+            return text
+        raise e
 
 
 def query_llm(
     prompt,
     system_instruction=None,
     schema=None,
-    temperature=0.0,
+#    temperature=0.0,
     max_retries=3,
     use_json_mode=True,
 ):
@@ -101,7 +109,7 @@ def query_llm(
     kwargs = {
         "model": model,
         "messages": messages,
-        "temperature": temperature,
+  #      "temperature": temperature,
     }
 
     if response_format:
@@ -117,9 +125,20 @@ def query_llm(
             text = response.choices[0].message.content
             return _parse_and_validate_json(text, schema)
         except Exception as e:
+            if "response_format" in kwargs and kwargs["response_format"].get("type") == "json_schema":
+                print(f"[LLM Client Warning] Structured output schema failed: {e}. Falling back to standard json_object format...")
+                kwargs["response_format"] = {"type": "json_object"}
+                kwargs.pop("reasoning_effort", None)
+                continue
+            elif "response_format" in kwargs:
+                print(f"[LLM Client Warning] json_object query failed: {e}. Retrying without response_format...")
+                kwargs.pop("response_format", None)
+                kwargs.pop("reasoning_effort", None)
+                continue
+
             raw_response = text if "text" in locals() else "No text response"
             print(
-                f"[LLM Client Warning] Attempt {attempt + 1} failed to parse JSON. Raw text:\n{raw_response}\nError: {e}"
+                f"[LLM Client Warning] Attempt {attempt + 1} failed. Raw text:\n{raw_response}\nError: {e}"
             )
             if attempt == max_retries - 1:
                 raise RuntimeError(

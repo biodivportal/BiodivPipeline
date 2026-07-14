@@ -110,7 +110,11 @@ def _score_row(row, config=None, llm_split=None):
 def score(rows, config=None):
     if not rows:
         return []
-    original_terms = [r.get("original_term", "") for r in rows]
+    original_terms = []
+    for r in rows:
+        locality_cols = r.get("locality", [])
+        term = ", ".join(loc for loc in locality_cols if loc)
+        original_terms.append(term)
     llm_splits = split_locality_label(original_terms)
     return [
         _score_row(r, config, llm_split=split) for r, split in zip(rows, llm_splits)
