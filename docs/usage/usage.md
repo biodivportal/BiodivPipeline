@@ -19,14 +19,12 @@ A small mock dataset is provided under `data/sample.csv` for use with `-profile 
 ### Quick test run
 
 ```bash
-nextflow run main.nf -profile test --outdir results
+nextflow run main.nf -profile test,docker --outdir results
 ```
 
-The `test` profile points to `data/sample.csv` and `assets/default_mapping.jsonld` so no other parameters are needed.
+The `test` profile points to `data/sample.csv` and `assets/default_mapping.jsonld`, and `docker` runs the module containers. On Apple Silicon add `,emulate_amd64` (the demo images are `linux/amd64`). API keys must be set first — see [Required secrets](../../README.md#required-secrets).
 
 ### Custom input run
-
-TODO: The profile `docker` is not yet fully working, because on the current dev branch there are only module stubs.
 
 ```bash
 nextflow run main.nf -profile docker \
@@ -76,6 +74,7 @@ Multiple profiles can be combined: `-profile test,docker`. They load in order, s
 | `singularity` | Run module containers with Singularity                             |
 | `podman`      | Run module containers with Podman                                  |
 | `conda`       | Use Conda environments (not recommended for reproducibility)       |
+| `emulate_amd64` | Force `linux/amd64` emulation (needed on Apple Silicon for the demo images) |
 
 ## Resuming a run
 
