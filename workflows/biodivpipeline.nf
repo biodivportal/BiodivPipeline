@@ -8,7 +8,7 @@ include { BIODIV_ANNOTATE      } from '../modules/local/biodiv_annotate/main'
 include { TAXONOMY_CLASSIFY    } from '../modules/local/taxonomy_classify/main'
 include { OUTLIER_DETECT       } from '../modules/local/outlier_detect/main'
 include { PROVISIONAL_CONCEPTS } from '../modules/local/provisional_concepts/main'
-include { RDF_TRANSFORM        } from '../modules/local/rdf_transform/main'
+include { RDF_TRANSFORM        } from '../modules/local/rdf_transform/nextflow/main'
 include { COLLECT_REPORTS      } from '../modules/local/collect_reports/main'
 include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 
