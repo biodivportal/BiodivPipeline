@@ -4,10 +4,11 @@ import argparse
 import asyncio
 import pandas as pd
 from .pipeline import process_csv
-from .config import DEFAULT_CONFIG
+from .config import DEFAULT_CONFIG, log
 
 async def _run(args):
     df = pd.read_csv(args.input, sep=None, engine='python')
+    log.info('Received %s with %d rows', args.input, len(df))
     result = await process_csv(
         df=df,
         model=DEFAULT_CONFIG['model'],
