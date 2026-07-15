@@ -47,8 +47,8 @@ Use a [Personal Access Token (classic)](https://github.com/settings/tokens) with
 `write:packages` scope as the password.
 
 ```bash
-# 1. Log in (use your PAT as the password when prompted)
-echo $CR_PAT | docker login ghcr.io -u <your-github-username> --password-stdin
+# 1. Log in (use your PAT (personal access token) as the password when prompted)
+docker login ghcr.io -u <your-github-username> --password-stdin
 
 # 2. Build with the target tag
 docker build -t ghcr.io/biodivportal/<module-name>:1.0.0 .
@@ -59,80 +59,7 @@ docker push ghcr.io/biodivportal/<module-name>:1.0.0
 
 ---
 
-## 4. Option B — Automated with GitHub Actions (recommended)
-
-Add the workflow below as `.github/workflows/docker-publish.yml` in your module repo.
-It builds and pushes automatically on every push to `main`/`master` and on version
-tags (`v1.0.0`). It uses the built-in `GITHUB_TOKEN`, so **no secrets to configure**.
-
-```yaml
-name: Publish Docker image to GHCR
-
-on:
-  push:
-    branches: [main, master]
-    tags: ["v*.*.*"]
-  workflow_dispatch:
-
-env:
-  REGISTRY: ghcr.io
-  # Change this to your module name, e.g. biodivportal/column-standardizer
-  IMAGE_NAME: biodivportal/${{ github.event.repository.name }}
-
-jobs:
-  build-and-push:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Log in to GHCR
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Derive image tags and labels
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          tags: |
-            type=semver,pattern={{version}}
-            type=ref,event=branch
-            type=sha,format=short
-            type=raw,value=latest,enable={{is_default_branch}}
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Build and push
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-```
-
-How tags are produced:
-
-- Push a git tag `v1.0.0` → image `:1.0.0` (the reproducible release tag).
-- Push to the default branch → image `:latest` plus a `:<short-sha>` tag.
-
-> Tip: if your org disallows the default `GITHUB_TOKEN` writing packages, an org admin
-> must enable it under **Settings → Actions → General → Workflow permissions**
-> (set "Read and write permissions").
-
----
-
-## 5. Make the package public (one-time)
+## 4. Make the package public (one-time)
 
 By default a new package may be **private**, which forces others to authenticate.
 After the first publish:
@@ -145,7 +72,7 @@ the package usually inherits public visibility automatically.)
 
 ---
 
-## 6. Verify it works
+## 5. Verify it works
 
 Anyone should be able to pull a public image with no login:
 
@@ -156,7 +83,7 @@ docker run --rm ghcr.io/biodivportal/<module-name>:1.0.0 --help
 
 ---
 
-## 7. Hand-off to WP1 (pipeline)
+## 6. Hand-off to WP1 (pipeline)
 
 Once published, send WP1:
 
@@ -175,7 +102,7 @@ We then set `container 'ghcr.io/biodivportal/<module-name>:1.0.0'` in the module
 - [ ] No secrets baked into the image
 - [ ] `org.opencontainers.image.source` label added
 - [ ] Image tagged `ghcr.io/biodivportal/<module-name>:<semver>`
-- [ ] `docker-publish.yml` added (or manual push done)
+- [ ] manual push done
 - [ ] Package visibility set to **Public**
 - [ ] `docker pull` works without authentication
 - [ ] Image reference + run command sent to WP1
