@@ -8,7 +8,7 @@ include { BIODIV_ANNOTATE      } from '../modules/local/biodiv_annotate/main'
 include { TAXONOMY_CLASSIFY    } from '../modules/local/taxonomy_classify/main'
 include { OUTLIER_DETECT       } from '../modules/local/outlier_detect/main'
 include { PROVISIONAL_CONCEPTS } from '../modules/local/provisional_concepts/main'
-include { RDF_TRANSFORM        } from '../modules/local/rdf_transform/main'
+include { RDF_TRANSFORM        } from '../modules/local/rdf_transform/nextflow/main'
 include { ASSEMBLE_DATASET     } from '../modules/local/assemble_dataset/main'
 include { COLLECT_REPORTS      } from '../modules/local/collect_reports/main'
 include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
@@ -24,6 +24,7 @@ workflow BIODIVPIPELINE {
     take:
     ch_input       // channel: path to input CSV file
     ch_schema      // channel: path to RDF mapping schema (JSON-LD or Turtle)
+    ch_meta
     outdir
 
     main:
@@ -50,7 +51,7 @@ workflow BIODIVPIPELINE {
     TAXONOMY_CLASSIFY( ch_enriched )
     ch_versions = ch_versions.mix(TAXONOMY_CLASSIFY.out.versions)
 
-    OUTLIER_DETECT( ch_standardised )
+    OUTLIER_DETECT( ch_input )
     ch_versions = ch_versions.mix(OUTLIER_DETECT.out.versions)
 
     // WP5 can be skipped (runs on the host, needs extra deps + an LLM key). When
@@ -64,12 +65,11 @@ workflow BIODIVPIPELINE {
         ch_concepts = PROVISIONAL_CONCEPTS.out.concepts
     }
 
-    RDF_TRANSFORM(
-        ch_standardised,
-        BIODIV_ANNOTATE.out.annotations,
-        TAXONOMY_CLASSIFY.out.resolved,
-        ch_schema
-    )
+    ch_rdf_input = ch_meta
+        .combine(ch_standardised)
+        .combine(ch_schema)
+
+    RDF_TRANSFORM( ch_rdf_input )
     ch_versions = ch_versions.mix(RDF_TRANSFORM.out.versions)
 
     // Output (i): assemble the single quality-annotated, taxonomically resolved
@@ -106,8 +106,8 @@ workflow BIODIVPIPELINE {
 
     emit:
     final_dataset = ASSEMBLE_DATASET.out.dataset        // channel: path to unified quality-annotated + taxonomically resolved dataset
-    rdf_turtle   = RDF_TRANSFORM.out.rdf_turtle       // channel: path to Turtle RDF output
-    rdf_jsonld   = RDF_TRANSFORM.out.rdf_jsonld        // channel: path to JSON-LD RDF output
+    // rdf_turtle   = RDF_TRANSFORM.out.rdf_turtle       // channel: path to Turtle RDF output
+    // rdf_jsonld   = RDF_TRANSFORM.out.rdf_jsonld        // channel: path to JSON-LD RDF output
     flagged      = OUTLIER_DETECT.out.flagged           // channel: path to flagged records
     taxonomy     = TAXONOMY_CLASSIFY.out.resolved       // channel: path to resolved taxonomy
     report       = COLLECT_REPORTS.out.report            // channel: path to human-readable quality report

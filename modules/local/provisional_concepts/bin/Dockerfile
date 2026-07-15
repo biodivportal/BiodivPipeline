@@ -12,28 +12,22 @@ RUN apt-get update \
 
 WORKDIR /app
 
+# Copy requirements.txt first for caching
+COPY requirements.txt .
+
 # Install the CPU-only build of torch first so we don't pull the multi-GB CUDA
 # wheels that the default index would resolve.
 RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu
 
-# Remaining Python dependencies (torch already installed above; `requests` is
-# used by clients/envo_client.py but is missing from requirements.txt).
-RUN pip install --no-cache-dir \
-        pygbif \
-        geopy \
-        rapidfuzz \
-        openai \
-        python-dotenv \
-        sentence-transformers \
-        numpy \
-        requests
+# Install remaining dependencies from requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Bake the ENVO embedding model into the image so the locality path needs no
-# network download at runtime. Store it in a world-writable location because the
+# Bake the ENVO embedding and reranking models into the image so the locality path needs no
+# network download at runtime. Store them in a world-writable location because the
 # container runs under an arbitrary uid (docker.runOptions '-u $(id -u):$(id -g)').
 ENV HF_HOME=/opt/hf \
     SENTENCE_TRANSFORMERS_HOME=/opt/hf
-RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('intfloat/multilingual-e5-large')" \
+RUN python -c "from sentence_transformers import SentenceTransformer, CrossEncoder; SentenceTransformer('BAAI/bge-large-en-v1.5'); CrossEncoder('cross-encoder/ms-marco-MiniLM-L-12-v2')" \
     && chmod -R 0777 /opt/hf
 
 # Force offline model loading at runtime and give the arbitrary-uid process a
@@ -55,3 +49,7 @@ ENV HF_HUB_OFFLINE=1 \
 
 # Copy the WP5 source (main.py, resolvers/, clients/, ontology_config.json, data/)
 COPY . /app
+
+# Pre-download local GeoNames data for Germany (DE) so it is baked into the image
+RUN python clients/local_geonames.py
+

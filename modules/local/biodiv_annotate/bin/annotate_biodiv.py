@@ -3,9 +3,12 @@ import csv
 import json
 import time
 import requests
+from dotenv import load_dotenv
 import unicodedata
 import argparse
 from concurrent.futures import ThreadPoolExecutor, as_completed
+
+load_dotenv()
 
 def get_api_key():
     api_key = os.environ.get("BIODIV_API_KEY") 
@@ -19,6 +22,8 @@ INPUT_CSV = "data/sample.csv"
 OUT_JSON = "results/annotation/annotated.jsonld"
 OUT_UNRESOLVED = "results/annotation/unresolved_terms.csv"
 OUT_ENRICHED_CSV = "results/annotation/enriched.csv"
+OUT_UNRESOLVED_WP5 = "results/annotation/unresolved_rows_for_wp5.csv"
+
 
 
 # prevents crash if results folder does not exist
@@ -28,6 +33,7 @@ os.makedirs("results/annotation", exist_ok=True)
 MAX_ROWS = 100000
 WAIT_BETWEEN_REQUESTS = 0
 MAX_WORKERS = 10
+
 
 ONTOLOGY_CONFIG_PATH = "modules/local/biodiv_annotate/bin/ontology_config.json"
 
@@ -46,10 +52,10 @@ def load_ontology_config(path):
         ontology = cfg.get("ontology")
         decision = cfg.get("decision", "use")
         if ontology and decision != "skip":
-            mapping[field] = ontology
+            mapping[field] = ontology or None
 
     return mapping
-FIELD_ONTOLOGY = load_ontology_config(ONTOLOGY_CONFIG_PATH)
+
 
 
 # columns contain the most useful text for ontology annotation
@@ -299,13 +305,12 @@ def guess_category(field):
 
 
 def annotate_records(rows, terms, term_results):
-    row_lookup = {
-        row["HerbariumID"]: row
-        for row in rows}
+    row_lookup = {row["HerbariumID"]: row for row in rows}
 
     records = {}
     unresolved = []
-    
+    wp5_by_record = {}
+
     for row in rows:
         record_id = row.get("HerbariumID")
 
@@ -323,8 +328,7 @@ def annotate_records(rows, terms, term_results):
         for occurrence in data["occurrences"]:
             record_id = occurrence["record_id"]
             field = occurrence["source_field"]
-
-            row = row_lookup.get(record_id)
+            row = row_lookup.get(record_id, {})
 
             records[record_id]["source_fields"][field] = term
 
@@ -332,16 +336,20 @@ def annotate_records(rows, terms, term_results):
 
             if len(parsed) == 0:
                 reason = result.get("error", "no_annotation_returned")
+                original_term = occurrence.get("original_term", term)
+                normalized_term = occurrence.get("normalized_term", term)
+                ontology_filter = result.get("ontology_filter", "")
+                suggested_category = guess_category(field)
 
                 unresolved.append({
                     "record_id": record_id,
                     "source_field": field,
-                    "original_term": occurrence.get("original_term", term),
-                    "normalized_term": occurrence.get("normalized_term", term),
+                    "original_term": original_term,
+                    "normalized_term": normalized_term,
                     "term": term,
                     "reason": reason,
-                    "ontology_filter": result.get("ontology_filter", ""),
-                    "suggested_category":guess_category(field),
+                    "ontology_filter": ontology_filter,
+                    "suggested_category": suggested_category,
                     "row_context": row,
 
                     "example_FullNameCache": row.get("FullNameCache", ""),
@@ -355,6 +363,13 @@ def annotate_records(rows, terms, term_results):
                     "example_Expeditionsangabe": row.get("Expeditionsangabe", ""),
                 })
 
+                wp5_by_record.setdefault(record_id, []).append({
+                    "source_field": field,
+                    "original_term": occurrence.get("original_term", term),
+                    "normalized_term": occurrence.get("normalized_term", term),
+                    "ontology_filter": result.get("ontology_filter", ""),
+                })
+
                 continue
 
             records[record_id]["annotations"].extend(parsed)
@@ -363,13 +378,21 @@ def annotate_records(rows, terms, term_results):
 
     for record in records.values():
         deduplicated = remove_duplicates(record["annotations"])
-
         record["annotations"] = deduplicated
         record["annotation_count"] = len(deduplicated)
-
         final_records.append(record)
 
-    return final_records, unresolved
+    unresolved_rows_for_wp5 = []
+
+    for record_id, unresolved_items in wp5_by_record.items():
+        row = dict(row_lookup[record_id])
+
+        failed_fields = list(dict.fromkeys(item["source_field"] for item in unresolved_items))
+        row["unresolved_fields"] = ", ".join(failed_fields)
+
+        unresolved_rows_for_wp5.append(row)
+
+    return final_records, unresolved, unresolved_rows_for_wp5
 
 
 
@@ -501,13 +524,54 @@ def save_enriched_csv(rows, annotated_records, out_path):
                     out_row[f"{field}_URI"] = uris.get(field, "")
             writer.writerow(out_row)
 
+def save_unresolved_rows_for_wp5(rows, output_path):
+    if not rows:
+        return
+
+    fieldnames = list(rows[0].keys())
+
+    with open(output_path, "w", encoding="utf-8", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(rows)
+
+def parse_target_ontologies(items):
+    if not items:
+        return {}
+
+    mapping = {}
+
+    for item in items:
+        if ":" not in item:
+            raise ValueError(
+                f"Invalid ontology mapping {item!r}. "
+                "Expected format COLUMN:ONTOLOGY"
+            )
+
+        column, ontology = item.split(":", 1)
+        column = column.strip()
+        ontology = ontology.strip()
+
+        if not column or not ontology:
+            raise ValueError(
+                f"Invalid ontology mapping {item!r}. "
+                "Column and ontology must not be empty."
+            )
+
+        mapping[column] = ontology
+
+    return mapping
+
 def parse_args():
     parser = argparse.ArgumentParser(description="Annotate biodiversity CSV records with BiodivPortal.")
     parser.add_argument("--input", default=INPUT_CSV)
     parser.add_argument("--out-json", default=OUT_JSON)
     parser.add_argument("--out-unresolved", default=OUT_UNRESOLVED)
+    parser.add_argument("--out-wp5-unresolved-rows", default=OUT_UNRESOLVED_WP5)
     parser.add_argument("--out-enriched-csv", default="results/annotation/enriched.csv")
     parser.add_argument("--max-rows", type=int, default=MAX_ROWS)
+    parser.add_argument("--columns", nargs="+", default=FIELDS_TO_CHECK)
+    parser.add_argument("--target-ontologies", dest="target_ontologies", nargs="+",default=None)
     return parser.parse_args()
 
 # if __name__ == "__main__":
@@ -522,13 +586,29 @@ if __name__ == "__main__":
     INPUT_CSV = args.input
     OUT_JSON = args.out_json
     OUT_UNRESOLVED = args.out_unresolved
+    OUT_UNRESOLVED_WP5 = args.out_wp5_unresolved_rows
     MAX_ROWS = args.max_rows
+    FIELDS_TO_CHECK = args.columns
+    FIELD_ONTOLOGY = load_ontology_config(ONTOLOGY_CONFIG_PATH)
+    cli_ontologies = parse_target_ontologies(args.target_ontologies)
+    FIELD_ONTOLOGY.update(cli_ontologies)
 
+    for field in FIELDS_TO_CHECK:
+        ontology = FIELD_ONTOLOGY.get(field)
+        if not ontology:
+            print(
+                f"[warn] No ontology configured for column {field!r}; "
+                "annotating without ontology filter.", flush=True,)
+        
     # os.makedirs(os.path.dirname(OUT_JSON), exist_ok=True)
     # os.makedirs(os.path.dirname(OUT_UNRESOLVED), exist_ok=True)
 
     out_json_dir = os.path.dirname(OUT_JSON)
     out_unresolved_dir = os.path.dirname(OUT_UNRESOLVED)
+    out_unresolved_for_wp5 = os.path.dirname(OUT_UNRESOLVED_WP5)
+
+    if out_unresolved_for_wp5:
+        os.makedirs(out_unresolved_for_wp5, exist_ok=True)
 
     if out_json_dir:
         os.makedirs(out_json_dir, exist_ok=True)
@@ -546,11 +626,11 @@ if __name__ == "__main__":
     print("Building annotated records...", flush=True)
 
     annotate_start = time.perf_counter()
-    annotated, unresolved_terms = annotate_records(
-        rows,
-        terms,
-        term_results,
-        )
+    annotated, unresolved_terms, unresolved_rows_for_wp5 = annotate_records(
+    rows,
+    terms,
+    term_results,
+)
     annotate_time = time.perf_counter() - annotate_start
 
     save_start = time.perf_counter()
@@ -558,8 +638,15 @@ if __name__ == "__main__":
     print("Writing annotated JSON-LD...", flush=True)
     save_json(annotated)
 
-    print("Writing Unresolved CSV...", flush=True)
-    save_unresolved(unresolved_terms)
+    # print("Writing Unresolved CSV...", flush=True)
+    # save_unresolved(unresolved_terms)
+
+    print("Writing unresolved rows to unresolved_terms.csv...", flush=True)
+    save_unresolved_rows_for_wp5(
+        unresolved_rows_for_wp5,
+        OUT_UNRESOLVED,
+    )
+    print("Saved:", OUT_UNRESOLVED)
 
     OUT_ENRICHED_CSV = args.out_enriched_csv
 

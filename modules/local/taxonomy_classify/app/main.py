@@ -1,6 +1,5 @@
 import io
 import os
-import tempfile
 
 import numpy as np
 import pandas as pd

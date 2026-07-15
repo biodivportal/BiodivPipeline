@@ -1,0 +1,151 @@
+@prefix rml:     <http://w3id.org/rml/> .
+@prefix grel:    <http://users.ugent.be/~bjdmeest/function/grel.ttl#> .
+@prefix builtin: <https://github.com/morph-kgc/morph-kgc/function/built-in.ttl#> .
+@prefix oboe:    <http://ecoinformatics.org/oboe/oboe.1.2/oboe-core.owl#> .
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix :        <http://example.com/rml/plant_height#> .
+
+# RML re-implementation of the InfAI OBOE Karma model
+# (plant_height_vegetative_raw-model_oboe.ttl), consumed by Morph-KGC.
+#
+# One source row → an OBOE ObservationCollection / Observation / Measurement /
+# MeasuredValue graph. The two derived URIs mirror the original Karma
+# PyTransforms:
+#   Entity IRI = "http://www.catalogueoflife.org/data/taxon/" + TaxonID
+#   Unit  IRI  = "http://qudt.org/vocab/unit/" + UnitName.capitalize()
+#
+# The logical source points at the JSON example; for the CSV swap
+# rml:referenceFormulation to rml:CSV and rml:source to the .csv (see README).
+# Written in the modern RML vocabulary (http://w3id.org/rml/); Morph-KGC also
+# accepts the legacy rr:/rml: (mmlab) namespaces.
+
+# ── ObservationCollection (keyed by DatasetID) ────────────────────────────
+:ObservationCollection a rml:TriplesMap ;
+    rml:logicalSource [
+        rml:source "plant_height_vegetative_raw_germany_20.json" ;
+        rml:referenceFormulation rml:JSONPath ;
+        rml:iterator "$[*]" ] ;
+    rml:subjectMap [
+        rml:template "http://ecoinformatics.org/oboe/data/{DatasetID}" ;
+        rml:class oboe:ObservationCollection ] ;
+    rml:predicateObjectMap [
+        rml:predicate rdfs:label ;
+        rml:objectMap [ rml:reference "Dataset" ] ] ;
+    rml:predicateObjectMap [
+        rml:predicate oboe:hasMember ;
+        rml:objectMap [ rml:template "http://ecoinformatics.org/oboe/data/{ObservationID}" ] ] .
+
+# ── Observation (keyed by ObservationID) ──────────────────────────────────
+:Observation a rml:TriplesMap ;
+    rml:logicalSource [
+        rml:source "plant_height_vegetative_raw_germany_20.json" ;
+        rml:referenceFormulation rml:JSONPath ;
+        rml:iterator "$[*]" ] ;
+    rml:subjectMap [
+        rml:template "http://ecoinformatics.org/oboe/data/{ObservationID}" ;
+        rml:class oboe:Observation ] ;
+    rml:predicateObjectMap [
+        rml:predicate oboe:hasMeasurement ;
+        rml:objectMap [ rml:template "http://ecoinformatics.org/oboe/data/{ObsDataID}" ] ] ;
+    rml:predicateObjectMap [
+        rml:predicate oboe:ofEntity ;
+        rml:objectMap [ rml:template "http://www.catalogueoflife.org/data/taxon/{TaxonID}" ] ] .
+
+# ── Measurement (keyed by ObsDataID) ──────────────────────────────────────
+:Measurement a rml:TriplesMap ;
+    rml:logicalSource [
+        rml:source "plant_height_vegetative_raw_germany_20.json" ;
+        rml:referenceFormulation rml:JSONPath ;
+        rml:iterator "$[*]" ] ;
+    rml:subjectMap [
+        rml:template "http://ecoinformatics.org/oboe/data/{ObsDataID}" ;
+        rml:class oboe:Measurement ] ;
+    # TraitID is already a full IRI → reference (not template, which would
+    # percent-encode the ':' '/' '#').
+    rml:predicateObjectMap [
+        rml:predicate oboe:ofCharacteristic ;
+        rml:objectMap [ rml:reference "TraitID" ; rml:termType rml:IRI ] ] ;
+    # usesStandard → the QUDT unit IRI, "http://qudt.org/vocab/unit/" + UnitName.capitalize()
+    rml:predicateObjectMap [
+        rml:predicate oboe:usesStandard ;
+        rml:objectMap [
+            rml:termType rml:IRI ;
+            rml:functionExecution [
+                rml:functionMap [ rml:constant builtin:concat ] ;
+                rml:input
+                    [ rml:parameterMap  [ rml:constant grel:valueParameter1 ] ;
+                      rml:inputValueMap [ rml:constant "http://qudt.org/vocab/unit/" ] ] ,
+                    [ rml:parameterMap  [ rml:constant grel:valueParameter2 ] ;
+                      rml:inputValueMap [
+                          rml:functionExecution [
+                              rml:functionMap [ rml:constant grel:toUpperCase ] ;
+                              rml:input [
+                                  rml:parameterMap  [ rml:constant grel:valueParameter ] ;
+                                  rml:inputValueMap [ rml:reference "UnitName" ] ] ] ] ] ] ] ] ;
+    # hasValue → the MeasuredValue blank node (same template ⇒ same bnode as :MeasuredValue)
+    rml:predicateObjectMap [
+        rml:predicate oboe:hasValue ;
+        rml:objectMap [ rml:template "MeasuredValue_{ObsDataID}" ; rml:termType rml:BlankNode ] ] .
+
+# ── MeasuredValue (blank node, keyed by ObsDataID) ────────────────────────
+:MeasuredValue a rml:TriplesMap ;
+    rml:logicalSource [
+        rml:source "plant_height_vegetative_raw_germany_20.json" ;
+        rml:referenceFormulation rml:JSONPath ;
+        rml:iterator "$[*]" ] ;
+    rml:subjectMap [
+        rml:template "MeasuredValue_{ObsDataID}" ;
+        rml:termType rml:BlankNode ;
+        rml:class oboe:MeasuredValue ] ;
+    rml:predicateObjectMap [
+        rml:predicate oboe:hasCode ;
+        rml:objectMap [ rml:reference "StdValue" ] ] .
+
+# ── Characteristic (the trait IRI itself, keyed by TraitID) ───────────────
+:Characteristic a rml:TriplesMap ;
+    rml:logicalSource [
+        rml:source "plant_height_vegetative_raw_germany_20.json" ;
+        rml:referenceFormulation rml:JSONPath ;
+        rml:iterator "$[*]" ] ;
+    rml:subjectMap [
+        rml:reference "TraitID" ;
+        rml:termType rml:IRI ;
+        rml:class oboe:Characteristic ] ;
+    rml:predicateObjectMap [
+        rml:predicate rdfs:label ;
+        rml:objectMap [ rml:reference "TraitName" ] ] .
+
+# ── Unit (QUDT IRI, keyed by UnitName.capitalize()) ───────────────────────
+:Unit a rml:TriplesMap ;
+    rml:logicalSource [
+        rml:source "plant_height_vegetative_raw_germany_20.json" ;
+        rml:referenceFormulation rml:JSONPath ;
+        rml:iterator "$[*]" ] ;
+    rml:subjectMap [
+        rml:termType rml:IRI ;
+        rml:class oboe:Unit ;
+        rml:functionExecution [
+            rml:functionMap [ rml:constant builtin:concat ] ;
+            rml:input
+                [ rml:parameterMap  [ rml:constant grel:valueParameter1 ] ;
+                  rml:inputValueMap [ rml:constant "http://qudt.org/vocab/unit/" ] ] ,
+                [ rml:parameterMap  [ rml:constant grel:valueParameter2 ] ;
+                  rml:inputValueMap [
+                      rml:functionExecution [
+                          rml:functionMap [ rml:constant grel:toUpperCase ] ;
+                          rml:input [
+                              rml:parameterMap  [ rml:constant grel:valueParameter ] ;
+                              rml:inputValueMap [ rml:reference "UnitName" ] ] ] ] ] ] ] .
+
+# ── Entity (Catalogue of Life taxon IRI, keyed by TaxonID) ────────────────
+:Entity a rml:TriplesMap ;
+    rml:logicalSource [
+        rml:source "plant_height_vegetative_raw_germany_20.json" ;
+        rml:referenceFormulation rml:JSONPath ;
+        rml:iterator "$[*]" ] ;
+    rml:subjectMap [
+        rml:template "http://www.catalogueoflife.org/data/taxon/{TaxonID}" ;
+        rml:class oboe:Entity ] ;
+    rml:predicateObjectMap [
+        rml:predicate rdfs:label ;
+        rml:objectMap [ rml:reference "AccSpeciesName" ] ] .
