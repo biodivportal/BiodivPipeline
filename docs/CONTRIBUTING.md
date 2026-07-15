@@ -6,45 +6,15 @@
 | --------------------- | ----------------------------------------------------------- |
 | `master`              | Stable releases only. Never commit directly.                |
 | `dev`                 | Integration branch. All feature branches merge here via PR. |
-| `wp1-*`, `wp2-*`, ... | Feature branches per work package                           |
+| `wp1-*`, `wp2-*`, ... | Feature branches with group name as prefix (multiple per group possible of course)                           |
 
 ```
-master ← dev ← wp1-nf-core-pipeline
-                ← wp2-annotator-service
-                ← wp3-taxonomy-classifier
+master ← dev ← wp1-fix-docker
+                ← wp1-speed-up-conda
+                ← wp3-taxonomy-classifier-integration
                 ...
 ```
 
-## Git conventions
-
-### Commit messages
-
-Use [Conventional Commits](https://www.conventionalcommits.org/):
-
-```
-<type>(<scope>): <description>
-
-[optional body]
-```
-
-Types: `feat`, `fix`, `docs`, `refactor`, `test`, `chore`, `ci`, `build`
-
-Examples:
-
-```
-feat(pipeline): wire 7 modules into biodivpipeline workflow DAG
-docs: rewrite README for biodiversity pipeline
-fix(schema): remove samplesheet validation from nextflow_schema.json
-chore: clean .gitignore and remove stray Nextflow artifacts
-```
-
-### Branch naming
-
-```
-wp<N>-<short-description>
-```
-
-Examples: `wp1-nf-core-pipeline`, `wp2-annotator-service`, `wp4-outlier-detection`
 
 ## Testing
 
@@ -52,7 +22,7 @@ Examples: `wp1-nf-core-pipeline`, `wp2-annotator-service`, `wp4-outlier-detectio
 nextflow run main.nf -profile test --outdir results
 ```
 
-All 7 modules must show `✔`. See [docs/module-workflow.md](module-workflow.md) for module-specific implementation instructions.
+All 7 modules must show `✔`. See [docs/module-integration-guide.md](module-integration-guide.md) for module-specific implementation instructions.
 
 ## Pull request process
 
@@ -61,7 +31,7 @@ All 7 modules must show `✔`. See [docs/module-workflow.md](module-workflow.md)
 3. Push and open a PR against `dev`
 4. CI must pass before merge
 5. At least one reviewer approval required
-6. Squash-merge or rebase — no merge commits
+6. Squash-merge or rebase — no merge commits (No worries. Group 1 takes care of merging into dev.)
 
 ## Project contacts
 

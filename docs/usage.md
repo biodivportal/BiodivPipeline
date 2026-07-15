@@ -19,12 +19,14 @@ A small mock dataset is provided under `data/sample.csv` for use with `-profile 
 ### Quick test run
 
 ```bash
-nextflow run main.nf -profile test,docker --outdir results
+nextflow run main.nf -profile test --outdir results
 ```
 
 The `test` profile points to `data/sample.csv` and `assets/default_mapping.jsonld` so no other parameters are needed.
 
 ### Custom input run
+
+TODO: The profile `docker` is not yet fully working, because on the current dev branch there are only module stubs.
 
 ```bash
 nextflow run main.nf -profile docker \

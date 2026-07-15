@@ -1,0 +1,10 @@
+pygbif
+geopy
+rapidfuzz
+openai
+python-dotenv
+sentence-transformers
+torch
+numpy
+requests
+deep-translator

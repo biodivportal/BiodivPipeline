@@ -1,0 +1,244 @@
+{
+  "Family": {
+    "ontology": "NCBITAXON",
+    "name": "",
+    "score": 0.666,
+    "decision": "use",
+    "translation_used": "no",
+    "all_recommendations": [
+      {
+        "acronym": "NCBITAXON",
+        "name": "",
+        "score": 0.666
+      },
+      {
+        "acronym": "ENVO",
+        "name": "",
+        "score": 0.067
+      },
+      {
+        "acronym": "BOHLMANN",
+        "name": "",
+        "score": 0.015
+      },
+      {
+        "acronym": "CHEBI",
+        "name": "",
+        "score": 0.007
+      }
+    ]
+  },
+  "FullNameCache": {
+    "ontology": "NCBITAXON",
+    "name": "",
+    "score": 0.673,
+    "decision": "use",
+    "translation_used": "no",
+    "all_recommendations": [
+      {
+        "acronym": "NCBITAXON",
+        "name": "",
+        "score": 0.673
+      },
+      {
+        "acronym": "BOHLMANN",
+        "name": "",
+        "score": 0.236
+      },
+      {
+        "acronym": "APTO",
+        "name": "",
+        "score": 0.015
+      },
+      {
+        "acronym": "UBERON",
+        "name": "",
+        "score": 0.007
+      },
+      {
+        "acronym": "ISOCOUNTRIES",
+        "name": "",
+        "score": 0.007
+      }
+    ]
+  },
+  "Country": {
+    "ontology": "UNESCOTHES",
+    "name": "",
+    "score": 0.7,
+    "decision": "use",
+    "translation_used": "no",
+    "all_recommendations": [
+      {
+        "acronym": "UNESCOTHES",
+        "name": "",
+        "score": 0.7
+      },
+      {
+        "acronym": "ISOCOUNTRIES",
+        "name": "",
+        "score": 0.697
+      }
+    ]
+  },
+  "Locality": {
+    "ontology": "ISOCOUNTRIES",
+    "name": "",
+    "score": 0.42,
+    "decision": "review",
+    "translation_used": "no",
+    "all_recommendations": [
+      {
+        "acronym": "ISOCOUNTRIES",
+        "name": "",
+        "score": 0.42
+      },
+      {
+        "acronym": "UBERON",
+        "name": "",
+        "score": 0.244
+      },
+      {
+        "acronym": "CL",
+        "name": "",
+        "score": 0.222
+      },
+      {
+        "acronym": "UNESCOTHES",
+        "name": "",
+        "score": 0.191
+      },
+      {
+        "acronym": "OBA",
+        "name": "",
+        "score": 0.167
+      }
+    ]
+  },
+  "TitelEtikett": {
+    "ontology": "BIODIVTHES",
+    "name": "",
+    "score": 0.7,
+    "decision": "use",
+    "translation_used": "no",
+    "all_recommendations": [
+      {
+        "acronym": "BIODIVTHES",
+        "name": "",
+        "score": 0.7
+      },
+      {
+        "acronym": "UNESCOTHES",
+        "name": "",
+        "score": 0.671
+      },
+      {
+        "acronym": "ENVTHES",
+        "name": "",
+        "score": 0.668
+      },
+      {
+        "acronym": "SWEET",
+        "name": "",
+        "score": 0.661
+      }
+    ]
+  },
+  "FundortUNdOeko": {
+    "ontology": "ISOCOUNTRIES",
+    "name": "",
+    "score": 0.616,
+    "decision": "use",
+    "translation_used": "no",
+    "all_recommendations": [
+      {
+        "acronym": "ISOCOUNTRIES",
+        "name": "",
+        "score": 0.616
+      },
+      {
+        "acronym": "UNESCOTHES",
+        "name": "",
+        "score": 0.381
+      },
+      {
+        "acronym": "VBO",
+        "name": "",
+        "score": 0.223
+      },
+      {
+        "acronym": "CHEBI",
+        "name": "",
+        "score": 0.037
+      },
+      {
+        "acronym": "ENVO",
+        "name": "",
+        "score": 0.031
+      }
+    ]
+  },
+  "NameCache": {
+    "ontology": "NCBITAXON",
+    "name": "",
+    "score": 0.684,
+    "decision": "use",
+    "translation_used": "no",
+    "all_recommendations": [
+      {
+        "acronym": "NCBITAXON",
+        "name": "",
+        "score": 0.684
+      },
+      {
+        "acronym": "BOHLMANN",
+        "name": "",
+        "score": 0.211
+      },
+      {
+        "acronym": "APTO",
+        "name": "",
+        "score": 0.01
+      },
+      {
+        "acronym": "ISOCOUNTRIES",
+        "name": "",
+        "score": 0.007
+      },
+      {
+        "acronym": "OIM",
+        "name": "",
+        "score": 0.005
+      }
+    ]
+  },
+  "Genus": {
+    "ontology": "BOHLMANN",
+    "name": "",
+    "score": 0.654,
+    "decision": "use",
+    "translation_used": "no",
+    "all_recommendations": [
+      {
+        "acronym": "BOHLMANN",
+        "name": "",
+        "score": 0.654
+      },
+      {
+        "acronym": "NCBITAXON",
+        "name": "",
+        "score": 0.653
+      },
+      {
+        "acronym": "APTO",
+        "name": "",
+        "score": 0.035
+      },
+      {
+        "acronym": "ENVO",
+        "name": "",
+        "score": 0.016
+      }
+    ]
+  }
+}

@@ -1,0 +1,8 @@
+__pycache__/
+**/__pycache__/
+*.pyc
+geonames_data/
+example_data/
+example.env
+.env
+README.md
