@@ -15,16 +15,12 @@ process TAXONOMY_CLASSIFY {
     script:
     def llm_base_export = params.taxonomy_llm_base_url ? "export OPENAI_BASE_URL='${params.taxonomy_llm_base_url}'" : ''
     """
-    # WP3 uses the OpenAI-compatible client (OpenAI by default). The OPENAI_API_KEY
-    # secret is injected by Nextflow's secret store (declared above). The endpoint
-    # and model are configurable via params so the same image can target OpenAI,
-    # DeepSeek, or any OpenAI-compatible API (the demo points at DeepSeek via
-    # conf/test.config). Running without --use-ollama routes through this client.
     ${llm_base_export}
     export OPENAI_API_KEY=\$WP3_OPENAI_API_KEY
     export OPENAI_MODEL='${params.taxonomy_llm_model}'
-    python /app/classify.py --input ${csv} --output taxonomy_resolved.csv
-    
+
+    taxonomy-classify --input ${csv} --output taxonomy_resolved.csv
+
     cat <<-VERSIONS > versions.yml
     "${task.process}":
         python: \$(python --version | sed 's/Python //')
