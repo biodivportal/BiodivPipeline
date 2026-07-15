@@ -6,20 +6,23 @@ import pandas as pd
 from .pipeline import process_csv
 from .config import DEFAULT_CONFIG
 
-async def main():
+async def _run(args):
+    df = pd.read_csv(args.input, sep=None, engine='python')
+    result = await process_csv(
+        df=df,
+        model=DEFAULT_CONFIG['model'],
+        version=DEFAULT_CONFIG['version'],
+    )
+    result.to_csv(args.output, index=False)
+
+
+def main():
     p = argparse.ArgumentParser()
     p.add_argument('--input', required=True)
     p.add_argument('--output', required=True)
-    # p.add_argument('--use-ollama', action='store_true')
     args = p.parse_args()
+    asyncio.run(_run(args))
 
-    df = pd.read_csv(args.input, sep=None, engine='python')
-    result = await asyncio.run(process_csv(
-        df=df,
-        model=DEFAULT_CONFIG['model'],
-        version=DEFAULT_CONFIG['version']
-    ))
-    result.to_csv(args.output)
 
 if __name__ == '__main__':
     main()

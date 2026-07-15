@@ -1,0 +1,19 @@
+nextflow_process {
+    name "Test TAXONOMY_CLASSIFY"
+    script "../main.nf"
+    process "TAXONOMY_CLASSIFY"
+
+    test("classifies a small sample as test") {
+        when {
+            process {
+                """
+                input[0] = file("${projectDir}/modules/local/taxonomy_classify/tests/sample10.csv")
+                """
+            }
+        }
+        then {
+            assert process.success
+            assert path(process.out.resolved[0]).exists()
+        }
+    }
+}
