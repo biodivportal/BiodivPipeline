@@ -65,9 +65,11 @@ workflow BIODIVPIPELINE {
         ch_concepts = PROVISIONAL_CONCEPTS.out.concepts
     }
 
-    RDF_TRANSFORM(
-        tuple ch_meta, ch_standardised, ch_schema
-    )
+    ch_rdf_input = ch_meta
+        .combine(ch_standardised)
+        .combine(ch_schema)
+
+    RDF_TRANSFORM( ch_rdf_input )
     ch_versions = ch_versions.mix(RDF_TRANSFORM.out.versions)
 
     // Output (i): assemble the single quality-annotated, taxonomically resolved
