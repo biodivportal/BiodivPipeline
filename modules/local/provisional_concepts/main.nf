@@ -2,10 +2,10 @@ process PROVISIONAL_CONCEPTS {
     tag "concepts"
     label 'process_single'
 
-    secret 'LLM_API_KEY'
+    secret 'WP5_LLM_API_KEY'
 
-    container 'ghcr.io/mitchell7970/wp5-provisional-concepts:demo'
-
+    //container 'ghcr.io/mitchell7970/wp5-provisional-concepts:demo'
+    container 'ghcr.io/dabauer/wp5:latest'
     input:
     path unresolved // resolves the csv :crossed_fingers:
     // Need to add ontologies once the recommender is implemented
@@ -38,7 +38,7 @@ process PROVISIONAL_CONCEPTS {
     def limit_arg = params.provisional_concepts_limit ? "--limit ${params.provisional_concepts_limit}" : ''
     def mapping_arg = params.provisional_concepts_mapping ? "--mapping '${params.provisional_concepts_mapping}'" : ''
 
-    def llm_base  = params.provisional_concepts_llm_base_url ? "export LLM_BASE_URL='${params.provisional_concepts_llm_base_url}'" : ''
+    def llm_base  = params.provisional_concepts_llm_base_url ? "export WP5_LLM_BASE_URL='${params.provisional_concepts_llm_base_url}'" : ''
     def llm_model = params.provisional_concepts_llm_model  ? "export LLM_MODEL='${params.provisional_concepts_llm_model}'"  : ''
     """
     ${llm_base}
