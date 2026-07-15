@@ -21,8 +21,8 @@ process PROVISIONAL_CONCEPTS {
     //   * locality (ENVO embeddings + an LLM) -> enabled by default (pass --skip-localities to disable)
     // Locality resolution needs an OpenAI-compatible key. To enable it:
     //   1. set params.provisional_concepts_skip_localities = false (kept true by default so the pipeline stays green without any secret)
-    //   2. add `secret 'LLM_API_KEY'` to this process
-    //   3. run `nextflow secrets set LLM_API_KEY <key>`
+    //   2. the process already declares `secret 'WP5_LLM_API_KEY'`
+    //   3. run `nextflow secrets set WP5_LLM_API_KEY <key>`
     def skip_species_flag = params.provisional_concepts_skip_species ? '--skip-species' : ''
     def skip_localities_flag = params.provisional_concepts_skip_localities ? '--skip-localities' : ''
 
