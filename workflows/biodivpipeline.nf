@@ -24,6 +24,7 @@ workflow BIODIVPIPELINE {
     take:
     ch_input       // channel: path to input CSV file
     ch_schema      // channel: path to RDF mapping schema (JSON-LD or Turtle)
+    ch_meta
     outdir
 
     main:
@@ -65,10 +66,7 @@ workflow BIODIVPIPELINE {
     }
 
     RDF_TRANSFORM(
-        ch_standardised,
-        BIODIV_ANNOTATE.out.annotations,
-        TAXONOMY_CLASSIFY.out.resolved,
-        ch_schema
+        tuple ch_meta, ch_standardised, ch_schema
     )
     ch_versions = ch_versions.mix(RDF_TRANSFORM.out.versions)
 
@@ -106,8 +104,8 @@ workflow BIODIVPIPELINE {
 
     emit:
     final_dataset = ASSEMBLE_DATASET.out.dataset        // channel: path to unified quality-annotated + taxonomically resolved dataset
-    rdf_turtle   = RDF_TRANSFORM.out.rdf_turtle       // channel: path to Turtle RDF output
-    rdf_jsonld   = RDF_TRANSFORM.out.rdf_jsonld        // channel: path to JSON-LD RDF output
+    // rdf_turtle   = RDF_TRANSFORM.out.rdf_turtle       // channel: path to Turtle RDF output
+    // rdf_jsonld   = RDF_TRANSFORM.out.rdf_jsonld        // channel: path to JSON-LD RDF output
     flagged      = OUTLIER_DETECT.out.flagged           // channel: path to flagged records
     taxonomy     = TAXONOMY_CLASSIFY.out.resolved       // channel: path to resolved taxonomy
     report       = COLLECT_REPORTS.out.report            // channel: path to human-readable quality report

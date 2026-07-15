@@ -40,12 +40,15 @@ workflow NFCORE_BIODIVPIPELINE {
         ? channel.fromPath(params.mapping_schema, checkIfExists: true)
         : channel.fromPath("${projectDir}/assets/default_mapping.jsonld", checkIfExists: true)
 
+    def ch_meta = hannel.fromPath("${projectDir}/modules/local/rdf_transform/nextflow/meta.yml", checkIfExists: true)
+
     //
     // WORKFLOW: Run pipeline
     //
     BIODIVPIPELINE (
         ch_input,
         ch_schema,
+        ch_meta,
         params.outdir,
     )
 
