@@ -95,8 +95,6 @@ Docs live under `docs/`, grouped by audience:
 
 - [Contributing](docs/development/CONTRIBUTING.md) — git conventions, branch model
 - [Module integration guide](docs/development/module-integration-guide.md) — implement your module
-- [Module workflow](docs/development/module-workflow.md) — module authoring workflow
-- [Publishing images](docs/development/deployment-docker.md) — push module images to GHCR
 - [Linting](docs/development/linting_guidelines.md) — lint configuration decisions
 - [Testing guidelines](docs/development/test_guidelines.md) — tests each service must provide
 
