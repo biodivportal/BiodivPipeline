@@ -26,8 +26,17 @@ The three deliverables mandated by Requirement 1 of the Lastenheft:
 | # | Output | Location |
 | - | ------ | -------- |
 | i | Quality-annotated and taxonomically resolved dataset | `final_dataset/final_dataset.csv` |
-| ii | RDF triples derived from the expert schema | `rdf/output.ttl`, `rdf/output.jsonld` |
+| ii | RDF triples derived from the expert schema | `rdf/<id>.ttl` + `rdf/validate.json` (skipped by default — see below) |
 | iii | Quality reports for each processing step | `reports/pipeline_summary.json`, `reports/pipeline_summary.md` |
+
+### `rdf/` (output ii)
+
+Produced by the WP7/WP8 RDF Matching & Transformation service from a tabular dataset and
+an RML mapping. **Skipped by default** (`--skip_rdf true`) because it needs an RML mapping
+whose columns match the dataset — a WP8 Schema Editor deliverable — and its image lives in
+a registry not everyone can pull. Enable with `--skip_rdf false --mapping_schema <real RML>`;
+the service `/validate`s the mapping against the ontology before emitting `<id>.ttl` and a
+`validate.json` report.
 
 ### `final_dataset/final_dataset.csv`
 

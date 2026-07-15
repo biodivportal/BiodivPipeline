@@ -40,7 +40,7 @@ workflow NFCORE_BIODIVPIPELINE {
         ? channel.fromPath(params.mapping_schema, checkIfExists: true)
         : channel.fromPath("${projectDir}/assets/default_mapping.jsonld", checkIfExists: true)
 
-    def ch_meta = channel.fromPath("${projectDir}/modules/local/rdf_transform/nextflow/meta.yml", checkIfExists: true)
+    def ch_meta = channel.value([ id: 'biodivpipeline' ])  // RDF service meta map; the module reads meta.id
 
     //
     // WORKFLOW: Run pipeline
@@ -54,7 +54,7 @@ workflow NFCORE_BIODIVPIPELINE {
 
     emit:
     final_dataset = BIODIVPIPELINE.out.final_dataset
-    rdf_turtle = BIODIVPIPELINE.out.rdf_turtle
+    rdf        = BIODIVPIPELINE.out.rdf
     summary    = BIODIVPIPELINE.out.summary
 }
 
