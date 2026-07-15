@@ -50,7 +50,7 @@ workflow BIODIVPIPELINE {
     TAXONOMY_CLASSIFY( ch_enriched )
     ch_versions = ch_versions.mix(TAXONOMY_CLASSIFY.out.versions)
 
-    OUTLIER_DETECT( ch_standardised )
+    OUTLIER_DETECT( ch_input )
     ch_versions = ch_versions.mix(OUTLIER_DETECT.out.versions)
 
     // WP5 can be skipped (runs on the host, needs extra deps + an LLM key). When
