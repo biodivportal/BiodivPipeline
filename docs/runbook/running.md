@@ -67,6 +67,51 @@ Parameters can also be supplied from a YAML file with `-params-file params.yaml`
 Combine with commas (`-profile test,docker`); later profiles override earlier ones. The
 standard nf-core `podman`, `conda`, and `apptainer` profiles are also available.
 
+## Configuration
+
+**Changing configuration never requires rebuilding a container.** The module images are
+fixed; *how* they run is controlled by parameters and config files that Nextflow reads
+fresh on every run. You only rebuild an image if you change a module's *source code* —
+never for a settings change.
+
+Three ways to configure a run, lowest to highest effort:
+
+1. **Command-line parameters** — the common knobs:
+
+   ```bash
+   nextflow run main.nf -profile docker --input data.csv --outdir results \
+       --max_rows 500 --taxonomy_llm_model gpt-4o --skip_provisional_concepts true
+   ```
+
+2. **A parameters file** — the same knobs, version-controlled:
+
+   ```bash
+   nextflow run main.nf -profile docker -params-file params.yaml --outdir results
+   ```
+
+3. **A custom config (`-c`)** — for per-module compute resources or a module's `ext`
+   tunables, without editing the repo:
+
+   ```bash
+   nextflow run main.nf -profile docker --input data.csv --outdir results -c my.config
+   ```
+
+### Tuning knobs
+
+Beyond the run-shape parameters listed above, each module exposes its settings as params —
+so the client can tune behaviour without touching code or images:
+
+| Parameter | Module (WP) | Effect |
+| --------- | ----------- | ------ |
+| `--max_rows` | biodiv_annotate (WP2) | Rows annotated per run |
+| `--taxonomy_llm_model`, `--taxonomy_llm_base_url` | taxonomy_classify (WP3) | LLM model / endpoint (any OpenAI-compatible API) |
+| `--provisional_concepts_llm_model`, `--provisional_concepts_llm_base_url` | provisional_concepts (WP5) | WP5 LLM model / endpoint |
+| `--provisional_concepts_skip_species`, `--provisional_concepts_skip_localities` | provisional_concepts (WP5) | Toggle WP5's two resolution paths |
+
+The RDF module additionally accepts `output_format`, `delimiter`, and `source_type` via
+`ext` in a `-c` config. Every module's inputs and outputs are listed in
+[../reference/module-interface.md](../reference/module-interface.md).
+
 ## Resume & background
 
 ```bash

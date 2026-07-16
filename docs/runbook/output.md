@@ -68,3 +68,7 @@ Standard Nextflow execution artifacts.
 | `pipeline_dag_*.html`                  | DAG visualisation of the workflow                                    |
 | `params_*.json`                        | Parameters used for this run                                         |
 | `biodivpipeline_software_versions.yml` | Versions of all software used in the pipeline                        |
+
+Every module reports the versions of the tools it used (a `versions.yml`), and the pipeline
+aggregates them into `biodivpipeline_software_versions.yml` **automatically on every run** —
+there is no separate command to run. Open that file to see every tool and version in one place.
