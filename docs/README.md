@@ -1,27 +1,23 @@
 # BiodivPipeline Documentation
 
-Start here. Docs are grouped by what you're trying to do. For the big picture,
-see the [pipeline dataflow diagram](design/flow_diagram.md).
+Grouped by what you're doing. For the big picture, start with the
+[architecture](reference/architecture.md).
 
-```mermaid
-flowchart LR
-    Run["🚀 Run it<br/>usage/"] --> Build["🛠 Extend it<br/>development/"] --> Why["🧭 Understand it<br/>design/"]
-```
+## Runbook — run & operate
 
-## Usage — run the pipeline
+- [Running](runbook/running.md) — prerequisites, secrets, parameters, profiles
+- [Output](runbook/output.md) — what each result file is
+- [Troubleshooting](runbook/troubleshooting.md) — common failures and fixes
+- [Resource monitoring](runbook/resource-monitoring.md) — runtime & resource metrics
 
-- [Usage](usage/usage.md) — install, secrets, profiles, and running the pipeline
-- [Output](usage/output.md) — what each file in the results folder is
+## Development — contribute
 
-## Development — build & contribute
+- [Developer guide](development/developer-guide.md) — branch model, PRs, adding a module
+- [Linting](development/linting.md) — nf-core lint configuration
+- [Testing](development/testing.md) — what each module must provide for integration
 
-- [Contributing](development/CONTRIBUTING.md) — branch model, PRs, conventions
-- [Module integration guide](development/module-integration-guide.md) — add your module to the pipeline
-- [Testing guidelines](development/test_guidelines.md) — the tests each module must provide
-- [Linting](development/linting_guidelines.md) — nf-core lint configuration
+## Reference — look it up
 
-## Design — how & why
-
-- [Dataflow](design/flow_diagram.md) — how data moves through the pipeline (diagram)
-- [Resource monitoring](design/resource_monitoring.md) — runtime & resource metrics (decision record)
-- [WP1 hardening plan](design/wp1-hardening-plan.md) — proposed follow-up work (RFC)
+- [Architecture](reference/architecture.md) — dataflow diagram and module overview
+- [Module interface](reference/module-interface.md) — each module's inputs and outputs
+- [WP1 hardening plan (draft)](reference/wp1-hardening-plan-draft.md) — proposed follow-up work

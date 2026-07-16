@@ -17,7 +17,7 @@ results/
 └── pipeline_info/
 ```
 
-Each module publishes its outputs to its own subdirectory. The file contents and schemas inside those subdirectories are owned by the module teams and are described in each module's interface spec.
+Each module publishes its outputs to its own subdirectory. The exact files and schemas are listed in [reference/module-interface.md](../reference/module-interface.md).
 
 ## Final pipeline outputs
 
@@ -52,7 +52,7 @@ so the dataset stays valid as those schemas evolve.
 An aggregation of every module's output into one report: columns mapped (and flagged for
 review), unresolved annotation terms, taxa resolved (with mean confidence), records
 flagged by the outlier module grouped by severity, provisional concepts registered, and
-RDF triple counts. The `.json` is machine-readable; the `.md` is a human-readable overview.
+RDF validation status. The `.json` is machine-readable; the `.md` is a human-readable overview.
 
 ## Pipeline information
 

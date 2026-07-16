@@ -90,11 +90,11 @@ hand-in.
 `python3`. Containers make them reproducible anywhere and bring them in line with the other
 modules. Because the scripts are pure stdlib, the image is essentially `python:slim`.
 
-### G — Interface-contract doc (effort: easy)
+### G — Interface-contract doc — done
 
-**What:** one concise `docs/module-interfaces.md` describing each output we consume —
-filename, delimiter, key fields, and the record-id column (or "positional"). Replace the vague
-"each module's interface spec" reference in `output.md`.
+**What:** [module-interface.md](module-interface.md) now documents each output we consume —
+filename, delimiter, key fields, and the record-id column (or "positional"), and the vague
+"each module's interface spec" line in `output.md` points there.
 
 **Why:** the WP3/4/6 schema changes that broke us were undocumented. A single consumer-side
 contract catches drift in one place and doubles as the thing we hand other teams to say "please
