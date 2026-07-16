@@ -84,23 +84,7 @@ BiodivPipeline/
 
 ## Documentation
 
-Docs live under `docs/`, grouped by audience:
-
-**Usage** — running the pipeline
-
-- [Usage](docs/usage/usage.md) — how to run, parameters, profiles
-- [Output](docs/usage/output.md) — output directory reference
-
-**Development** — contributing and authoring modules
-
-- [Contributing](docs/development/CONTRIBUTING.md) — git conventions, branch model
-- [Module integration guide](docs/development/module-integration-guide.md) — implement your module
-- [Linting](docs/development/linting_guidelines.md) — lint configuration decisions
-- [Testing guidelines](docs/development/test_guidelines.md) — tests each service must provide
-
-**Design** — decisions and plans
-
-- [Resource monitoring](docs/design/resource_monitoring.md) — runtime/resource metrics decision record
-- [WP1 hardening plan (RFC)](docs/design/DRAFT-wp1-hardening-plan.md) — proposed follow-up work
+Full docs live in [`docs/`](docs/README.md), grouped by audience (usage · development · design).
+Start at the [documentation index](docs/README.md), or jump straight to the [pipeline dataflow](docs/design/flow_diagram.md).
 
 Built on the [nf-core](https://nf-co.re) framework — see [`CITATIONS.md`](CITATIONS.md).
