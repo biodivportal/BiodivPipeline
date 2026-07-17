@@ -24,7 +24,6 @@ workflow BIODIVPIPELINE {
     take:
     ch_input       // channel: path to input CSV file
     ch_schema      // channel: path to RDF mapping schema (JSON-LD or Turtle)
-    ch_meta
     outdir
 
     main:
@@ -76,12 +75,9 @@ workflow BIODIVPIPELINE {
         ch_rdf        = channel.empty()
         ch_rdf_report = channel.fromPath("${projectDir}/assets/NO_FILE")
     } else {
-        def ch_rdf_input = ch_meta
-            .combine(ch_standardised)
-            .combine(ch_schema)
-        RDF_TRANSFORM( ch_rdf_input )
+        RDF_TRANSFORM( ch_standardised, ch_schema )
         ch_versions   = ch_versions.mix(RDF_TRANSFORM.out.versions)
-        ch_rdf        = RDF_TRANSFORM.out.rdf.map { meta, f -> f }
+        ch_rdf        = RDF_TRANSFORM.out.rdf
         ch_rdf_report = RDF_TRANSFORM.out.validate
     }
 
