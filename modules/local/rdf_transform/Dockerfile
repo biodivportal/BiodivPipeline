@@ -13,12 +13,16 @@
 FROM python:3.11-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
-    ONTOLOGIES_DIR=/app/ontologies
+  PYTHONUNBUFFERED=1 \
+  ONTOLOGIES_DIR=/app/ontologies
 
+# tini: PID 1 signal handling. procps: provides `ps`, which Nextflow calls to
+# collect per-task CPU/memory metrics — the task fails without it under the
+# docker profile. curl: used by the nf module script to reach the service's
+# HTTP API (health / validate / transform).
 RUN apt-get update \
- && apt-get install -y --no-install-recommends tini \
- && rm -rf /var/lib/apt/lists/*
+  && apt-get install -y --no-install-recommends tini procps curl \
+  && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
@@ -37,7 +41,7 @@ EXPOSE 8000
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
   CMD python -c "import urllib.request, sys; \
-sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/', timeout=3).status == 200 else 1)" \
+  sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/', timeout=3).status == 200 else 1)" \
   || exit 1
 
 ENTRYPOINT ["/usr/bin/tini", "--"]
