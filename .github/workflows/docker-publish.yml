@@ -25,9 +25,7 @@ on:
     branches: [main, master, dev]
     tags: ["v*.*.*"]
     paths:
-      - "modules/local/taxonomy_classify/**"
-      - "modules/local/outlier_detect/**"
-      - "modules/local/provisional_concepts/**"
+      - "modules/local/**"
       - ".github/workflows/docker-publish.yml"
   workflow_dispatch:
 
@@ -36,24 +34,87 @@ env:
   OWNER: biodivportal
 
 jobs:
+  # Detect which in-repo modules changed and emit a build matrix so we only
+  # (re)publish images whose source actually changed. Manual runs
+  # (workflow_dispatch) and tag pushes rebuild every module.
+  detect:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set.outputs.matrix }}
+      has_changes: ${{ steps.set.outputs.has_changes }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Detect changed module paths
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            column-standardise: 'modules/local/column_standardise/**'
+            biodiv-annotate: 'modules/local/biodiv_annotate/**'
+            taxonomy-classify: 'modules/local/taxonomy_classify/**'
+            outlier-detect: 'modules/local/outlier_detect/**'
+            provisional-concepts: 'modules/local/provisional_concepts/**'
+            assemble-dataset: 'modules/local/assemble_dataset/**'
+            collect-reports: 'modules/local/collect_reports/**'
+            rdf-matching-and-transformation-service: 'modules/local/rdf_transform/**'
+
+      - name: Build matrix from changed modules
+        id: set
+        env:
+          CHANGED: ${{ steps.filter.outputs.changes }}
+          EVENT: ${{ github.event_name }}
+          REF_TYPE: ${{ github.ref_type }}
+        run: |
+          python3 - <<'PY'
+          import json, os, re
+
+          # image name -> build context + the main.nf that declares the container
+          # tag. The tag in main.nf is the single source of truth for the version.
+          MODULES = {
+              "column-standardise":                      {"context": "modules/local/column_standardise",       "main": "modules/local/column_standardise/main.nf"},
+              "biodiv-annotate":                         {"context": "modules/local/biodiv_annotate",          "main": "modules/local/biodiv_annotate/main.nf"},
+              "taxonomy-classify":                       {"context": "modules/local/taxonomy_classify",        "main": "modules/local/taxonomy_classify/main.nf"},
+              "outlier-detect":                          {"context": "modules/local/outlier_detect",           "main": "modules/local/outlier_detect/main.nf"},
+              "provisional-concepts":                    {"context": "modules/local/provisional_concepts/bin", "main": "modules/local/provisional_concepts/main.nf"},
+              "assemble-dataset":                        {"context": "modules/local/assemble_dataset",         "main": "modules/local/assemble_dataset/main.nf"},
+              "collect-reports":                         {"context": "modules/local/collect_reports",          "main": "modules/local/collect_reports/main.nf"},
+              "rdf-matching-and-transformation-service": {"context": "modules/local/rdf_transform",             "main": "modules/local/rdf_transform/nextflow/main.nf"},
+          }
+
+          def tag_for(image, main):
+              txt = open(main).read()
+              m = re.search(r"ghcr\.io/biodivportal/" + re.escape(image) + r":([A-Za-z0-9._-]+)", txt)
+              if not m:
+                  raise SystemExit(f"::error::no container tag found for {image} in {main}")
+              return m.group(1)
+
+          # Rebuild everything on a manual dispatch or a tag; otherwise only changed.
+          if os.environ["EVENT"] == "workflow_dispatch" or os.environ.get("REF_TYPE") == "tag":
+              changed = list(MODULES)
+          else:
+              changed = json.loads(os.environ.get("CHANGED") or "[]")
+
+          include = [
+              {"module": m, "context": MODULES[m]["context"], "version": tag_for(m, MODULES[m]["main"])}
+              for m in changed if m in MODULES
+          ]
+          with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+              f.write("matrix=" + json.dumps({"include": include}) + "\n")
+              f.write("has_changes=" + ("true" if include else "false") + "\n")
+          PY
+
   build-and-push:
+    needs: detect
+    if: needs.detect.outputs.has_changes == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
     strategy:
       fail-fast: false
-      matrix:
-        include:
-          - module: taxonomy-classify
-            context: modules/local/taxonomy_classify
-            version: "0.1"
-          - module: outlier-detect
-            context: modules/local/outlier_detect
-            version: "0.1"
-          - module: provisional-concepts
-            context: modules/local/provisional_concepts/bin
-            version: "0.1"
+      matrix: ${{ fromJSON(needs.detect.outputs.matrix) }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4

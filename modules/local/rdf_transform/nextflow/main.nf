@@ -16,7 +16,7 @@ process RDF_TRANSFORM {
     tag "rdf_transform"
     label 'process_low'
 
-    container "ghcr.io/biodivportal/rdf-matching-and-transformation-service:latest"
+    container "ghcr.io/biodivportal/rdf-matching-and-transformation-service:0.1"
 
     input:
     path dataset      // tabular records to transform (CSV / TSV / JSON)
