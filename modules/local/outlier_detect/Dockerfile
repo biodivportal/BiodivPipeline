@@ -1,12 +1,16 @@
 FROM python:3.11-slim
 
-ENV PYTHONUNBUFFERED=1
-ENV PYTHONTONTWRITEBYTECODE=1
+# PYTHONPATH=/app so the absolute `from app....` imports resolve regardless of
+# how the container is invoked (module CLI, `python -m`, or uvicorn).
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONPATH=/app
 
 WORKDIR /app
 
-# System packages required for pandas/sklearn
-RUN apt-get update && apt-get install -y \
+# build-essential + curl are required: hdbscan/cython compile from source, and
+# curl backs the HEALTHCHECK below. procps provides `ps` for Nextflow metrics.
+RUN apt-get update && apt-get install -y --no-install-recommends \
     procps \
     build-essential \
     curl \
@@ -15,7 +19,14 @@ RUN apt-get update && apt-get install -y \
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY app/ .
+# Keep the `app` package intact at /app/app. The previous `COPY app/ .` flattened
+# the package into /app, so `import app` failed at runtime
+# (ModuleNotFoundError: No module named 'app').
+COPY app/ ./app/
+
+# The Nextflow module invokes `python /app/main_with_cli.py`; expose the package
+# entrypoint at that path without duplicating the file.
+RUN ln -s app/main_with_cli.py main_with_cli.py
 
 EXPOSE 8000
 
