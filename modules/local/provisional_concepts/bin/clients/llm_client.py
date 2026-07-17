@@ -94,7 +94,7 @@ def query_llm(
     use_json_mode=True,
 ):
     base_url = os.environ.get("LLM_BASE_URL", None)
-    api_key = os.environ.get("LLM_API_KEY", "lm-studio")
+    api_key = os.environ.get("WP5_LLM_API_KEY", "lm-studio")
     model = os.environ.get("LLM_MODEL", "gpt-5.4-nano-2026-03-17")
     reasoning_effort = os.environ.get("LLM_REASONING_EFFORT")
 
