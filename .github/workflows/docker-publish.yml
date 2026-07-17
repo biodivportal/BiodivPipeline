@@ -67,20 +67,28 @@ jobs:
           EVENT: ${{ github.event_name }}
           REF_TYPE: ${{ github.ref_type }}
         run: |
-          python3 - <<'PY' >> "$GITHUB_OUTPUT"
-          import json, os
+          python3 - <<'PY'
+          import json, os, re
 
-          # Single source of truth: image name -> build context + pinned tag.
+          # image name -> build context + the main.nf that declares the container
+          # tag. The tag in main.nf is the single source of truth for the version.
           MODULES = {
-              "column-standardise":                      {"context": "modules/local/column_standardise",       "version": "0.1"},
-              "biodiv-annotate":                         {"context": "modules/local/biodiv_annotate",          "version": "0.1"},
-              "taxonomy-classify":                       {"context": "modules/local/taxonomy_classify",        "version": "0.1"},
-              "outlier-detect":                          {"context": "modules/local/outlier_detect",           "version": "0.1"},
-              "provisional-concepts":                    {"context": "modules/local/provisional_concepts/bin", "version": "0.1"},
-              "assemble-dataset":                        {"context": "modules/local/assemble_dataset",         "version": "0.1"},
-              "collect-reports":                         {"context": "modules/local/collect_reports",          "version": "0.1"},
-              "rdf-matching-and-transformation-service": {"context": "modules/local/rdf_transform",             "version": "latest"},
+              "column-standardise":                      {"context": "modules/local/column_standardise",       "main": "modules/local/column_standardise/main.nf"},
+              "biodiv-annotate":                         {"context": "modules/local/biodiv_annotate",          "main": "modules/local/biodiv_annotate/main.nf"},
+              "taxonomy-classify":                       {"context": "modules/local/taxonomy_classify",        "main": "modules/local/taxonomy_classify/main.nf"},
+              "outlier-detect":                          {"context": "modules/local/outlier_detect",           "main": "modules/local/outlier_detect/main.nf"},
+              "provisional-concepts":                    {"context": "modules/local/provisional_concepts/bin", "main": "modules/local/provisional_concepts/main.nf"},
+              "assemble-dataset":                        {"context": "modules/local/assemble_dataset",         "main": "modules/local/assemble_dataset/main.nf"},
+              "collect-reports":                         {"context": "modules/local/collect_reports",          "main": "modules/local/collect_reports/main.nf"},
+              "rdf-matching-and-transformation-service": {"context": "modules/local/rdf_transform",             "main": "modules/local/rdf_transform/nextflow/main.nf"},
           }
+
+          def tag_for(image, main):
+              txt = open(main).read()
+              m = re.search(r"ghcr\.io/biodivportal/" + re.escape(image) + r":([A-Za-z0-9._-]+)", txt)
+              if not m:
+                  raise SystemExit(f"::error::no container tag found for {image} in {main}")
+              return m.group(1)
 
           # Rebuild everything on a manual dispatch or a tag; otherwise only changed.
           if os.environ["EVENT"] == "workflow_dispatch" or os.environ.get("REF_TYPE") == "tag":
@@ -88,9 +96,13 @@ jobs:
           else:
               changed = json.loads(os.environ.get("CHANGED") or "[]")
 
-          include = [dict(module=m, **MODULES[m]) for m in changed if m in MODULES]
-          print("matrix=" + json.dumps({"include": include}))
-          print("has_changes=" + ("true" if include else "false"))
+          include = [
+              {"module": m, "context": MODULES[m]["context"], "version": tag_for(m, MODULES[m]["main"])}
+              for m in changed if m in MODULES
+          ]
+          with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+              f.write("matrix=" + json.dumps({"include": include}) + "\n")
+              f.write("has_changes=" + ("true" if include else "false") + "\n")
           PY
 
   build-and-push:
