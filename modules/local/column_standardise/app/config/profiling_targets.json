@@ -1,0 +1,1028 @@
+{
+  "entries": [
+    {
+      "abcd_field": "DataSets",
+      "synonyms": ["Collections", "Records", "Repository", "Archive", "Database"]
+    },
+    {
+      "abcd_field": "DataSet",
+      "synonyms": ["Collection", "Dataset", "Record set", "Batch", "Submission"]
+    },
+    {
+      "abcd_field": "GUID",
+      "synonyms": ["Global identifier", "Unique ID", "UUID", "Persistent identifier", "PID"]
+    },
+    {
+      "abcd_field": "ID",
+      "synonyms": ["Identifier", "Code", "Key", "Record number", "Reference number"]
+    },
+    {
+      "abcd_field": "ResourceURI",
+      "synonyms": ["Resource link", "URL", "Endpoint", "Data URL", "Access URI"]
+    },
+    {
+      "abcd_field": "ResourceURIs",
+      "synonyms": ["Resource links", "URLs", "Endpoints", "Web references", "Access points"]
+    },
+    {
+      "abcd_field": "TechnicalContacts",
+      "synonyms": ["Technical staff", "IT contacts", "System administrators", "Technical personnel", "Support contacts"]
+    },
+    {
+      "abcd_field": "TechnicalContact",
+      "synonyms": ["Technical person", "IT staff", "System contact", "Data publisher", "Technical responsible"]
+    },
+    {
+      "abcd_field": "ContentContacts",
+      "synonyms": ["Data stewards", "Custodians", "Data owners", "Content responsible", "Suppliers"]
+    },
+    {
+      "abcd_field": "ContentContact",
+      "synonyms": ["Data steward", "Custodian", "Data supplier", "Data owner", "Content responsible"]
+    },
+    {
+      "abcd_field": "DataCenter",
+      "synonyms": ["Hosting institution", "Data host", "Repository host", "Server", "Infrastructure provider"]
+    },
+    {
+      "abcd_field": "OtherProviders",
+      "synonyms": ["Mirror providers", "Additional sources", "Secondary hosts", "Alternative endpoints", "Co-publishers"]
+    },
+    {
+      "abcd_field": "OtherProvider",
+      "synonyms": ["Mirror source", "Alternative provider", "Secondary host", "Co-publisher", "Mirror URI"]
+    },
+    {
+      "abcd_field": "Metadata",
+      "synonyms": ["Descriptive information", "Resource description", "Data about data", "Documentation", "Dataset description"]
+    },
+    {
+      "abcd_field": "Units",
+      "synonyms": ["Specimens", "Records", "Observations", "Occurrences", "Items"]
+    },
+    {
+      "abcd_field": "Unit",
+      "synonyms": ["Specimen", "Record", "Observation", "Occurrence", "Item"]
+    },
+    {
+      "abcd_field": "Gathering",
+      "synonyms": ["Collection event", "Sampling event", "Field event", "Observation event", "Collecting"]
+    },
+    {
+      "abcd_field": "Date",
+      "synonyms": ["Collection date", "Event date", "Timestamp", "Date and time", "When"]
+    },
+    {
+      "abcd_field": "GatheringAgents",
+      "synonyms": ["Collectors", "Field workers", "Observers", "Recorders", "Sampling personnel"]
+    },
+    {
+      "abcd_field": "GatheringAgent",
+      "synonyms": ["Collector", "Field worker", "Observer", "Recorder", "Sampler"]
+    },
+    {
+      "abcd_field": "GatheringAgentsText",
+      "synonyms": ["Collectors text", "Leg.", "Collected by", "Observer names", "Field team"]
+    },
+    {
+      "abcd_field": "Permits",
+      "synonyms": ["Authorizations", "Licenses", "Permissions", "Clearances", "Regulatory documents"]
+    },
+    {
+      "abcd_field": "Permit",
+      "synonyms": ["Authorization", "License", "Permission", "Clearance", "Approval document"]
+    },
+    {
+      "abcd_field": "Project",
+      "synonyms": ["Research project", "Survey", "Campaign", "Study", "Initiative"]
+    },
+    {
+      "abcd_field": "PlatformName",
+      "synonyms": ["Vessel name", "Research vessel", "Platform", "Vehicle", "Carrier"]
+    },
+    {
+      "abcd_field": "Method",
+      "synonyms": ["Collection method", "Technique", "Protocol", "Procedure", "Approach"]
+    },
+    {
+      "abcd_field": "ValidDistributionFlag",
+      "synonyms": ["Valid occurrence", "Natural occurrence indicator", "Native flag", "Wild occurrence flag", "Distribution valid"]
+    },
+    {
+      "abcd_field": "EstablishmentMeans",
+      "synonyms": ["Origin", "Provenance", "Status (wild/cultivated)", "Occurrence status", "Native or introduced"]
+    },
+    {
+      "abcd_field": "LocalityText",
+      "synonyms": ["Location description", "Verbatim locality", "Collection site", "Where collected", "Place description"]
+    },
+    {
+      "abcd_field": "Country",
+      "synonyms": ["Nation", "Country of origin", "Country name", "State (country)", "Territory"]
+    },
+    {
+      "abcd_field": "NamedAreas",
+      "synonyms": ["Geographic areas", "Administrative areas", "Regions", "Named places", "Area hierarchy"]
+    },
+    {
+      "abcd_field": "NamedArea",
+      "synonyms": ["Region", "Administrative area", "Geographic area", "Named place", "District"]
+    },
+    {
+      "abcd_field": "NamedPlaceRelations",
+      "synonyms": ["Place relationships", "Nearby places", "Relative locations", "Proximity references", "Location references"]
+    },
+    {
+      "abcd_field": "NearbyPlaceName",
+      "synonyms": ["Nearby locality", "Reference place", "Adjacent location", "Neighboring place", "Close-by location"]
+    },
+    {
+      "abcd_field": "NearbyPlaceRelation",
+      "synonyms": ["Distance and direction", "Spatial relation", "Relative distance", "Proximity direction", "Offset description"]
+    },
+    {
+      "abcd_field": "CoordinateSet",
+      "synonyms": ["Coordinates", "Geographic coordinates", "Geolocation", "Point coordinates", "Spatial fix"]
+    },
+    {
+      "abcd_field": "CoordinateSets",
+      "synonyms": ["Multiple coordinates", "Coordinate records", "Georeferences", "Coordinate entries", "Spatial records"]
+    },
+    {
+      "abcd_field": "LatitudeDecimal",
+      "synonyms": ["Latitude", "Decimal latitude", "Y coordinate", "North-south position", "Lat"]
+    },
+    {
+      "abcd_field": "LongitudeDecimal",
+      "synonyms": ["Longitude", "Decimal longitude", "X coordinate", "East-west position", "Long"]
+    },
+    {
+      "abcd_field": "CoordinatesLatLong",
+      "synonyms": ["Lat/long coordinates", "Geographic coordinates", "Decimal degree coordinates", "WGS84 coordinates", "Lat-lon pair"]
+    },
+    {
+      "abcd_field": "CoordinatesUTM",
+      "synonyms": ["UTM coordinates", "Grid reference (UTM)", "Easting-northing", "Projected coordinates", "UTM location"]
+    },
+    {
+      "abcd_field": "CoordinatesGrid",
+      "synonyms": ["Grid coordinates", "Grid reference", "Map grid", "Grid system", "Cell reference"]
+    },
+    {
+      "abcd_field": "ErrorDistanceInMeters",
+      "synonyms": ["Coordinate uncertainty", "Location uncertainty", "Precision radius", "GPS accuracy", "Georeferencing error"]
+    },
+    {
+      "abcd_field": "ErrorMethod",
+      "synonyms": ["Uncertainty method", "Precision method", "Accuracy determination", "Error estimation method", "Georeference method"]
+    },
+    {
+      "abcd_field": "SpatialDatum",
+      "synonyms": ["Geodetic datum", "Reference system", "Coordinate reference system", "CRS", "Datum"]
+    },
+    {
+      "abcd_field": "EPSGID",
+      "synonyms": ["EPSG code", "Coordinate system code", "CRS code", "Projection code", "Reference system ID"]
+    },
+    {
+      "abcd_field": "Altitude",
+      "synonyms": ["Elevation", "Height above sea level", "Elevation (m)", "Masl", "Elevation above sea level"]
+    },
+    {
+      "abcd_field": "Depth",
+      "synonyms": ["Water depth", "Depth below surface", "Submersion depth", "Benthic depth", "Depth (m)"]
+    },
+    {
+      "abcd_field": "Height",
+      "synonyms": ["Height above ground", "Vertical position", "Above ground level", "Clearance", "Canopy height"]
+    },
+    {
+      "abcd_field": "Aspect",
+      "synonyms": ["Facing direction", "Slope aspect", "Cardinal direction", "Exposure direction", "Orientation"]
+    },
+    {
+      "abcd_field": "OtherMeasurementsOrFacts",
+      "synonyms": ["Additional measurements", "Environmental data", "Field measurements", "Extra parameters", "Supplementary facts"]
+    },
+    {
+      "abcd_field": "OtherMeasurementOrFact",
+      "synonyms": ["Additional measurement", "Environmental measurement", "Field parameter", "Extra measurement", "Supplementary value"]
+    },
+    {
+      "abcd_field": "MeasurementOrFact",
+      "synonyms": ["Measurement", "Trait value", "Observation value", "Parameter value", "Fact"]
+    },
+    {
+      "abcd_field": "MeasurementsOrFacts",
+      "synonyms": ["Measurements", "Trait values", "Observation values", "Parameters", "Facts"]
+    },
+    {
+      "abcd_field": "MultimediaObjects",
+      "synonyms": ["Media", "Images and media", "Multimedia", "Digital objects", "Associated media"]
+    },
+    {
+      "abcd_field": "MultimediaObject",
+      "synonyms": ["Media file", "Image", "Digital object", "Media attachment", "Associated medium"]
+    },
+    {
+      "abcd_field": "Stratigraphy",
+      "synonyms": ["Geological layers", "Rock stratigraphy", "Stratigraphic context", "Geological context", "Rock unit"]
+    },
+    {
+      "abcd_field": "Biotope",
+      "synonyms": ["Habitat", "Ecosystem", "Microhabitat", "Ecological site", "Habitat type"]
+    },
+    {
+      "abcd_field": "Synecology",
+      "synonyms": ["Community ecology", "Biotic context", "Associated species", "Phytosociology", "Community composition"]
+    },
+    {
+      "abcd_field": "AssociatedTaxa",
+      "synonyms": ["Associated species", "Companion species", "Co-occurring taxa", "Accompanying organisms", "Community members"]
+    },
+    {
+      "abcd_field": "AssociatedTaxon",
+      "synonyms": ["Associated species", "Companion taxon", "Co-occurring organism", "Neighboring species", "Observed together"]
+    },
+    {
+      "abcd_field": "Notes",
+      "synonyms": ["Remarks", "Comments", "Observations", "Additional notes", "Free text"]
+    },
+    {
+      "abcd_field": "FootprintWKT",
+      "synonyms": ["Spatial footprint", "WKT geometry", "Collection area", "Well-Known Text", "Polygon footprint"]
+    },
+    {
+      "abcd_field": "FootprintSpatialFit",
+      "synonyms": ["Spatial fit", "Footprint accuracy", "Geometry fit ratio", "Area match ratio", "Georeference quality"]
+    },
+    {
+      "abcd_field": "Identification",
+      "synonyms": ["Determination", "Taxon assignment", "Species identification", "Det.", "Name applied"]
+    },
+    {
+      "abcd_field": "Identifications",
+      "synonyms": ["Determinations", "Taxon assignments", "Species identifications", "Identification history", "Name history"]
+    },
+    {
+      "abcd_field": "TaxonIdentified",
+      "synonyms": ["Identified taxon", "Determined taxon", "Species name", "Taxonomic determination", "Taxon name"]
+    },
+    {
+      "abcd_field": "MaterialIdentified",
+      "synonyms": ["Identified material", "Substrate", "Non-biological material", "Material type", "Identified substance"]
+    },
+    {
+      "abcd_field": "PreferredFlag",
+      "synonyms": ["Current identification", "Accepted determination", "Valid identification", "Primary det.", "Accepted name flag"]
+    },
+    {
+      "abcd_field": "NegativeIdentificationFlag",
+      "synonyms": ["Negative determination", "Exclusion flag", "'Non'-flag", "Excluded taxon", "Negative det."]
+    },
+    {
+      "abcd_field": "StoredUnderFlag",
+      "synonyms": ["Filed under", "Storage name flag", "Catalogued under", "Archived as", "Labelled under"]
+    },
+    {
+      "abcd_field": "ResultRole",
+      "synonyms": ["Identification role", "Taxonomic role", "Organism role", "Role in sample", "Relationship role"]
+    },
+    {
+      "abcd_field": "Identifiers",
+      "synonyms": ["Determiners", "Taxonomists", "Identification team", "Identifying persons", "Det. persons"]
+    },
+    {
+      "abcd_field": "Identifier",
+      "synonyms": ["Determiner", "Taxonomist", "Identifier person", "Det. person", "Who identified"]
+    },
+    {
+      "abcd_field": "IdentifierRole",
+      "synonyms": ["Determination type", "Role of determiner", "Verification type", "Det. qualifier", "Determination role"]
+    },
+    {
+      "abcd_field": "IdentificationSource",
+      "synonyms": ["Identification reference", "Source publication", "Det. source", "Identification basis", "Used literature"]
+    },
+    {
+      "abcd_field": "References",
+      "synonyms": ["Literature", "Publications", "Citations", "Bibliography", "Sources"]
+    },
+    {
+      "abcd_field": "Reference",
+      "synonyms": ["Publication", "Citation", "Literature reference", "Source", "Bibliographic entry"]
+    },
+    {
+      "abcd_field": "IdentificationQualifier",
+      "synonyms": ["Det. qualifier", "Taxon qualifier", "cf. / aff.", "Name qualifier", "Identification uncertainty"]
+    },
+    {
+      "abcd_field": "VerificationLevel",
+      "synonyms": ["Quality level", "Verification status", "Accuracy level", "Confidence level", "Data quality"]
+    },
+    {
+      "abcd_field": "NamedArea",
+      "synonyms": ["Administrative region", "Geographic zone", "Area name", "Named region", "Political area"]
+    },
+    {
+      "abcd_field": "AreaClass",
+      "synonyms": ["Area type", "Region type", "Geographic category", "Administrative category", "Zone type"]
+    },
+    {
+      "abcd_field": "SourceInstitutionID",
+      "synonyms": ["Institution code", "Institution identifier", "Holding institution", "Repository code", "Collection institution"]
+    },
+    {
+      "abcd_field": "SourceID",
+      "synonyms": ["Collection code", "Source collection", "Database name", "Collection name", "Data source code"]
+    },
+    {
+      "abcd_field": "NumericID",
+      "synonyms": ["Numeric catalogue number", "Numeric accession", "Catalogue number (numeric)", "Numeric specimen ID", "Sortable ID"]
+    },
+    {
+      "abcd_field": "LastEditor",
+      "synonyms": ["Modified by", "Last modified by", "Editor", "Record editor", "Data curator"]
+    },
+    {
+      "abcd_field": "DateModified",
+      "synonyms": ["Last modified", "Update date", "Modification date", "Date updated", "Last changed"]
+    },
+    {
+      "abcd_field": "Owner",
+      "synonyms": ["Record owner", "Legal owner", "Data owner", "Responsible institution", "Proprietor"]
+    },
+    {
+      "abcd_field": "LegalStatements",
+      "synonyms": ["Legal information", "Rights statements", "Legal notices", "Usage rights", "Ownership statements"]
+    },
+    {
+      "abcd_field": "InformationWithheld",
+      "synonyms": ["Suppressed data", "Withheld information", "Restricted data", "Hidden fields", "Confidential data"]
+    },
+    {
+      "abcd_field": "SourceReference",
+      "synonyms": ["Source publication", "Original reference", "Data source citation", "Originating publication", "Primary literature"]
+    },
+    {
+      "abcd_field": "UnitReferences",
+      "synonyms": ["Specimen citations", "Voucher citations", "Published records", "Literature mentions", "Citation list"]
+    },
+    {
+      "abcd_field": "UnitReference",
+      "synonyms": ["Specimen citation", "Voucher citation", "Published record", "Literature mention", "Publication record"]
+    },
+    {
+      "abcd_field": "KindOfUnit",
+      "synonyms": ["Record type", "Specimen type", "Unit type", "Object type", "Nature of unit"]
+    },
+    {
+      "abcd_field": "RecordBasis",
+      "synonyms": ["Basis of record", "Type of record", "Evidence type", "Record nature", "Observation basis"]
+    },
+    {
+      "abcd_field": "Acquisition",
+      "synonyms": ["Accession event", "How acquired", "Provenance", "Acquisition event", "Receipt"]
+    },
+    {
+      "abcd_field": "AcquisitionType",
+      "synonyms": ["How acquired", "Acquisition method", "Receipt type", "Transfer type", "Accession type"]
+    },
+    {
+      "abcd_field": "AcquiredFrom",
+      "synonyms": ["Source person", "Donor", "Depositor", "Transferred from", "Originated from"]
+    },
+    {
+      "abcd_field": "AcquisitionSourceText",
+      "synonyms": ["Acquisition notes", "Source description", "Provenance text", "Free-text acquisition", "Origin notes"]
+    },
+    {
+      "abcd_field": "Accessions",
+      "synonyms": ["Accession records", "Catalogue entries", "Registration entries", "Accession list", "Registered items"]
+    },
+    {
+      "abcd_field": "Accession",
+      "synonyms": ["Accession record", "Catalogue entry", "Registration", "Accession entry", "Registered specimen"]
+    },
+    {
+      "abcd_field": "AccessionDate",
+      "synonyms": ["Date accessioned", "Date registered", "Date catalogued", "Registration date", "Entry date"]
+    },
+    {
+      "abcd_field": "AccessionCatalogue",
+      "synonyms": ["Catalogue name", "Accession register", "Numbering scheme", "Registry", "Catalogue code"]
+    },
+    {
+      "abcd_field": "AccessionNumber",
+      "synonyms": ["Catalogue number", "Museum number", "Register number", "Accession no.", "Collection number"]
+    },
+    {
+      "abcd_field": "Preparations",
+      "synonyms": ["Specimen preparations", "Sample preparations", "Prepared materials", "Physical preparations", "Processing records"]
+    },
+    {
+      "abcd_field": "Preparation",
+      "synonyms": ["Specimen preparation", "Sample type", "Physical form", "Prepared form", "Processing"]
+    },
+    {
+      "abcd_field": "PreparationType",
+      "synonyms": ["Preparation kind", "Sample type", "Specimen type", "Material type", "Form of specimen"]
+    },
+    {
+      "abcd_field": "PreparationMethod",
+      "synonyms": ["Processing method", "Extraction method", "Preparation protocol", "Treatment method", "Preparation procedure"]
+    },
+    {
+      "abcd_field": "PreparationMaterials",
+      "synonyms": ["Reagents", "Chemicals used", "Processing materials", "Treatment chemicals", "Preparation chemicals"]
+    },
+    {
+      "abcd_field": "PreparationAgent",
+      "synonyms": ["Prepared by", "Preparator", "Processing person", "Sample processor", "Preparation responsible"]
+    },
+    {
+      "abcd_field": "PreparationDate",
+      "synonyms": ["Date prepared", "Processing date", "Extraction date", "Sample date", "Treatment date"]
+    },
+    {
+      "abcd_field": "SampleSize",
+      "synonyms": ["Amount collected", "Volume", "Sample volume", "Sample mass", "Collected quantity"]
+    },
+    {
+      "abcd_field": "Sieving",
+      "synonyms": ["Sieve size", "Filtration", "Sample filtration", "Mesh size", "Sieve design"]
+    },
+    {
+      "abcd_field": "SampleDesignation",
+      "synonyms": ["Sample number", "Lab number", "Project number", "Sample ID", "Lab code"]
+    },
+    {
+      "abcd_field": "PreparationsText",
+      "synonyms": ["Preparation description", "Free-text preparation", "Specimen treatment text", "Prep. notes", "Preparation notes"]
+    },
+    {
+      "abcd_field": "Preservations",
+      "synonyms": ["Preservation records", "Storage conditions", "Conservation methods", "Preservation history", "Storage history"]
+    },
+    {
+      "abcd_field": "Preservation",
+      "synonyms": ["Conservation", "Storage method", "Preservation type", "Storage conditions", "Curation method"]
+    },
+    {
+      "abcd_field": "PreservationType",
+      "synonyms": ["Storage type", "Conservation type", "Preservation medium", "Storage medium", "Curation type"]
+    },
+    {
+      "abcd_field": "PreservationTemperature",
+      "synonyms": ["Storage temperature", "Conservation temperature", "Freezer temperature", "Kept at", "Temperature stored"]
+    },
+    {
+      "abcd_field": "PreservationDateBegin",
+      "synonyms": ["Preservation start date", "Storage start", "Preservation since", "Date stored", "Conservation start"]
+    },
+    {
+      "abcd_field": "Marks",
+      "synonyms": ["Labels", "Inscriptions", "Tags", "Markings", "Annotations on specimen"]
+    },
+    {
+      "abcd_field": "Mark",
+      "synonyms": ["Label", "Inscription", "Tag", "Marking", "Written annotation"]
+    },
+    {
+      "abcd_field": "MarkType",
+      "synonyms": ["Label type", "Inscription type", "Tag type", "Marking kind", "Type of mark"]
+    },
+    {
+      "abcd_field": "MarkText",
+      "synonyms": ["Label text", "Inscription text", "Tag text", "Written text", "Label transcription"]
+    },
+    {
+      "abcd_field": "PositionOnObject",
+      "synonyms": ["Location on specimen", "Label position", "Where on object", "Inscription location", "Position"]
+    },
+    {
+      "abcd_field": "MarkAuthor",
+      "synonyms": ["Label author", "Inscription author", "Who wrote label", "Label creator", "Tag author"]
+    },
+    {
+      "abcd_field": "MarkComment",
+      "synonyms": ["Label comment", "Annotation comment", "Remark on label", "Label note", "Interpretation"]
+    },
+    {
+      "abcd_field": "PreviousUnits",
+      "synonyms": ["Previous identifiers", "Historical records", "Former entries", "Old records", "Previous accessions"]
+    },
+    {
+      "abcd_field": "PreviousUnit",
+      "synonyms": ["Former identifier", "Historical record", "Previous entry", "Old ID", "Past record"]
+    },
+    {
+      "abcd_field": "PreviousUnitGUID",
+      "synonyms": ["Former GUID", "Previous unique ID", "Old global ID", "Historical UUID", "Former persistent ID"]
+    },
+    {
+      "abcd_field": "PreviousSourceInstitutionID",
+      "synonyms": ["Former institution code", "Previous holding institution", "Old institution code", "Past institution ID", "Historical institution"]
+    },
+    {
+      "abcd_field": "PreviousSourceID",
+      "synonyms": ["Former collection code", "Previous source collection", "Old source ID", "Historical source", "Past collection code"]
+    },
+    {
+      "abcd_field": "PreviousUnitID",
+      "synonyms": ["Former specimen ID", "Old catalogue number", "Previous accession number", "Historical ID", "Past identifier"]
+    },
+    {
+      "abcd_field": "Sex",
+      "synonyms": ["Gender", "Biological sex", "Sex of specimen", "Male/Female", "Organism sex"]
+    },
+    {
+      "abcd_field": "LifeStage",
+      "synonyms": ["Developmental stage", "Ontogenetic stage", "Age class", "Growth stage", "Stage of life"]
+    },
+    {
+      "abcd_field": "PhaseOrStage",
+      "synonyms": ["Development phase", "Life phase", "Ontogenetic phase", "Phenological stage", "Stage"]
+    },
+    {
+      "abcd_field": "OrganismType",
+      "synonyms": ["Organism category", "Type of organism", "Biological type", "Kingdom/type", "Life form category"]
+    },
+    {
+      "abcd_field": "TypeStatus",
+      "synonyms": ["Nomenclatural type", "Type designation", "Type category", "Holotype/Paratype etc.", "Nomenclatural role"]
+    },
+    {
+      "abcd_field": "NomenclaturalTypeDesignation",
+      "synonyms": ["Type designation", "Nomenclatural type", "Type status description", "Typification", "Type citation"]
+    },
+    {
+      "abcd_field": "NomenclaturalTypeText",
+      "synonyms": ["Type text", "Free-text type status", "Typification notes", "Type notes", "Type description text"]
+    },
+    {
+      "abcd_field": "ScientificName",
+      "synonyms": ["Taxon name", "Latin name", "Binomial", "Species name", "Scientific nomenclature"]
+    },
+    {
+      "abcd_field": "FullScientificName",
+      "synonyms": ["Full taxon name", "Complete species name", "Name with authority", "Full binomial", "Full nomenclature"]
+    },
+    {
+      "abcd_field": "GenusOrMonomial",
+      "synonyms": ["Genus", "Generic name", "Genus name", "Higher name", "Monomial"]
+    },
+    {
+      "abcd_field": "FirstEpithet",
+      "synonyms": ["Species epithet", "Specific epithet", "Species name part", "Epithet 1", "Species"]
+    },
+    {
+      "abcd_field": "SpeciesEpithet",
+      "synonyms": ["Specific epithet", "Species name", "Second name part", "Epithet", "Species designation"]
+    },
+    {
+      "abcd_field": "SubspeciesEpithet",
+      "synonyms": ["Subspecific epithet", "Subspecies name", "Infraspecific epithet", "Subsp.", "Third name part"]
+    },
+    {
+      "abcd_field": "InfraspecificEpithet",
+      "synonyms": ["Infraspecific name", "Infrasubspecific name", "Variety epithet", "Form epithet", "Below-subspecies name"]
+    },
+    {
+      "abcd_field": "Subgenus",
+      "synonyms": ["Subgeneric name", "Subgenus name", "Between genus and species", "Subgeneric epithet", "Subgeneric taxon"]
+    },
+    {
+      "abcd_field": "AuthorTeam",
+      "synonyms": ["Author", "Name author", "Taxonomic author", "Authority", "Naming authority"]
+    },
+    {
+      "abcd_field": "AuthorTeamAndYear",
+      "synonyms": ["Author and year", "Authority with year", "Author citation", "Author + year", "Authorship"]
+    },
+    {
+      "abcd_field": "AuthorTeamOriginalAndYear",
+      "synonyms": ["Original author and year", "Basionym author", "Original authority", "First author + year", "Protologist and year"]
+    },
+    {
+      "abcd_field": "AuthorTeamParenthesis",
+      "synonyms": ["Parenthetical author", "Author in parentheses", "Basionym authority (in brackets)", "Former author", "Original authority (parenthetical)"]
+    },
+    {
+      "abcd_field": "HigherTaxa",
+      "synonyms": ["Higher taxonomy", "Classification", "Taxonomic hierarchy", "Taxonomic ranks above species", "Supraspecific classification"]
+    },
+    {
+      "abcd_field": "HigherTaxon",
+      "synonyms": ["Taxonomic rank", "Higher rank name", "Supraspecific taxon", "Classification level", "Taxon rank entry"]
+    },
+    {
+      "abcd_field": "HigherTaxonName",
+      "synonyms": ["Higher taxon name", "Family name", "Order name", "Class name", "Rank name"]
+    },
+    {
+      "abcd_field": "HigherTaxonRank",
+      "synonyms": ["Taxonomic rank level", "Rank", "Rank designation", "Classification rank", "Hierarchical level"]
+    },
+    {
+      "abcd_field": "HybridFlag",
+      "synonyms": ["Is hybrid", "Hybrid indicator", "Hybrid marker", "Cross indicator", "Nothotaxon flag"]
+    },
+    {
+      "abcd_field": "NameAddendum",
+      "synonyms": ["Name suffix", "Name addition", "Informal addition", "Name qualifier", "Sensu lato/stricto"]
+    },
+    {
+      "abcd_field": "IdentificationQualifier",
+      "synonyms": ["cf. / aff.", "Identification doubt", "Name qualifier", "Determination qualifier", "Taxon qualifier"]
+    },
+    {
+      "abcd_field": "FieldNumber",
+      "synonyms": ["Collector's number", "Collection number", "Field ID", "Collector number", "Field code"]
+    },
+    {
+      "abcd_field": "FieldNumbers",
+      "synonyms": ["Collector's numbers", "Field IDs", "Collection numbers", "Field codes", "Collector numbers"]
+    },
+    {
+      "abcd_field": "FieldNotes",
+      "synonyms": ["Field observations", "Field notebook", "Collector notes", "Field diary", "Observation notes"]
+    },
+    {
+      "abcd_field": "FieldNotesReference",
+      "synonyms": ["Field notes citation", "Notebook reference", "Field book reference", "Notes citation", "Field record reference"]
+    },
+    {
+      "abcd_field": "CollectorName",
+      "synonyms": ["Collected by", "Leg.", "Collector", "Field worker name", "Observer name"]
+    },
+    {
+      "abcd_field": "SpecimenUnit",
+      "synonyms": ["Physical specimen", "Museum specimen", "Voucher", "Preserved specimen", "Herbarium sheet"]
+    },
+    {
+      "abcd_field": "HerbariumUnit",
+      "synonyms": ["Herbarium specimen", "Plant specimen", "Pressed plant", "Herbarium sheet", "Dried plant"]
+    },
+    {
+      "abcd_field": "ObservationUnit",
+      "synonyms": ["Observation record", "Occurrence observation", "Field observation", "Sighting record", "Occurrence record"]
+    },
+    {
+      "abcd_field": "ObservationUnitID",
+      "synonyms": ["Observation ID", "Occurrence ID", "Sighting ID", "Field record ID", "Observation identifier"]
+    },
+    {
+      "abcd_field": "CultureCollectionUnit",
+      "synonyms": ["Culture specimen", "Microbial culture", "Strain record", "Culture entry", "Microorganism culture"]
+    },
+    {
+      "abcd_field": "Strain",
+      "synonyms": ["Microbial strain", "Isolate", "Culture strain", "Microorganism strain", "Genetic strain"]
+    },
+    {
+      "abcd_field": "MycologicalUnit",
+      "synonyms": ["Fungal specimen", "Mycological record", "Fungus specimen", "Fungal collection", "Mushroom specimen"]
+    },
+    {
+      "abcd_field": "PaleontologicalUnit",
+      "synonyms": ["Fossil specimen", "Paleontological specimen", "Fossil record", "Fossil unit", "Rock specimen"]
+    },
+    {
+      "abcd_field": "ZoologicalUnit",
+      "synonyms": ["Animal specimen", "Zoological specimen", "Animal record", "Faunal specimen", "Animal voucher"]
+    },
+    {
+      "abcd_field": "BotanicalGardenUnit",
+      "synonyms": ["Garden specimen", "Living plant record", "Botanical garden plant", "Garden accession", "Living collection unit"]
+    },
+    {
+      "abcd_field": "PlantGeneticResourcesUnit",
+      "synonyms": ["Plant germplasm", "Genetic resources entry", "Accession (genebank)", "Genebank entry", "Plant genetic material"]
+    },
+    {
+      "abcd_field": "Accession",
+      "synonyms": ["Genebank accession", "Accession number", "Germplasm entry", "Registered accession", "Plant accession"]
+    },
+    {
+      "abcd_field": "AccessionName",
+      "synonyms": ["Accession name", "Cultivar name", "Variety name", "Line name", "Germplasm name"]
+    },
+    {
+      "abcd_field": "BiologicalStatus",
+      "synonyms": ["Biological classification", "Cultivated/wild status", "Organism status", "Material status", "Conservation status"]
+    },
+    {
+      "abcd_field": "ProvenanceCategory",
+      "synonyms": ["Origin category", "Geographic origin", "Provenance class", "Source category", "Origin type"]
+    },
+    {
+      "abcd_field": "Annotation",
+      "synonyms": ["Remark", "Note", "Comment", "Annotation text", "Editorial note"]
+    },
+    {
+      "abcd_field": "Annotations",
+      "synonyms": ["Remarks", "Notes", "Comments", "Annotations", "Editorial notes"]
+    },
+    {
+      "abcd_field": "Annotator",
+      "synonyms": ["Annotating person", "Remarker", "Commentator", "Who annotated", "Note author"]
+    },
+    {
+      "abcd_field": "Association",
+      "synonyms": ["Relationship", "Interaction", "Link", "Connection", "Ecological association"]
+    },
+    {
+      "abcd_field": "AssociationType",
+      "synonyms": ["Relationship type", "Interaction type", "Association category", "Link type", "Ecological relationship"]
+    },
+    {
+      "abcd_field": "Associations",
+      "synonyms": ["Relationships", "Interactions", "Links", "Connections", "Ecological associations"]
+    },
+    {
+      "abcd_field": "Sequences",
+      "synonyms": ["DNA sequences", "Molecular data", "Genetic sequences", "Nucleotide sequences", "Molecular sequences"]
+    },
+    {
+      "abcd_field": "SequencedPart",
+      "synonyms": ["Gene region", "Sequenced locus", "Molecular marker", "Sequenced region", "DNA locus"]
+    },
+    {
+      "abcd_field": "SequenceLength",
+      "synonyms": ["Base pairs", "Sequence size", "Length of sequence", "Number of nucleotides", "bp count"]
+    },
+    {
+      "abcd_field": "SequenceDatabase",
+      "synonyms": ["GenBank", "Molecular database", "Sequence repository", "EMBL/GenBank/DDBJ", "Nucleotide database"]
+    },
+    {
+      "abcd_field": "SequencingAgent",
+      "synonyms": ["Sequenced by", "Laboratory", "Sequencing lab", "Molecular lab", "Who sequenced"]
+    },
+    {
+      "abcd_field": "Genotype",
+      "synonyms": ["Genetic type", "Molecular type", "Genotypic information", "Genetic variant", "Molecular genotype"]
+    },
+    {
+      "abcd_field": "NaturalOccurrence",
+      "synonyms": ["Wild occurrence", "Natural population", "In situ occurrence", "Non-cultivated", "Wild record"]
+    },
+    {
+      "abcd_field": "CultivatedOccurrence",
+      "synonyms": ["Cultivated plant", "Garden occurrence", "Cultivation record", "Planted specimen", "Ex situ record"]
+    },
+    {
+      "abcd_field": "LoanDate",
+      "synonyms": ["Date loaned", "Loan start date", "Borrowed on", "Dispatch date", "Loan sent date"]
+    },
+    {
+      "abcd_field": "LoanReturnDate",
+      "synonyms": ["Return date", "Due date", "Expected return", "Loan end date", "Return by"]
+    },
+    {
+      "abcd_field": "LoanConditions",
+      "synonyms": ["Loan terms", "Borrowing conditions", "Loan restrictions", "Use conditions", "Loan requirements"]
+    },
+    {
+      "abcd_field": "LoanDestination",
+      "synonyms": ["Sent to", "Borrowing institution", "Loan recipient", "Destination institution", "Borrowed by"]
+    },
+    {
+      "abcd_field": "Disposition",
+      "synonyms": ["Current location", "Storage location", "Where housed", "Physical location", "In collection"]
+    },
+    {
+      "abcd_field": "InformalName",
+      "synonyms": ["Common name", "Vernacular name", "Popular name", "Local name", "Trivial name"]
+    },
+    {
+      "abcd_field": "NameComments",
+      "synonyms": ["Name notes", "Nomenclatural comment", "Remarks on name", "Taxonomic note", "Name remark"]
+    },
+    {
+      "abcd_field": "NomenclaturalReference",
+      "synonyms": ["Protologue", "Original description reference", "Nomenclatural citation", "Basionym reference", "Nomenclatural source"]
+    },
+    {
+      "abcd_field": "Rank",
+      "synonyms": ["Taxonomic rank", "Classification level", "Hierarchical rank", "Rank name", "Level in hierarchy"]
+    },
+    {
+      "abcd_field": "Title",
+      "synonyms": ["Name", "Heading", "Label", "Designation", "Heading text"]
+    },
+    {
+      "abcd_field": "Description",
+      "synonyms": ["Free-text description", "Summary", "Details", "Explanation", "Characterization"]
+    },
+    {
+      "abcd_field": "Version",
+      "synonyms": ["Schema version", "File version", "Data version", "Revision number", "Release"]
+    },
+    {
+      "abcd_field": "WebsiteURL",
+      "synonyms": ["Website", "Web address", "Homepage", "URL", "Online resource"]
+    },
+    {
+      "abcd_field": "FileURL",
+      "synonyms": ["File link", "Download URL", "File address", "Media URL", "File access link"]
+    },
+    {
+      "abcd_field": "FileFormat",
+      "synonyms": ["Format", "File type", "Media format", "File extension", "MIME type"]
+    },
+    {
+      "abcd_field": "FileSize",
+      "synonyms": ["File size in bytes", "Data size", "Storage size", "File length", "Byte count"]
+    },
+    {
+      "abcd_field": "ThumbnailURL",
+      "synonyms": ["Preview image", "Thumbnail link", "Small image URL", "Preview URL", "Miniature image"]
+    },
+    {
+      "abcd_field": "Image",
+      "synonyms": ["Photo", "Picture", "Photograph", "Image file", "Visual record"]
+    },
+    {
+      "abcd_field": "Video",
+      "synonyms": ["Film", "Recording", "Video file", "Movie", "Clip"]
+    },
+    {
+      "abcd_field": "Audio",
+      "synonyms": ["Sound recording", "Sound file", "Sound clip", "Acoustic recording", "Audio file"]
+    },
+    {
+      "abcd_field": "Creator",
+      "synonyms": ["Author", "Photographer", "Recorder", "Who created", "Producer"]
+    },
+    {
+      "abcd_field": "SuggestedCitation",
+      "synonyms": ["How to cite", "Recommended citation", "Citation", "Reference text", "Cite as"]
+    },
+    {
+      "abcd_field": "Acknowledgement",
+      "synonyms": ["Acknowledgment", "Thanks", "Funding acknowledgment", "Credit", "Attribution"]
+    },
+    {
+      "abcd_field": "License",
+      "synonyms": ["Usage license", "Data license", "Copyright", "Rights", "Terms of use"]
+    },
+    {
+      "abcd_field": "Address",
+      "synonyms": ["Postal address", "Institution address", "Mailing address", "Contact address", "Street address"]
+    },
+    {
+      "abcd_field": "EmailAddress",
+      "synonyms": ["Email", "E-mail", "Electronic mail", "Contact email", "Email contact"]
+    },
+    {
+      "abcd_field": "TelephoneNumber",
+      "synonyms": ["Phone number", "Telephone", "Phone", "Contact number", "Tel."]
+    },
+    {
+      "abcd_field": "GivenNames",
+      "synonyms": ["First name", "Forename", "Personal name", "Given name", "Christian name"]
+    },
+    {
+      "abcd_field": "Person",
+      "synonyms": ["Individual", "Personal contact", "Named person", "Staff member", "Contact person"]
+    },
+    {
+      "abcd_field": "Organization",
+      "synonyms": ["Institution", "Organisation", "Body", "Entity", "Agency"]
+    },
+    {
+      "abcd_field": "Acronym",
+      "synonyms": ["Abbreviation", "Short name", "Code", "Initialism", "Short form"]
+    },
+    {
+      "abcd_field": "Temperature",
+      "synonyms": ["Temp.", "Degrees", "Thermal value", "Degrees Celsius", "Thermal measurement"]
+    },
+    {
+      "abcd_field": "ISO3166Code",
+      "synonyms": ["Country code", "ISO country code", "Two-letter country code", "Alpha-2 code", "Nation code"]
+    },
+    {
+      "abcd_field": "BreedingCountryCode",
+      "synonyms": ["Country of breeding", "Origin country code", "Bred in country", "Breeding country ISO", "Country bred"]
+    },
+    {
+      "abcd_field": "Breed",
+      "synonyms": ["Variety", "Race", "Cultivar", "Domesticated variety", "Breeding line"]
+    },
+    {
+      "abcd_field": "CultivarName",
+      "synonyms": ["Cultivar", "Variety name", "Garden variety", "Named variety", "Cultivated variety"]
+    },
+    {
+      "abcd_field": "TradeDesignationName",
+      "synonyms": ["Trade name", "Commercial name", "Brand name", "Market name", "Product designation"]
+    },
+    {
+      "abcd_field": "Age",
+      "synonyms": ["Organism age", "Age of specimen", "Age at collection", "Relative age", "Time since birth"]
+    },
+    {
+      "abcd_field": "GeoecologicalTerm",
+      "synonyms": ["Habitat term", "Ecological zone", "Biome", "Ecozone", "Ecological category"]
+    },
+    {
+      "abcd_field": "ClassificationScheme",
+      "synonyms": ["Classification system", "Nomenclature system", "Habitat classification", "Classification standard", "Coding system"]
+    },
+    {
+      "abcd_field": "Taphonomy",
+      "synonyms": ["Fossilization type", "Diagenesis", "Preservation mode", "Burial mode", "Taphonomic history"]
+    },
+    {
+      "abcd_field": "Mineralization",
+      "synonyms": ["Fossilization", "Mineral replacement", "Petrification", "Mineralization type", "Permineralization"]
+    },
+    {
+      "abcd_field": "Assemblage",
+      "synonyms": ["Fossil assemblage", "Faunal assemblage", "Taxon assemblage", "Community", "Co-occurrence group"]
+    },
+    {
+      "abcd_field": "BiostratigraphicTerm",
+      "synonyms": ["Biozone", "Biohorizon", "Biostratigraphic zone", "Fossil zone", "Biostratigraphic unit"]
+    },
+    {
+      "abcd_field": "ChronostratigraphicTerm",
+      "synonyms": ["Geological age", "Time period", "Geological period", "Stratigraphic age", "Geochronological term"]
+    },
+    {
+      "abcd_field": "LithostratigraphicTerm",
+      "synonyms": ["Rock unit", "Formation", "Stratigraphic formation", "Lithostratigraphic unit", "Rock layer"]
+    },
+    {
+      "abcd_field": "UnitOfMeasurement",
+      "synonyms": ["Unit", "Measurement unit", "Scale unit", "Physical unit", "Measuring unit"]
+    },
+    {
+      "abcd_field": "LowerValue",
+      "synonyms": ["Minimum value", "Lower bound", "Minimum", "Range start", "From value"]
+    },
+    {
+      "abcd_field": "UpperValue",
+      "synonyms": ["Maximum value", "Upper bound", "Maximum", "Range end", "To value"]
+    },
+    {
+      "abcd_field": "IsQuantitative",
+      "synonyms": ["Numeric flag", "Quantitative indicator", "Is numeric", "Numerical data flag", "Quantifiable"]
+    },
+    {
+      "abcd_field": "MeasuredBy",
+      "synonyms": ["Who measured", "Measured by person", "Measurement responsible", "Observer", "Recorder of measurement"]
+    },
+    {
+      "abcd_field": "MeasurementDateTime",
+      "synonyms": ["Date measured", "Time of measurement", "When measured", "Measurement date", "Measurement timestamp"]
+    },
+    {
+      "abcd_field": "Parameter",
+      "synonyms": ["Variable", "Attribute", "Trait", "Measured property", "Factor"]
+    },
+    {
+      "abcd_field": "VerbatimLatitude",
+      "synonyms": ["Original latitude", "As-recorded latitude", "Uncorrected latitude", "Latitude text", "Raw latitude"]
+    },
+    {
+      "abcd_field": "VerbatimLongitude",
+      "synonyms": ["Original longitude", "As-recorded longitude", "Uncorrected longitude", "Longitude text", "Raw longitude"]
+    },
+    {
+      "abcd_field": "GridCellCode",
+      "synonyms": ["Grid code", "Map grid cell", "Grid reference code", "Cell code", "Grid ID"]
+    },
+    {
+      "abcd_field": "GridCellSystem",
+      "synonyms": ["Grid system", "Grid standard", "Map grid system", "Grid reference system", "Grid framework"]
+    },
+    {
+      "abcd_field": "NationalInventoryCode",
+      "synonyms": ["National code", "Country inventory code", "National collection number", "National registry code", "State inventory ID"]
+    },
+    {
+      "abcd_field": "Syntaxon",
+      "synonyms": ["Vegetation unit", "Plant community name", "Phytosociological unit", "Vegetation class", "Plant association name"]
+    },
+    {
+      "abcd_field": "Rating",
+      "synonyms": ["Score", "Quality rating", "Evaluation", "Grade", "Assessment score"]
+    },
+    {
+      "abcd_field": "Context",
+      "synonyms": ["Background", "Setting", "Contextual information", "Situation", "Surrounding information"]
+    },
+    {
+      "abcd_field": "Coverage",
+      "synonyms": ["Scope of data", "Extent", "Data coverage", "Spatial/temporal coverage", "Range covered"]
+    },
+    {
+      "abcd_field": "Scope",
+      "synonyms": ["Range", "Subject matter", "Coverage area", "Scope of collection", "Thematic scope"]
+    }
+  ]
+}
