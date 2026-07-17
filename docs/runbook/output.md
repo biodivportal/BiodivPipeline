@@ -17,7 +17,7 @@ results/
 └── pipeline_info/
 ```
 
-Each module publishes its outputs to its own subdirectory. The file contents and schemas inside those subdirectories are owned by the module teams and are described in each module's interface spec.
+Each module publishes its outputs to its own subdirectory. The exact files and schemas are listed in [reference/module-interface.md](../reference/module-interface.md).
 
 ## Final pipeline outputs
 
@@ -26,8 +26,24 @@ The three deliverables mandated by Requirement 1 of the Lastenheft:
 | # | Output | Location |
 | - | ------ | -------- |
 | i | Quality-annotated and taxonomically resolved dataset | `final_dataset/final_dataset.csv` |
-| ii | RDF triples derived from the expert schema | `rdf/output.ttl`, `rdf/output.jsonld` |
+| ii | RDF triples derived from the expert schema | `rdf/transformed.ttl` + `rdf/validate.json` (skipped by default — see below) |
 | iii | Quality reports for each processing step | `reports/pipeline_summary.json`, `reports/pipeline_summary.md` |
+
+### `rdf/` (output ii)
+
+Produced by the WP7/WP8 RDF Matching & Transformation service from a tabular dataset and
+an RML mapping. **Skipped by default** (`skip_rdf = true`) because it needs an RML mapping
+whose columns match the dataset — a WP8 Schema Editor deliverable. Because `skip_rdf` is not
+in `nextflow_schema.json`, enable it from a params-file (not the CLI):
+
+```yaml
+# rdf-params.yaml
+skip_rdf: false
+mapping_schema: <real RML>
+```
+
+The service `/validate`s the mapping against the ontology before emitting `transformed.<ext>`
+(turtle by default) and a `validate.json` report.
 
 ### `final_dataset/final_dataset.csv`
 
@@ -43,7 +59,7 @@ so the dataset stays valid as those schemas evolve.
 An aggregation of every module's output into one report: columns mapped (and flagged for
 review), unresolved annotation terms, taxa resolved (with mean confidence), records
 flagged by the outlier module grouped by severity, provisional concepts registered, and
-RDF triple counts. The `.json` is machine-readable; the `.md` is a human-readable overview.
+RDF validation status. The `.json` is machine-readable; the `.md` is a human-readable overview.
 
 ## Pipeline information
 
@@ -59,3 +75,7 @@ Standard Nextflow execution artifacts.
 | `pipeline_dag_*.html`                  | DAG visualisation of the workflow                                    |
 | `params_*.json`                        | Parameters used for this run                                         |
 | `biodivpipeline_software_versions.yml` | Versions of all software used in the pipeline                        |
+
+Every module reports the versions of the tools it used (a `versions.yml`), and the pipeline
+aggregates them into `biodivpipeline_software_versions.yml` **automatically on every run** —
+there is no separate command to run. Open that file to see every tool and version in one place.
