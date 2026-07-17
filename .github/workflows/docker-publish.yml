@@ -25,9 +25,7 @@ on:
     branches: [main, master, dev]
     tags: ["v*.*.*"]
     paths:
-      - "modules/local/taxonomy_classify/**"
-      - "modules/local/outlier_detect/**"
-      - "modules/local/provisional_concepts/**"
+      - "modules/local/**"
       - ".github/workflows/docker-publish.yml"
   workflow_dispatch:
 
@@ -36,24 +34,75 @@ env:
   OWNER: biodivportal
 
 jobs:
+  # Detect which in-repo modules changed and emit a build matrix so we only
+  # (re)publish images whose source actually changed. Manual runs
+  # (workflow_dispatch) and tag pushes rebuild every module.
+  detect:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set.outputs.matrix }}
+      has_changes: ${{ steps.set.outputs.has_changes }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Detect changed module paths
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            column-standardise: 'modules/local/column_standardise/**'
+            biodiv-annotate: 'modules/local/biodiv_annotate/**'
+            taxonomy-classify: 'modules/local/taxonomy_classify/**'
+            outlier-detect: 'modules/local/outlier_detect/**'
+            provisional-concepts: 'modules/local/provisional_concepts/**'
+            assemble-dataset: 'modules/local/assemble_dataset/**'
+            collect-reports: 'modules/local/collect_reports/**'
+            rdf-matching-and-transformation-service: 'modules/local/rdf_transform/**'
+
+      - name: Build matrix from changed modules
+        id: set
+        env:
+          CHANGED: ${{ steps.filter.outputs.changes }}
+          EVENT: ${{ github.event_name }}
+          REF_TYPE: ${{ github.ref_type }}
+        run: |
+          python3 - <<'PY' >> "$GITHUB_OUTPUT"
+          import json, os
+
+          # Single source of truth: image name -> build context + pinned tag.
+          MODULES = {
+              "column-standardise":                      {"context": "modules/local/column_standardise",       "version": "0.1"},
+              "biodiv-annotate":                         {"context": "modules/local/biodiv_annotate",          "version": "0.1"},
+              "taxonomy-classify":                       {"context": "modules/local/taxonomy_classify",        "version": "0.1"},
+              "outlier-detect":                          {"context": "modules/local/outlier_detect",           "version": "0.1"},
+              "provisional-concepts":                    {"context": "modules/local/provisional_concepts/bin", "version": "0.1"},
+              "assemble-dataset":                        {"context": "modules/local/assemble_dataset",         "version": "0.1"},
+              "collect-reports":                         {"context": "modules/local/collect_reports",          "version": "0.1"},
+              "rdf-matching-and-transformation-service": {"context": "modules/local/rdf_transform",             "version": "latest"},
+          }
+
+          # Rebuild everything on a manual dispatch or a tag; otherwise only changed.
+          if os.environ["EVENT"] == "workflow_dispatch" or os.environ.get("REF_TYPE") == "tag":
+              changed = list(MODULES)
+          else:
+              changed = json.loads(os.environ.get("CHANGED") or "[]")
+
+          include = [dict(module=m, **MODULES[m]) for m in changed if m in MODULES]
+          print("matrix=" + json.dumps({"include": include}))
+          print("has_changes=" + ("true" if include else "false"))
+          PY
+
   build-and-push:
+    needs: detect
+    if: needs.detect.outputs.has_changes == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
     strategy:
       fail-fast: false
-      matrix:
-        include:
-          - module: taxonomy-classify
-            context: modules/local/taxonomy_classify
-            version: "0.1"
-          - module: outlier-detect
-            context: modules/local/outlier_detect
-            version: "0.1"
-          - module: provisional-concepts
-            context: modules/local/provisional_concepts/bin
-            version: "0.1"
+      matrix: ${{ fromJSON(needs.detect.outputs.matrix) }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
