@@ -68,7 +68,7 @@
                 },
                 "provisional_concepts_localities": {
                     "type": "boolean",
-                    "description": "Also run the ENVO/locality resolution path in provisional_concepts (WP5). Requires the LLM_API_KEY secret.",
+                    "description": "Also run the ENVO/locality resolution path in provisional_concepts (WP5). Requires the WP5_OPENAI_API_KEY secret.",
                     "fa_icon": "fas fa-map-marker-alt"
                 },
                 "provisional_concepts_llm_base_url": {

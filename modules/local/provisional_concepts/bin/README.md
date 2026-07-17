@@ -14,7 +14,7 @@ This directory contains the core logic for the **Provisional Concepts (WP5)** pi
 ### 1. Run the Resolver Standalone
 Execute the orchestrator directly to resolve taxonomic (species) and/or geographic (locality) concepts. Both are enabled by default; use the skip flags if you want to bypass either resolver:
 ```bash
-# Run both resolvers (requires LLM_API_KEY)
+# Run both resolvers (requires WP5_OPENAI_API_KEY)
 python main.py \
     --input unresolved_terms.csv \
     --output provisional_concepts.json

@@ -1,7 +1,7 @@
 # WP5 provisional_concepts — provisional concept recommender
 # Contains both resolver paths:
 #   - taxon  (GBIF, no key)          -> run with --species
-#   - locality (ENVO embeddings+LLM) -> run with --localities (needs LLM_API_KEY)
+#   - locality (ENVO embeddings+LLM) -> run with --localities (needs WP5_OPENAI_API_KEY)
 FROM python:3.11-slim
 
 # procps provides `ps`, which Nextflow uses to collect resource metrics
