@@ -45,6 +45,7 @@ process PROVISIONAL_CONCEPTS {
     python /app/main.py \\
         --input ${unresolved} \\
         --output provisional_concepts.json \\
+        --csv-output provisional_concepts.csv \\
         ${skip_species_flag} \\
         ${skip_localities_flag} \\
         ${id_arg} \\
@@ -58,10 +59,6 @@ process PROVISIONAL_CONCEPTS {
         ${ontology_config_arg} \\
         ${limit_arg} \\
         ${mapping_arg}
-
-    python /app/export_csv.py \\
-        --input provisional_concepts.json \\
-        --output provisional_concepts.csv
 
     cat <<-VERSIONS > versions.yml
     "${task.process}":

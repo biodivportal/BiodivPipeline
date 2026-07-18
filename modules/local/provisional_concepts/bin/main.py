@@ -6,12 +6,14 @@ from pathlib import Path
 from ingest import load_ontology_config, read_unresolved_csv, resolve_mapping, split_resolvers
 from resolvers.plant_taxons import score as score_taxon
 from resolvers.locality import score as score_locality
+from export_csv import export_concepts_csv
 
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Resolve provisional concepts from a CSV.")
     parser.add_argument("--input", required=True, help="Path to input CSV")
     parser.add_argument("--output", required=True, help="Path to output JSON")
+    parser.add_argument("--csv-output", help="Path to output CSV (defaults to replacing .json with .csv)")
     parser.add_argument(
         "--ontology-config",
         default=Path(__file__).parent / "ontology_config.json",
@@ -52,6 +54,12 @@ def main():
 
     with open(args.output, "w", encoding="utf-8") as f:
         json.dump({"provisional_concepts": match}, f, indent=2, ensure_ascii=False)
+
+    csv_path = args.csv_output
+    if not csv_path:
+        p = Path(args.output)
+        csv_path = str(p.with_suffix(".csv"))
+    export_concepts_csv(match, csv_path)
 
 
 if __name__ == "__main__":

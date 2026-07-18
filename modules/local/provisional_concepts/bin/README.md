@@ -9,6 +9,12 @@ This directory contains the core logic for the **Provisional Concepts (WP5)** pi
 - `evaluate.py`: Evaluation utility script for measuring resolver performance (precision, recall, top-k accuracy) against a ground-truth dataset.
 - `clients/local_geonames.py`: Script to download and prepare local GeoNames data for offline country/locality filtering.
 
+## Outputs
+
+Running the resolver (`main.py`) generates two outputs:
+- **JSON Output** (`.json`): A fully detailed machine-readable json containing all raw and intermediate resolving metadata (plant taxonomies, API results, and LLM split terms).
+- **CSV Output** (`.csv`): A readable, exhaustive flat summary of the concepts. Unified columns are used for both taxon and locality records, and type-specific details are flattened into semicolon-separated `key=value` pairs.
+
 ## Usage
 
 ### 1. Run the Resolver Standalone
