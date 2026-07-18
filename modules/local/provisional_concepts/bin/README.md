@@ -4,16 +4,16 @@ This directory contains the core logic for the **Provisional Concepts (WP5)** pi
 
 ## Relevant Scripts
 
-- `main.py`: Core CLI orchestrator. It ingests unresolved terms, routes them to the appropriate resolvers, and outputs matched/registered concepts.
-- `export_csv.py`: Converts the JSON concepts output into a flattened, human-readable CSV.
+- `main.py`: Core CLI orchestrator. It ingests unresolved terms, routes them to the appropriate resolvers, writes both JSON and CSV output files, and optionally runs evaluation.
+- `export_csv.py`: Contains the CSV export logic. Can also be run standalone to convert any concept JSON file back to CSV.
 - `evaluate.py`: Evaluation utility script for measuring resolver performance (precision, recall, top-k accuracy) against a ground-truth dataset.
 - `clients/local_geonames.py`: Script to download and prepare local GeoNames data for offline country/locality filtering.
 
 ## Outputs
 
-Running the resolver (`main.py`) generates two outputs:
-- **JSON Output** (`.json`): A fully detailed machine-readable json containing all raw and intermediate resolving metadata (plant taxonomies, API results, and LLM split terms).
-- **CSV Output** (`.csv`): A readable, exhaustive flat summary of the concepts. Unified columns are used for both taxon and locality records, and type-specific details are flattened into semicolon-separated `key=value` pairs.
+Running the resolver orchestrator (`main.py`) always generates two output formats:
+- **JSON Output** (`.json`): A fully detailed machine-readable payload containing all raw and intermediate resolving metadata (e.g., taxonomic hierarchies, full API payloads, and LLM split details).
+- **CSV Output** (`.csv`): A readable, exhaustive flat summary of the resolved concepts. Unified columns are used for both taxon and locality records, and type-specific details are flattened into semicolon-separated `key=value` pairs.
 
 ## Usage
 
@@ -31,24 +31,29 @@ python main.py \
     --output provisional_concepts.json \
     --skip-localities
 ```
+The matching CSV output will automatically be created at `provisional_concepts.csv`. You can customize the CSV output path using the `--csv-output` flag.
 
-### 2. Export Output to CSV
-Convert the registered concepts JSON to a readable CSV:
+### 2. Run with Evaluation
+To run the resolver and immediately evaluate the locality results against a ground truth dataset:
 ```bash
-python export_csv.py \
-    --input provisional_concepts.json \
-    --output provisional_concepts.csv
+python main.py \
+    --input unresolved_terms.csv \
+    --output provisional_concepts.json \
+    --evaluate \
+    --ground-truth data/provisional_concepts_ground_truth.csv \
+    --eval-output data/evaluation_results.json
 ```
+To enable splitting evaluation (which compares the LLM location/environment split against the ground truth, requiring LLM API calls), add the `--enable-splitting-eval` flag.
 
-### 3. Run Evaluation Script
-Evaluate performance metrics (precision, recall, top-k match accuracy) against a ground truth dataset:
-```bash
-python evaluate.py \
-    --predictions provisional_concepts.json \
-    --ground-truth data/provisional_concepts_ground_truth.csv
-```
+#### Required Ground Truth Fields
+The ground truth CSV must contain the following columns:
+- `original_term`: The raw unresolved locality/environment text string.
+- `split_location`: The expected location/geographic place parsed.
+- `split_environment`: The expected environment/habitat parsed.
+- `matched_environment_envo_uri`: The expected ENVO term URI.
+- `environment_decision`: The expected action: `ACCEPT` or `REGISTER`.
 
-### 4. Pre-download GeoNames Data
+### 3. Pre-download GeoNames Data
 GeoNames datasets default to Germany (`DE`) on first load. You can pre-download specific country maps for offline resolution:
 ```bash
 # Download Germany (DE)
