@@ -22,23 +22,7 @@ from app.config import (
 )
 from app.preprocessing.process_csv import process_csv_in_chunks
 from app.utils import apply_bgbm_columns_if_needed, prepare_dataframe
-from app.config import (
-    UNINITIALIZED_MSG,
-    RULE_BASED_MSG,
-    HERBARIUM_ID,
-    FULL_NAME_CACHE,
-    COUNTRY,
-    LOCALITY,
-    LATITUDE,
-    LONGITUDE,
-    COLLECTION_DATE_BEGIN,
-)
-
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(filename)s:%(lineno)d - %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S",
-)
+from app.config import UNINITIALIZED_MSG, RULE_BASED_MSG, get_columns
 
 logging.basicConfig(
     level=logging.INFO,
@@ -132,7 +116,14 @@ async def detect_json(
             )
     except json.JSONDecodeError:
         raise HTTPException(status_code=400, detail="Invalid JSON file contents.")
-    request = DetectRequest(**data)
+
+    if isinstance(data, list):
+        records_list = data
+        payload = {"records": records_list}
+        request = DetectRequest(**payload)
+
+    else:
+        request = DetectRequest(**data)
 
     response = run_detectors(
         records=request.records,
@@ -235,13 +226,13 @@ async def detect_csv(
     df = pd.DataFrame(response.annotated_records)
 
     important_columns = [
-        HERBARIUM_ID,
-        FULL_NAME_CACHE,
-        COUNTRY,
-        LOCALITY,
-        LATITUDE,
-        LONGITUDE,
-        COLLECTION_DATE_BEGIN,
+        get_columns().get("HERBARIUM_ID", "HerbariumID"),
+        get_columns().get("FULL_NAME_CACHE"),
+        get_columns().get("COUNTRY"),
+        get_columns().get("LOCALITY"),
+        get_columns().get("LATITUDE"),
+        get_columns().get("LONGITUDE"),
+        get_columns().get("COLLECTION_DATE_BEGIN"),
         "outlier_detected",
         "outlier_status",
         "outlier_confidence",
