@@ -54,6 +54,5 @@ RUN mkdir -p /app/geonames_data \
 # Pre-download local GeoNames data for Germany (DE) so it is baked into the image
 RUN python clients/local_geonames.py
 
-ENTRYPOINT ["python", "/app/main.py"]
-CMD ["--help"]
+CMD ["python", "/app/main.py", "--help"]
 
