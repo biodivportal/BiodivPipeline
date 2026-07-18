@@ -4,10 +4,7 @@ import time
 import re
 from io import BytesIO
 from collections import deque
-from dotenv import load_dotenv
 from openai import OpenAI
-
-load_dotenv()
 
 
 class RateLimiter:
@@ -97,7 +94,13 @@ def query_llm(
     use_json_mode=True,
 ):
     base_url = os.environ.get("WP5_LLM_BASE_URL", None)
-    api_key = os.environ.get("WP5_OPENAI_API_KEY", "lm-studio")
+    api_key = os.environ.get("WP5_OPENAI_API_KEY")
+    if not api_key:
+        raise RuntimeError(
+            "WP5_OPENAI_API_KEY environment variable is not set. "
+            "For Nextflow: run `nextflow secrets set WP5_OPENAI_API_KEY <key>`. "
+            "For local dev: export WP5_OPENAI_API_KEY=<key>"
+        )
     model = os.environ.get("WP5_LLM_MODEL", "gpt-5.4-nano-2026-03-17")
 
     client = OpenAI(
@@ -147,9 +150,16 @@ def _batch_client():
     # Set up a batch client cache
     global _batch_client_cache
     if _batch_client_cache is None:
+        api_key = os.environ.get("WP5_OPENAI_API_KEY")
+        if not api_key:
+            raise RuntimeError(
+                "WP5_OPENAI_API_KEY environment variable is not set. "
+                "For Nextflow: run `nextflow secrets set WP5_OPENAI_API_KEY <key>`. "
+                "For local dev: export WP5_OPENAI_API_KEY=<key>"
+            )
         _batch_client_cache = OpenAI(
             base_url=os.environ.get("WP5_LLM_BASE_URL", None),
-            api_key=os.environ.get("WP5_OPENAI_API_KEY", "lm-studio"), # most other providers won't mange the openai batch api
+            api_key=api_key,
         )
     return _batch_client_cache
 
