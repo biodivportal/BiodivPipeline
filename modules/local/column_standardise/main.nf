@@ -2,7 +2,7 @@ process COLUMN_STANDARDISE {
     tag "column_std"
     label 'process_single'
 
-    container 'ghcr.io/mitchell7970/wp6-column-standardise:demo' // demo image (personal GHCR namespace); TODO(registry): move to ghcr.io/biodivportal/... when org publishing is available
+    container 'ghcr.io/biodivportal/column-standardise:0.1' // built + published from this module's vendored Dockerfile by .github/workflows/docker-publish.yml
 
     input:
     path csv

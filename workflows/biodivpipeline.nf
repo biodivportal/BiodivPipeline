@@ -24,7 +24,6 @@ workflow BIODIVPIPELINE {
     take:
     ch_input       // channel: path to input CSV file
     ch_schema      // channel: path to RDF mapping schema (JSON-LD or Turtle)
-    ch_meta
     outdir
 
     main:
@@ -65,12 +64,22 @@ workflow BIODIVPIPELINE {
         ch_concepts = PROVISIONAL_CONCEPTS.out.concepts
     }
 
-    ch_rdf_input = ch_meta
-        .combine(ch_standardised)
-        .combine(ch_schema)
-
-    RDF_TRANSFORM( ch_rdf_input )
-    ch_versions = ch_versions.mix(RDF_TRANSFORM.out.versions)
+    // Output (ii): RDF triples via the WP7/WP8 RDF Matching & Transformation service.
+    // The service needs an RML mapping (from the WP8 Schema Editor) whose columns match
+    // the dataset. Until a matching mapping exists for the BGBM data — and while its
+    // image lives in a registry we cannot all pull — RDF is skippable so the rest of the
+    // pipeline stays green. Enable with `--skip_rdf false --mapping_schema <real RML>`.
+    def ch_rdf
+    def ch_rdf_report
+    if (params.skip_rdf) {
+        ch_rdf        = channel.empty()
+        ch_rdf_report = channel.fromPath("${projectDir}/assets/NO_FILE")
+    } else {
+        RDF_TRANSFORM( ch_standardised, ch_schema )
+        ch_versions   = ch_versions.mix(RDF_TRANSFORM.out.versions)
+        ch_rdf        = RDF_TRANSFORM.out.rdf
+        ch_rdf_report = RDF_TRANSFORM.out.validate
+    }
 
     // Output (i): assemble the single quality-annotated, taxonomically resolved
     // dataset by joining the annotated records with taxonomy resolution + quality
@@ -89,7 +98,7 @@ workflow BIODIVPIPELINE {
         TAXONOMY_CLASSIFY.out.resolved,
         OUTLIER_DETECT.out.flagged,
         ch_concepts,
-        RDF_TRANSFORM.out.report
+        ch_rdf_report
     )
     ch_versions = ch_versions.mix(COLLECT_REPORTS.out.versions)
 
@@ -106,8 +115,7 @@ workflow BIODIVPIPELINE {
 
     emit:
     final_dataset = ASSEMBLE_DATASET.out.dataset        // channel: path to unified quality-annotated + taxonomically resolved dataset
-    // rdf_turtle   = RDF_TRANSFORM.out.rdf_turtle       // channel: path to Turtle RDF output
-    // rdf_jsonld   = RDF_TRANSFORM.out.rdf_jsonld        // channel: path to JSON-LD RDF output
+    rdf          = ch_rdf                                 // channel: path to RDF output (empty when --skip_rdf)
     flagged      = OUTLIER_DETECT.out.flagged           // channel: path to flagged records
     taxonomy     = TAXONOMY_CLASSIFY.out.resolved       // channel: path to resolved taxonomy
     report       = COLLECT_REPORTS.out.report            // channel: path to human-readable quality report

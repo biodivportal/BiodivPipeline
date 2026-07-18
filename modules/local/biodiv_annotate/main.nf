@@ -2,7 +2,9 @@ process BIODIV_ANNOTATE {
     tag "annotate"
     label 'process_single'
 
-    secret 'WP2_BIODIV_API_KEY' // BiodivPortal API key; injected into the task env (works for the local executor too)
+    secret 'WP2_BIODIV_API_KEY' // dedicated WP2 key; aliased to BIODIV_API_KEY in the task script below (matches the WP-prefixed names in docs/usage.md)
+
+    container 'ghcr.io/biodivportal/biodiv-annotate:0.1' // built + published from this module's Dockerfile by .github/workflows/docker-publish.yml
 
     input:
     path csv
@@ -15,10 +17,11 @@ process BIODIV_ANNOTATE {
 
     script:
     """
-    # The script reads BIODIV_API_KEY from the env; alias the WP2-scoped secret to it.
+    # WP2 reads BIODIV_API_KEY from the env; alias the dedicated WP2 secret to it so the
+    # documented WP-prefixed name works and never collides with other WPs' keys.
     export BIODIV_API_KEY=\$WP2_BIODIV_API_KEY
 
-    python ${moduleDir}/bin/annotate_biodiv.py \\
+    python /app/bin/annotate_biodiv.py \\
         --input ${csv} \\
         --out-json annotated.jsonld \\
         --out-unresolved unresolved_terms.csv \\
