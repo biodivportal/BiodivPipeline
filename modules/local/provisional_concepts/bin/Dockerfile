@@ -15,11 +15,10 @@ WORKDIR /app
 # Copy requirements.txt first for caching
 COPY requirements.txt .
 
-# Install the CPU-only build of torch first so we don't pull the multi-GB CUDA
-# wheels that the default index would resolve.
-RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu
-
-# Install remaining dependencies from requirements.txt
+# Default build is CPU-only (PyPI torch installs without CUDA).
+# To build with GPU/CUDA instead, replace the pip install below with:
+#   RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cu126
+#   RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Bake the ENVO embedding and reranking models into the image so the locality path needs no
@@ -54,4 +53,7 @@ RUN mkdir -p /app/geonames_data \
 
 # Pre-download local GeoNames data for Germany (DE) so it is baked into the image
 RUN python clients/local_geonames.py
+
+ENTRYPOINT ["python", "/app/main.py"]
+CMD ["--help"]
 

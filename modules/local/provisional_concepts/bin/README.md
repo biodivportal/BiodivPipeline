@@ -57,11 +57,22 @@ python clients/local_geonames.py AT CH
 ### Build the Image
 To build the Docker image locally for testing:
 ```bash
-docker build -t ghcr.io/mitchell7970/wp5-provisional-concepts:demo -f Dockerfile .
+docker build -t ghcr.io/biodivportal/provisional-concepts:0.1 -f Dockerfile .
 ```
-*(Or run from the repository root with `-f modules/local/provisional_concepts/bin/Dockerfile modules/local/provisional_concepts/bin`)*
+
+### Run the Image Standalone
+To run the container standalone (which defaults to running the resolver script):
+```bash
+# Mount a local folder containing your data to /data inside the container
+docker run -it --rm \
+    -v /absolute/path/to/local/data:/data \
+    -e WP5_OPENAI_API_KEY="your-key-here" \
+    ghcr.io/biodivportal/provisional-concepts:0.1 \
+    --input /data/unresolved_terms.csv \
+    --output /data/provisional_concepts.json
+```
 
 ### Baked Assets in the Dockerfile
-The Docker image is designed to run in offline/isolated environments. The following resources are downloaded during the build stage and pre-baked into the image:
+To reduce startup times some data is baked into the docker image.
 1. **Local GeoNames database** (Germany `DE` and `admin1CodesASCII` maps).
 2. **HuggingFace Embedding and Reranking models** (`BAAI/bge-large-en-v1.5` and `cross-encoder/ms-marco-MiniLM-L-12-v2`).
