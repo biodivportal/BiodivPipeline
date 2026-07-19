@@ -53,7 +53,7 @@ workflow BIODIVPIPELINE {
     OUTLIER_DETECT( ch_input )
     ch_versions = ch_versions.mix(OUTLIER_DETECT.out.versions)
 
-    // WP5 can be skipped (runs on the host, needs extra deps + an LLM key). When
+    // WP5 can be skipped (its ENVO/locality path needs a WP5_OPENAI_API_KEY secret). When
     // skipped, feed COLLECT_REPORTS an empty placeholder instead of its output.
     def ch_concepts
     if (params.skip_provisional_concepts) {
