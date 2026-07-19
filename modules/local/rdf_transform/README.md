@@ -20,20 +20,25 @@ BGBM.
 
 ## Quick start
 
-```bash
-docker run --rm -p 8000:8000 --name rdf-transform \
-  ghcr.io/biodivportal/rdf-matching-and-transformation-service:latest
-```
-
-Swagger UI then at http://127.0.0.1:8000/docs. (Requires the image to be
-published and public first — see
-[Service image](#service-image--nf-core-module).) 
-To build and run the image locally instead (pure Python, no build args):
+Build and run the image locally (pure Python, no build args):
 
 ```bash
 docker build -t rdf-transform .
 docker run --rm -p 8000:8000 rdf-transform
 ```
+
+Swagger UI then at http://127.0.0.1:8000/docs.
+
+> **Note:** Once the service is fully integrated,
+> you can pull the pre-built image from GHCR instead of building locally —
+> but that path is not fully wired up yet (the image must be published and
+> made public first, see
+> [Service image](#service-image--nf-core-module)):
+>
+> ```bash
+> docker run --rm -p 8000:8000 --name rdf-transform \
+>   ghcr.io/biodivportal/rdf-matching-and-transformation-service:latest
+> ```
 
 ## `POST /transform`
 

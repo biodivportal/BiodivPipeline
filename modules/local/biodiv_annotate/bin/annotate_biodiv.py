@@ -25,17 +25,14 @@ OUT_ENRICHED_CSV = "results/annotation/enriched.csv"
 OUT_UNRESOLVED_WP5 = "results/annotation/unresolved_rows_for_wp5.csv"
 
 
-
-# prevents crash if results folder does not exist
-os.makedirs("results/annotation", exist_ok=True)
-
-
 MAX_ROWS = 100000
 WAIT_BETWEEN_REQUESTS = 0
 MAX_WORKERS = 10
 
 
-ONTOLOGY_CONFIG_PATH = "modules/local/biodiv_annotate/bin/ontology_config.json"
+ONTOLOGY_CONFIG_PATH = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), "ontology_config.json"
+)
 
 def load_ontology_config(path):
     # load recommender output.sjon and build a field -> ontology mapping

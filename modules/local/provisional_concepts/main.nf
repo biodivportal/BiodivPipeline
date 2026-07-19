@@ -2,10 +2,9 @@ process PROVISIONAL_CONCEPTS {
     tag "concepts"
     label 'process_single'
 
-    secret 'WP5_LLM_API_KEY'
+    secret 'WP5_OPENAI_API_KEY'
+    container 'ghcr.io/biodivportal/provisional-concepts:0.2'
 
-    //container 'ghcr.io/mitchell7970/wp5-provisional-concepts:demo'
-    container 'ghcr.io/dabauer/wp5:latest'
     input:
     path unresolved // resolves the csv :crossed_fingers:
     // Need to add ontologies once the recommender is implemented
@@ -21,8 +20,8 @@ process PROVISIONAL_CONCEPTS {
     //   * locality (ENVO embeddings + an LLM) -> enabled by default (pass --skip-localities to disable)
     // Locality resolution needs an OpenAI-compatible key. To enable it:
     //   1. set params.provisional_concepts_skip_localities = false (kept true by default so the pipeline stays green without any secret)
-    //   2. add `secret 'LLM_API_KEY'` to this process
-    //   3. run `nextflow secrets set LLM_API_KEY <key>`
+    //   2. add `secret 'WP5_OPENAI_API_KEY'` to this process
+    //   3. run `nextflow secrets set WP5_OPENAI_API_KEY <key>`
     def skip_species_flag = params.provisional_concepts_skip_species ? '--skip-species' : ''
     def skip_localities_flag = params.provisional_concepts_skip_localities ? '--skip-localities' : ''
 
@@ -39,13 +38,14 @@ process PROVISIONAL_CONCEPTS {
     def mapping_arg = params.provisional_concepts_mapping ? "--mapping '${params.provisional_concepts_mapping}'" : ''
 
     def llm_base  = params.provisional_concepts_llm_base_url ? "export WP5_LLM_BASE_URL='${params.provisional_concepts_llm_base_url}'" : ''
-    def llm_model = params.provisional_concepts_llm_model  ? "export LLM_MODEL='${params.provisional_concepts_llm_model}'"  : ''
+    def llm_model = params.provisional_concepts_llm_model  ? "export WP5_LLM_MODEL='${params.provisional_concepts_llm_model}'"  : ''
     """
     ${llm_base}
     ${llm_model}
     python /app/main.py \\
         --input ${unresolved} \\
         --output provisional_concepts.json \\
+        --csv-output provisional_concepts.csv \\
         ${skip_species_flag} \\
         ${skip_localities_flag} \\
         ${id_arg} \\
@@ -59,10 +59,6 @@ process PROVISIONAL_CONCEPTS {
         ${ontology_config_arg} \\
         ${limit_arg} \\
         ${mapping_arg}
-
-    python /app/export_csv.py \\
-        --input provisional_concepts.json \\
-        --output provisional_concepts.csv
 
     cat <<-VERSIONS > versions.yml
     "${task.process}":

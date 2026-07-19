@@ -8,18 +8,17 @@ Note: Splitting evaluation requires LLM API - disabled by default due to rate li
 
 import csv
 import json
+import argparse
 from pathlib import Path
 from resolvers.locality.envo_matching import match_envo
 
-# paths
+# default paths
 DATA_DIR = Path(__file__).parent / "data"
-GROUND_TRUTH_PATH = DATA_DIR / "provisional_concepts_ground_truth.csv"
+DEFAULT_GROUND_TRUTH_PATH = DATA_DIR / "provisional_concepts_ground_truth.csv"
+DEFAULT_OUTPUT_PATH = DATA_DIR / "evaluation_results.json"
 
 # score threshold for ENVO matching
 SCORE_THRESHOLD = 0.82
-
-# set to True to enable splitting evaluation (requires LLM API)
-ENABLE_SPLITTING = False
 
 
 def load_ground_truth(path):
@@ -54,8 +53,8 @@ def get_all_uris(match_result):
     return [m.get("iri") for m in matches if m.get("iri")]
 
 
-def evaluate():
-    rows = load_ground_truth(GROUND_TRUTH_PATH)
+def run_evaluation(ground_truth_path, output_path, enable_splitting=False):
+    rows = load_ground_truth(ground_truth_path)
 
     # ENVO matching counters
     tp = fp = fn = tn = 0
@@ -84,7 +83,7 @@ def evaluate():
         # splitting evaluation (disabled by default)
         pred_location = ""
         pred_environment = ""
-        if ENABLE_SPLITTING:
+        if enable_splitting:
             try:
                 from resolvers.locality.cleaner import split_locality_label
                 from rapidfuzz import fuzz
@@ -203,13 +202,12 @@ def evaluate():
     print(f"\n--- Decision Evaluation ---")
     print(f"Decision accuracy: {decision_correct_count}/{decision_total} = {decision_acc:.1%}")
     print(f"\n--- Splitting Evaluation ---")
-    if ENABLE_SPLITTING:
+    if enable_splitting:
         print(f"Location accuracy:    {location_correct}/{location_total} = {location_acc:.1%}")
         print(f"Environment accuracy: {environment_correct}/{environment_total} = {environment_acc:.1%}")
     else:
-        print(f"Splitting evaluation disabled (set ENABLE_SPLITTING=True to run, requires LLM API)")
+        print(f"Splitting evaluation disabled (requires LLM API)")
 
-    output_path = DATA_DIR / "evaluation_results.json"
     with open(output_path, "w", encoding="utf-8") as f:
         json.dump({
             "envo_precision": precision,
@@ -226,5 +224,19 @@ def evaluate():
     print(f"\n[done] Results saved to {output_path}")
 
 
+def main():
+    parser = argparse.ArgumentParser(description="Evaluate performance against ground truth")
+    parser.add_argument("--ground-truth", default=DEFAULT_GROUND_TRUTH_PATH, help="Path to ground truth CSV")
+    parser.add_argument("--output", default=DEFAULT_OUTPUT_PATH, help="Path to output JSON")
+    parser.add_argument("--enable-splitting", action="store_true", help="Enable splitting evaluation (requires LLM)")
+    args = parser.parse_args()
+
+    run_evaluation(
+        ground_truth_path=args.ground_truth,
+        output_path=args.output,
+        enable_splitting=args.enable_splitting
+    )
+
+
 if __name__ == "__main__":
-    evaluate()
+    main()

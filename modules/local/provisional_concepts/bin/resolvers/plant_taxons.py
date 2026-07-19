@@ -254,4 +254,6 @@ def score(row, ontology_config):
         "ontology_inclusion_score": ontology_inclusion_score,
         "proposed_action": proposed_action,
         "explanation": " ".join(explanation_parts),
+        "gbif_match_type": match_type,
+        "gbif_usage_key": gbif_match.get("usageKey"),
     }

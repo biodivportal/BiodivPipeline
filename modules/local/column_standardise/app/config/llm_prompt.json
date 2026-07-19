@@ -1,0 +1,3 @@
+{
+  "prompt_template": "Du bist ein Experte für Biodiversitätsdaten und ABCD (Access to Biological Collection Data) Terms.\nDeine Aufgabe ist es, für den gegebenen Spaltennamen (Header) und einen dazugehörigen Beispielwert den passendsten ABCD-Term aus einer Liste von Vorschlägen auszuwählen.\n\nHeader: {header}\nBeispielwert: {example_val}\n\nVorschläge (mit Beschreibungen):\n{preds_text}\n\nWelcher dieser Vorschläge passt am besten?\nGib deine Antwort ausschließlich als valides JSON in folgendem Format zurück, ohne jeglichen weiteren Text:\n{{\"llm_prediction\": \"TERM_HIER\"}}\n"
+}

@@ -2,9 +2,7 @@ process ASSEMBLE_DATASET {
     tag "assemble"
     label 'process_single'
 
-    // Runs on the host with the stdlib-only assembler in bin/ (no extra deps),
-    // mirroring the other host-run modules. Swap in a container here if the
-    // pipeline is ever run fully containerised.
+    container 'ghcr.io/biodivportal/assemble-dataset:0.1' // stdlib-only assembler baked into a slim image; built + published by .github/workflows/docker-publish.yml
 
     input:
     path base        // annotated records (base table, e.g. enriched.csv)
@@ -17,7 +15,7 @@ process ASSEMBLE_DATASET {
 
     script:
     """
-    python ${moduleDir}/bin/assemble_dataset.py \\
+    python /app/bin/assemble_dataset.py \\
         --base ${base} \\
         --taxonomy ${taxonomy} \\
         --flagged ${flagged} \\
