@@ -2,9 +2,15 @@
 
 import argparse 
 import asyncio
+import logging
+
 import pandas as pd
+
 from .pipeline import process_csv
-from .config import DEFAULT_CONFIG, log
+from .config import DEFAULT_CONFIG, configure_logging
+
+configure_logging()
+log = logging.getLogger(__name__)
 
 async def _run(args):
     df = pd.read_csv(args.input, sep=None, engine='python')
@@ -12,7 +18,6 @@ async def _run(args):
     result = await process_csv(
         df=df,
         model=DEFAULT_CONFIG['model'],
-        version=DEFAULT_CONFIG['version'],
     )
     result.to_csv(args.output, index=False)
 

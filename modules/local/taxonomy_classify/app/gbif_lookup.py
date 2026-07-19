@@ -1,7 +1,10 @@
 import httpx
+import logging
 
-from .config import GBIF_CONFIDENCE_RESOLVED, log
+from .config import GBIF_CONFIDENCE_RESOLVED
 from .util.models import TaxonMatch
+
+log = logging.getLogger(__name__)
 
 # temp cache: persists across run (not permanent)
 _gbif_cache: dict[tuple, TaxonMatch] = {}
@@ -87,14 +90,3 @@ async def match_gbif(name: str, genus: str, family: str, client: httpx.AsyncClie
         _gbif_cache[key] = result
 
     return result
-
-
-def taxon_prompt_fields(match: TaxonMatch, csv_name: str = '') -> dict[str, str]:
-    if match.status != 'resolved' or not match.canonical_name:
-        return {'Species': csv_name} if csv_name else {}
-
-    label = 'Genus' if match.rank == 'GENUS' else 'Species'
-    fields = {label: match.canonical_name}
-    if match.family:
-        fields['Family'] = match.family
-    return fields

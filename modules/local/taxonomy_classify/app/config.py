@@ -1,72 +1,84 @@
+"""
+Module configuration:
+Variables, such as secrets, models, etc., are read from environment variables, so that they can be changed without needing to rebuild the docker image.
+Dataset-specific information is saved in a JSON file, so that different datasets can be used. For this to work, DATASET_SCHEMA needs to read the correct file.
+"""
+
+import json
 import logging
 import os
-
 from pathlib import Path
+
 from dotenv import load_dotenv
 
 load_dotenv()
 
-_HERE = os.path.dirname(os.path.abspath(__file__))
+# Paths 
+HERE = Path(__file__).resolve().parent
 
-GBIF_CONFIDENCE_RESOLVED = 80
-BATCH_SIZE = 10
+TAXONOMY_PATH = Path(os.getenv("TAXONOMY_PATH", HERE / "taxonomy.csv"))
 
+# Models / providers
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY") # Required!
 
-OPENAI_API_KEY  = os.getenv('OPENAI_API_KEY')
-OLLAMA_BASE_URL = 'http://ollama:11434/v1'
-OPENAI_MODEL    = 'gpt-5.4-mini'
-OLLAMA_MODEL    = 'llama3.2'
-TAXONOMY_PATH = os.path.join(_HERE, 'taxonomy.csv')
+OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-5.4-mini")
+DEFAULT_MODEL = os.getenv("DEFAULT_MODEL", OPENAI_MODEL)
 
-DEFAULT_MODEL = OPENAI_MODEL
-GEE_PROJECT = 'clc-code'
-GEE_MAP = 'COPERNICUS/CORINE/V20/100m/2018'
+# Tune Processing
+BATCH_SIZE = int(os.getenv("BATCH_SIZE", 10))
+GBIF_CONFIDENCE_RESOLVED = int(os.getenv("GBIF_CONFIDENCE_RESOLVED", 80))
 
+# Rate Limiting
+OPENAI_TPM = int(os.getenv("OPENAI_TPM", 200_000))
+
+# Pricing (per 1M tokens, as of 17-07-2026)
 PRICES = {
-    'gpt-5.4-mini': {'input': 0.75, 'output': 4.5},
-    'gpt-5.4-nano': {'input': 0.20, 'output': 1.25},
-    'gpt-5-nano': {'input': 0.05, 'output': 0.4},
-    'gpt-4.1-nano': {'input': 0.1, 'output': 0.4},
-    'gpt-5.6-terra': {'input': 2.5, 'output': 15},
-}
-
-
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s %(levelname)s %(message)s',
-)
-logging.getLogger('httpx').setLevel(logging.WARNING)
-
-log = logging.getLogger(__name__)
-
-# Used Columns
-ID = 'HerbariumID'
-NAME = 'FullNameCache'
-GENUS = 'Genus'
-FAMILY = 'Family'
-LAT = 'Latitude'
-LON = 'Longitude'
-CULTIVATED_FIELD = 'Anmerkungen'
-
-LOCALITY_LABELS = {
-    'FundortUNdOeko': 'Habitat and ecology',   # primary
-    'Locality':       'Locality',              # secondary
-    # more if necessary
-}
-
-# fill out with descriptive labels for the columns that are in use
-FIELD_LABELS = {
-    'FundortUNdOeko':  'Habitat and ecology',
-    'Locality':        'Locality',
-    'NameCache':       'Collected species',
-    'Genus':           'Genus',
-    'Family':          'Family',
+    "gpt-5.4-mini": {"input": 0.75, "output": 4.5},
+    "gpt-5.4-nano": {"input": 0.20, "output": 1.25},
+    "gpt-5-nano":   {"input": 0.05, "output": 0.4},
+    "gpt-4.1-nano": {"input": 0.10, "output": 0.4},
+    "gpt-5.6-terra": {"input": 2.5, "output": 15},
 }
 
 DEFAULT_CONFIG = {
-    'model': 'gpt-5.4-mini',
-    'version': 5,
-    'variant': None,
-    'taxa': None,
-    'use_species': True
+    "model": DEFAULT_MODEL,
+    "taxa": None,
+    "use_species": True,
 }
+
+# Load Dataset Schema
+DATASET_SCHEMA = Path(os.getenv("DATASET_SCHEMA", HERE / "schema.json")).resolve()
+
+
+def _load_schema(path: Path) -> dict:
+    with open(path, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+
+_schema = _load_schema(DATASET_SCHEMA)
+_columns = _schema["columns"]
+
+# Used Columns
+ID = _columns["id"]
+NAME = _columns["name"]
+GENUS = _columns["genus"]
+FAMILY = _columns["family"]
+LAT = _columns["lat"]
+LON = _columns["lon"]
+CULTIVATED_FIELD = _columns["cultivated_field"]
+
+LOCALITY_LABELS = _schema.get("locality_labels", {})
+FIELD_LABELS = _schema.get("field_labels", {})
+
+# Logging
+LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
+
+
+def configure_logging(level: str | None = None) -> logging.Logger:
+    """Set up logging, call once from main."""
+    logging.basicConfig(
+        level=level or LOG_LEVEL,
+        format="%(asctime)s %(levelname)s %(message)s",
+    )
+    logging.getLogger("httpx").setLevel(logging.WARNING)
+    return logging.getLogger("app")
