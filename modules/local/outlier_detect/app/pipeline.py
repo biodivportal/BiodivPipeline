@@ -62,14 +62,6 @@ def sample_training_records(
     return rng.sample(records, k=subset_size)
 
 
-def train_detectors(detectors, records: list[dict]) -> None:
-    for detector in detectors:
-        try:
-            detector.train(records)
-        except Exception:
-            continue
-
-
 def prepare_records(records: list[dict]) -> list[dict]:
     """Normalize raw records and add derived fields used by detectors."""
     if not records:
@@ -247,7 +239,7 @@ def run_detectors(
 
     This pipeline normalizes records, executes each
     enabled detector, merges flag outputs, and produces a final DetectResponse.
-    
+
     Parameters:
         records: List of records to process
         enable_quality: Enable all quality detectors (can be overridden by individual flags)
@@ -300,7 +292,7 @@ def run_detectors(
         use_rule_detector = enable_quality
     else:
         use_rule_detector = enable_rule_detector
-    
+
     if use_rule_detector:
         detectors.append(quality_detectors[0])
 
@@ -310,7 +302,7 @@ def run_detectors(
         use_semantic_rule_detector = enable_semantic
     else:
         use_semantic_rule_detector = enable_semantic_rule_detector
-    
+
     if use_semantic_rule_detector:
         detectors.append(semantic_detectors[0])
 
@@ -319,7 +311,7 @@ def run_detectors(
         use_iqr_detector = enable_outliers
     else:
         use_iqr_detector = enable_iqr_detector
-    
+
     if use_iqr_detector:
         detectors.append(outlier_detectors[0])
 
@@ -327,7 +319,7 @@ def run_detectors(
         use_zscore_detector = enable_outliers
     else:
         use_zscore_detector = enable_zscore_detector
-    
+
     if use_zscore_detector:
         detectors.append(outlier_detectors[1])
 
@@ -335,7 +327,7 @@ def run_detectors(
         use_modified_zscore_detector = enable_outliers
     else:
         use_modified_zscore_detector = enable_modified_zscore_detector
-    
+
     if use_modified_zscore_detector:
         detectors.append(outlier_detectors[2])
 
@@ -343,7 +335,7 @@ def run_detectors(
         use_date_outlier_detector = enable_outliers
     else:
         use_date_outlier_detector = enable_date_outlier_detector
-    
+
     if use_date_outlier_detector:
         detectors.append(outlier_detectors[3])
 
@@ -351,7 +343,7 @@ def run_detectors(
         use_isolation_forest_detector = enable_outliers
     else:
         use_isolation_forest_detector = enable_isolation_forest_detector
-    
+
     if use_isolation_forest_detector:
         detectors.append(outlier_detectors[4])
 
@@ -359,7 +351,7 @@ def run_detectors(
         use_hdbscan_geo_detector = enable_outliers
     else:
         use_hdbscan_geo_detector = enable_hdbscan_geo_detector
-    
+
     if use_hdbscan_geo_detector:
         detectors.append(outlier_detectors[5])
 
@@ -381,26 +373,31 @@ def run_detectors(
     logging.info(f"\n[RUN] Processing {len(result)} records")
 
     for detector in detectors:
-        detector_name = detector.name
+        try:
+            detector_name = detector.name
 
-        logging.info(f"[DETECTOR START] {detector_name}")
+            logging.info(f"[DETECTOR START] {detector_name}")
 
-        start_time = time.time()
-        flag_map = detector.detect(result)
-        elapsed = time.time() - start_time
+            start_time = time.time()
+            flag_map = detector.detect(result)
+            elapsed = time.time() - start_time
 
-        flag_count = sum(len(flags) for flags in flag_map.values())
+            flag_count = sum(len(flags) for flags in flag_map.values())
 
-        record_count = sum(1 for flags in flag_map.values() if flags)
+            record_count = sum(1 for flags in flag_map.values() if flags)
 
-        logging.info(
-            f"[DETECTOR DONE] {detector_name} | "
-            f"flagged_records={record_count} | "
-            f"flags={flag_count} | "
-            f"time={elapsed:.2f}s"
-        )
+            logging.info(
+                f"[DETECTOR DONE] {detector_name} | "
+                f"flagged_records={record_count} | "
+                f"flags={flag_count} | "
+                f"time={elapsed:.2f}s"
+            )
 
-        flag_maps.append(flag_map)
+            flag_maps.append(flag_map)
+
+        except Exception as e:
+            logging.warning(f"[WARNING] Skipping detector {detector_name}: {e}")
+            pass
 
     merged = merge_flags(*flag_maps)
 
