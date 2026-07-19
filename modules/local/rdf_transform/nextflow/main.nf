@@ -1,78 +1,77 @@
-// nf-core module: transform a tabular dataset + RML mapping into RDF
-// via the WP8 RDF Matching and Transformation Service.
+// nf-core module: tabular dataset (+ RML mapping) → RDF, via the WP8
+// RDF Matching and Transformation Service.
 //
-// We use the service's own container image (published to GHCR by the
-// `Build Service Image` workflow). Inside the container we start the
-// FastAPI app on localhost:8000, hit /validate as a pre-flight check
-// (refusing to transform if the mapping is broken or drifted from OBOE),
-// then call /transform for the actual work. The REST detour is
-// intentional: it's the same path the WP7 Schema Editor and external
-// pipeline consumers use, so /transform errors look identical no matter
-// who's calling.
+// The service ships as its own container. Each task starts its FastAPI app
+// on localhost, runs /validate as a pre-flight (aborts if the mapping is
+// broken or drifted from the ontology), then calls /transform. Same HTTP
+// path the WP7 Schema Editor uses, so errors look identical for every caller.
 //
-// Tunables via `task.ext`:
-//   output_format    'turtle' (default) | 'ntriples' | 'jsonld'
-//   delimiter        'COMMA' (default) | 'TAB' | ';' | …  (tabular input)
-//   source_type      'CSV' (default) | 'JSON'
-//   skip_validate    false (default). Set true to bypass /validate.
+// Tunables via task.ext:
+//   output_format  'turtle' (default) | 'ntriples' | 'jsonld'
+//   delimiter      'COMMA' (default) | 'TAB' | ';' | …   (tabular input only)
+//   source_type    'CSV' (default) | 'JSON'
+//   skip_validate  false (default) — set true to bypass the /validate gate
 
 process RDF_TRANSFORM {
-    tag "${meta.id}"
+    tag "rdf_transform"
     label 'process_low'
 
-    container "ghcr.io/biodivportal/rdf-matching-and-transformation-service:latest"
+    container "ghcr.io/biodivportal/rdf-matching-and-transformation-service:0.1"
 
     input:
-    tuple val(meta), path(dataset), path(schema)
+    path dataset      // tabular records to transform (CSV / TSV / JSON)
+    path schema       // RML mapping that drives the transformation
 
     output:
-    tuple val(meta), path("${meta.id}.${ext}"), emit: rdf
-    path "validate.json",                       emit: validate
-    path "versions.yml",                        emit: versions
+    path "transformed.${ext}", emit: rdf         // the materialized RDF
+    path "validate.json",      emit: validate    // raw /validate pre-flight result
+    path "versions.yml",       emit: versions
 
     script:
     def output_format = task.ext.output_format ?: 'turtle'
     def delimiter     = task.ext.delimiter     ?: 'COMMA'
     def source_type   = task.ext.source_type   ?: 'CSV'
     def skip_validate = task.ext.skip_validate ?: false
+    // Output file extension follows the requested RDF serialization.
+    // (No `def`, so the output: block above can see it.)
     ext = output_format == 'jsonld'
             ? 'jsonld'
             : (output_format == 'ntriples' ? 'nt' : 'ttl')
     """
-    # ── Start the service on localhost ───────────────────────────────────
+    # Start the service on localhost, kill it when the task ends.
     uvicorn main:app --host 127.0.0.1 --port 8000 \\
         --app-dir /app --log-level warning &
     SERVICE_PID=\$!
     trap "kill \$SERVICE_PID 2>/dev/null" EXIT
 
-    # Wait until the service answers /. 30 s ceiling for OBOE-ontology
-    # load on cold start.
+    # Wait until it answers (30 s ceiling for the ontology load on cold start).
     for i in \$(seq 1 60); do
         if curl -sf http://127.0.0.1:8000/ > /dev/null 2>&1; then break; fi
         sleep 0.5
     done
 
-    # ── Pre-flight: /validate the model against the loaded ontologies ─────
+    # Pre-flight: validate the mapping against the loaded ontologies.
     curl -sf -X POST http://127.0.0.1:8000/validate \\
         -F "mapping_schema=@${schema}" \\
         -o validate.json
 
+    # Abort the task if the mapping is invalid (unless skipped).
     if [ "${skip_validate}" != "true" ]; then
         python3 -c "import json,sys; r=json.load(open('validate.json')); \\
 sys.exit(0 if r['valid'] else (print('Model validation failed:', file=sys.stderr) \\
 or [print(f'  {i}', file=sys.stderr) for i in r['issues']] or 1))"
     fi
 
-    # ── Transform ─────────────────────────────────────────────────────────
+    # Transform: materialize the RDF into transformed.<ext>.
     curl -sf -X POST http://127.0.0.1:8000/transform \\
         -F "dataset=@${dataset}" \\
         -F "mapping_schema=@${schema}" \\
         -F "source_type=${source_type}" \\
         -F "delimiter=${delimiter}" \\
         -F "output_format=${output_format}" \\
-        -o "${meta.id}.${ext}"
+        -o "transformed.${ext}"
 
-    # ── Version stamp ─────────────────────────────────────────────────────
+    # Record the service version for the pipeline's versions report.
     SERVICE_VERSION=\$(curl -sf http://127.0.0.1:8000/ | python3 -c "import json,sys;print(json.load(sys.stdin)['version'])")
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

@@ -1,0 +1,54 @@
+[
+  {
+    "header_keyword": "latitude",
+    "term_keyword": "latitude",
+    "bonus": 0.08
+  },
+  {
+    "header_keyword": "longitude",
+    "term_keyword": "longitude",
+    "bonus": 0.08
+  },
+  {
+    "header_keyword": "country",
+    "term_keyword": "country",
+    "bonus": 0.05
+  },
+  {
+    "header_keyword": "genus",
+    "term_keyword": "genus",
+    "bonus": 0.05
+  },
+  {
+    "header_keyword": "identifier",
+    "term_keyword": "identifier",
+    "bonus": 0.04
+  },
+  {
+    "header_keyword": "database",
+    "exact_terms": [
+      "SourceID",
+      "DataSet",
+      "DataSets"
+    ],
+    "bonus": 0.04
+  },
+  {
+    "header_keyword": "image",
+    "exact_terms": [
+      "FileURL",
+      "Image",
+      "MultimediaObject"
+    ],
+    "bonus": 0.04
+  },
+  {
+    "header_keyword": "collector",
+    "exact_terms": [
+      "GatheringAgentsText",
+      "GatheringAgents",
+      "CollectorName"
+    ],
+    "bonus": 0.04
+  }
+]

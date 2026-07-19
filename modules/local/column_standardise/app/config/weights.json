@@ -1,0 +1,8 @@
+{
+  "semantic_weight": 0.8,
+  "surface_string_weight": 0.15,
+  "term_string_weight": 0.05,
+  "heuristic_weight": 1.0,
+  "profile_weight": 1.0,
+  "profile_max_boost": 0.10
+}

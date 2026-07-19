@@ -217,9 +217,20 @@ def summarise_concepts(path: str | None) -> dict:
 
 
 def summarise_rdf(path: str | None) -> dict:
+    if _is_placeholder(path):
+        return {"status": "skipped"}
     data = _load_json(path)
     if not isinstance(data, dict):
         return {"status": "no_data"}
+    # Current WP7 service emits a /validate response: {valid: bool, issues: [...]}.
+    if "valid" in data:
+        issues = data.get("issues") or []
+        return {
+            "status": "validated" if data.get("valid") else "invalid",
+            "valid": bool(data.get("valid")),
+            "issues": len(issues) if isinstance(issues, list) else issues,
+        }
+    # Legacy stub report: {records_transformed, triples_generated, ...}.
     keep = ("records_transformed", "triples_generated", "formats", "status", "mapping_schema_used")
     out = {k: data[k] for k in keep if k in data}
     out.setdefault("status", "ok")
@@ -283,10 +294,16 @@ def render_markdown(summary: dict) -> str:
         lines.append(f"| WP5 Provisional concepts | {con.get('registered', 0)} provisional concepts registered |")
 
     rdf = steps["rdf"]
-    lines.append(
-        f"| WP7 RDF transform | {rdf.get('triples_generated', 0)} triples from "
-        f"{rdf.get('records_transformed', 0)} records ({rdf.get('status', 'n/a')}) |"
-    )
+    if rdf.get("status") == "skipped":
+        rdf_metric = "skipped"
+    elif "valid" in rdf:
+        rdf_metric = f"model {'valid' if rdf['valid'] else 'INVALID'} ({rdf.get('issues', 0)} issues)"
+    else:
+        rdf_metric = (
+            f"{rdf.get('triples_generated', 0)} triples from "
+            f"{rdf.get('records_transformed', 0)} records ({rdf.get('status', 'n/a')})"
+        )
+    lines.append(f"| WP7 RDF transform | {rdf_metric} |")
 
     lines.append("")
     return "\n".join(lines)

@@ -2,9 +2,7 @@ process COLLECT_REPORTS {
     tag "reports"
     label 'process_single'
 
-    // Runs on the host with the stdlib-only aggregator in bin/ (no extra deps),
-    // mirroring the other host-run modules. Swap in a container here if the
-    // pipeline is ever run fully containerised.
+    container 'ghcr.io/biodivportal/collect-reports:0.1' // stdlib-only aggregator baked into a slim image; built + published by .github/workflows/docker-publish.yml
 
     input:
     path column_mapping
@@ -21,7 +19,7 @@ process COLLECT_REPORTS {
 
     script:
     """
-    python ${moduleDir}/bin/collect_reports.py \\
+    python /app/bin/collect_reports.py \\
         --column-mapping ${column_mapping} \\
         --annotation-unresolved ${annotation_unresolved} \\
         --taxonomy ${taxonomy_resolved} \\
