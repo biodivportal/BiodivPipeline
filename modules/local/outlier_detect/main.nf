@@ -4,7 +4,7 @@ process OUTLIER_DETECT {
 
     secret 'WP4_OPENAI_API_KEY' // dedicated key; WP4's LLM detector runs in OpenAI mode (kept separate from WP3's key)
 
-    container 'ghcr.io/biodivportal/outlier-detect:0.1'
+    container 'ghcr.io/biodivportal/outlier-detect:0.2'
     containerOptions '--network host'
 
     input:
