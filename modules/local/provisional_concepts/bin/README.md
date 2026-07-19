@@ -67,18 +67,38 @@ python clients/local_geonames.py AT CH
 
 ### Build the Image
 To build the Docker image locally for testing:
+
+**CPU version (default):**
 ```bash
-docker build -t ghcr.io/biodivportal/provisional-concepts:0.1 -f Dockerfile .
+docker build -t ghcr.io/biodivportal/provisional-concepts:0.2 -f Dockerfile .
+```
+
+**GPU version (uses PyTorch CUDA 12.6 wheels):**
+```bash
+docker build --build-arg DEVICE=gpu -t ghcr.io/biodivportal/provisional-concepts:0.2-gpu -f Dockerfile .
 ```
 
 ### Run the Image Standalone
 To run the container standalone (which defaults to running the resolver script):
+
+**CPU version:**
 ```bash
 # Mount a local folder containing your data to /data inside the container
 docker run -it --rm \
     -v /absolute/path/to/local/data:/data \
     -e WP5_OPENAI_API_KEY="your-key-here" \
-    ghcr.io/biodivportal/provisional-concepts:0.1 \
+    ghcr.io/biodivportal/provisional-concepts:0.2 \
+    --input /data/unresolved_terms.csv \
+    --output /data/provisional_concepts.json
+```
+
+**GPU version:**
+Running with GPU support requires the [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html) installed on the host machine.
+```bash
+docker run -it --rm --gpus all \
+    -v /absolute/path/to/local/data:/data \
+    -e WP5_OPENAI_API_KEY="your-key-here" \
+    ghcr.io/biodivportal/provisional-concepts:0.2-gpu \
     --input /data/unresolved_terms.csv \
     --output /data/provisional_concepts.json
 ```

@@ -15,11 +15,20 @@ WORKDIR /app
 # Copy requirements.txt first for caching
 COPY requirements.txt .
 
-# Default build is CPU-only (PyPI torch installs without CUDA).
-# To build with GPU/CUDA instead, replace the pip install below with:
-#   RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cu126
-#   RUN pip install --no-cache-dir -r requirements.txt
-RUN pip install --no-cache-dir -r requirements.txt
+# cpu/gpu builds
+# defaults to cpu build
+# To use gpu use `docker build --build-arg DEVICE=gpu -t ghcr.io/biodivportal/provisional-concepts:0.2-gpu -f Dockerfile`.
+ARG DEVICE="cpu"
+
+RUN if [ "$DEVICE" = "cpu" ]; then \
+        pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu && \
+        pip install --no-cache-dir -r requirements.txt --extra-index-url https://download.pytorch.org/whl/cpu; \
+    elif [ "$DEVICE" = "gpu" ]; then \
+        pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cu126 && \
+        pip install --no-cache-dir -r requirements.txt --extra-index-url https://download.pytorch.org/whl/cu126; \
+    else \
+        echo "Error: Unsupported DEVICE '$DEVICE'. Must be 'cpu' or 'gpu'." && exit 1; \
+    fi
 
 # Bake the ENVO embedding and reranking models into the image so the locality path needs no
 # network download at runtime. Store them in a world-writable location because the
