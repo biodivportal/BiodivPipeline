@@ -9,11 +9,11 @@ A modular nf-core / Nextflow pipeline scaffold that orchestrates pluggable modul
 **Prerequisites:**
 
 - Java 11+, [Nextflow](https://www.nextflow.io/) >= 25.10.4, and [Docker](https://www.docker.com/) **running**.
-- Three Nextflow secrets must be set: `WP2_BIODIV_API_KEY`, `WP3_OPENAI_API_KEY`, `WP4_OPENAI_API_KEY` — see [Secrets](docs/usage.md#secrets) in the usage docs for what each is and the exact `nextflow secrets set` commands.
+- Four Nextflow secrets must be set: `WP2_BIODIV_API_KEY`, `WP3_OPENAI_API_KEY`, `WP4_OPENAI_API_KEY`, and `WP5_OPENAI_API_KEY` — see [Secrets](docs/usage.md#secrets) in the usage docs for what each is and the exact `nextflow secrets set` commands.
 - On **Apple Silicon (arm64)** add the `emulate_amd64` profile — the demo images are `amd64`-only. On Intel / Linux x86 you can drop it.
 
 ```bash
-# Run the bundled sample dataset end-to-end (calls real APIs — needs Docker + the three secrets)
+# Run the bundled sample dataset end-to-end (calls real APIs — needs Docker + the four secrets)
 nextflow run main.nf -profile test,docker,emulate_amd64 --outdir results
 
 # Run with your own input

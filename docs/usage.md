@@ -10,13 +10,14 @@
 
 ### Secrets
 
-The pipeline reads three API keys as **Nextflow secrets**. All three must be set before a `test` or `docker` run, otherwise the run stops with `Required secret is missing: '<NAME>'`.
+The pipeline reads four API keys as **Nextflow secrets**. All four must be set before a `test` or `docker` run, otherwise the run stops with `Required secret is missing: '<NAME>'`.
 
 | Secret               | Used by                              | What it is                                       |
 | -------------------- | ------------------------------------ | ------------------------------------------------ |
 | `WP2_BIODIV_API_KEY` | WP2 annotation (`biodiv_annotate`)   | BiodivPortal Annotator API key                   |
 | `WP3_OPENAI_API_KEY` | WP3 taxonomy (`taxonomy_classify`)   | OpenAI key for land-cover / taxonomy classification |
 | `WP4_OPENAI_API_KEY` | WP4 outlier detection (`outlier_detect`) | OpenAI key for the LLM outlier detector          |
+| `WP5_OPENAI_API_KEY` | WP5 provisional concepts (`provisional_concepts`) | OpenAI key for the provisional concepts resolver |
 
 Set each one once (stored under `~/.nextflow`, per user — never committed to the repo):
 
@@ -24,18 +25,19 @@ Set each one once (stored under `~/.nextflow`, per user — never committed to t
 nextflow secrets set WP2_BIODIV_API_KEY "<BiodivPortal key>"
 nextflow secrets set WP3_OPENAI_API_KEY "<OpenAI key>"
 nextflow secrets set WP4_OPENAI_API_KEY "<OpenAI key>"
+nextflow secrets set WP5_OPENAI_API_KEY "<OpenAI key>"
 ```
 
 Notes:
 
-- The two OpenAI keys have **different names** on purpose (WP3 and WP4 keep separate keys); you may set the same value for both.
+- The OpenAI keys have **different names** on purpose (WP3, WP4, and WP5 keep separate keys); you may set the same value for all of them.
 - Keys are read via `nextflow secrets set`, **not** shell `export`. The names are WP-prefixed — the old un-prefixed names (`BIODIV_API_KEY`, `OPENAI_API_KEY`) and the `export VAR=...` method no longer work. Each module re-aliases its secret to the env var its code expects, so no key ever needs to be exported by hand.
 
 ## Input data
 
 The pipeline expects a CSV file with biodiversity specimen records and a header row. Column names do not need to follow any specific standard — the first pipeline module is responsible for mapping headers to a target schema.
 
-A small real sample dataset is provided under `data/sample.csv` for use with `-profile test`. Note: the `test` profile runs the **real** pipeline modules on this data and calls real APIs, so it needs Docker running, the three secrets, and network access — it is not an offline mock.
+A small real sample dataset is provided under `data/sample.csv` for use with `-profile test`. Note: the `test` profile runs the **real** pipeline modules on this data and calls real APIs, so it needs Docker running, the four secrets, and network access — it is not an offline mock.
 
 ## Running the pipeline
 
@@ -45,7 +47,7 @@ A small real sample dataset is provided under `data/sample.csv` for use with `-p
 nextflow run main.nf -profile test,docker,emulate_amd64 --outdir results
 ```
 
-Prerequisites: Docker must be running, and the three secrets — `WP2_BIODIV_API_KEY`, `WP3_OPENAI_API_KEY`, `WP4_OPENAI_API_KEY` — must be set via `nextflow secrets set`. On Apple Silicon (arm64) the `emulate_amd64` profile is required because the demo images are `amd64`-only; drop it on Intel / Linux x86. The `test` profile points to `data/sample.csv` and `assets/default_mapping.jsonld`, so no `--input` or `--mapping_schema` is needed — but the run is not offline: it executes the real modules against real APIs.
+Prerequisites: Docker must be running, and the four secrets — `WP2_BIODIV_API_KEY`, `WP3_OPENAI_API_KEY`, `WP4_OPENAI_API_KEY`, and `WP5_OPENAI_API_KEY` — must be set via `nextflow secrets set`. On Apple Silicon (arm64) the `emulate_amd64` profile is required because the demo images are `amd64`-only; drop it on Intel / Linux x86. The `test` profile points to `data/sample.csv` and `assets/default_mapping.jsonld`, so no `--input` or `--mapping_schema` is needed — but the run is not offline: it executes the real modules against real APIs.
 
 ### Custom input run
 

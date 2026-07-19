@@ -1,7 +1,7 @@
 # WP5 provisional_concepts — provisional concept recommender
 # Contains both resolver paths:
 #   - taxon  (GBIF, no key)          -> run with --species
-#   - locality (ENVO embeddings+LLM) -> run with --localities (needs LLM_API_KEY)
+#   - locality (ENVO embeddings+LLM) -> run with --localities (needs WP5_OPENAI_API_KEY)
 FROM python:3.11-slim
 
 # procps provides `ps`, which Nextflow uses to collect resource metrics
@@ -15,12 +15,20 @@ WORKDIR /app
 # Copy requirements.txt first for caching
 COPY requirements.txt .
 
-# Install the CPU-only build of torch first so we don't pull the multi-GB CUDA
-# wheels that the default index would resolve.
-RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu
+# cpu/gpu builds
+# defaults to cpu build
+# To use gpu use `docker build --build-arg DEVICE=gpu -t ghcr.io/biodivportal/provisional-concepts:0.2-gpu -f Dockerfile`.
+ARG DEVICE="cpu"
 
-# Install remaining dependencies from requirements.txt
-RUN pip install --no-cache-dir -r requirements.txt
+RUN if [ "$DEVICE" = "cpu" ]; then \
+        pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu && \
+        pip install --no-cache-dir -r requirements.txt --extra-index-url https://download.pytorch.org/whl/cpu; \
+    elif [ "$DEVICE" = "gpu" ]; then \
+        pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cu126 && \
+        pip install --no-cache-dir -r requirements.txt --extra-index-url https://download.pytorch.org/whl/cu126; \
+    else \
+        echo "Error: Unsupported DEVICE '$DEVICE'. Must be 'cpu' or 'gpu'." && exit 1; \
+    fi
 
 # Bake the ENVO embedding and reranking models into the image so the locality path needs no
 # network download at runtime. Store them in a world-writable location because the
@@ -49,7 +57,11 @@ ENV HF_HUB_OFFLINE=1 \
 
 # Copy the WP5 source (main.py, resolvers/, clients/, ontology_config.json, data/)
 COPY . /app
+RUN mkdir -p /app/geonames_data \
+    && chmod -R 0777 /app/geonames_data
 
 # Pre-download local GeoNames data for Germany (DE) so it is baked into the image
 RUN python clients/local_geonames.py
+
+CMD ["python", "/app/main.py", "--help"]
 
