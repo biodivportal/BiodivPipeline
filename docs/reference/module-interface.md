@@ -16,17 +16,21 @@ exactly — downstream modules read them by name. Every module also emits `versi
 
 | Direction | File | Notes |
 | --------- | ---- | ----- |
-| in | raw input CSV | biodiversity records |
+| in | WP3 `taxonomy_resolved.csv` | the whole dataset + taxonomy columns, from TAXONOMY_CLASSIFY |
 | out | `annotated.jsonld` | records with ontology term URIs |
-| out | `enriched.csv` | records plus `*_URI` annotation columns |
+| out | `enriched.csv` | input records plus `*_URI` annotation columns (taxonomy columns carried through) |
 | out | `unresolved_terms.csv` | terms that could not be matched |
+
+The record-id column and the columns to annotate come from the module's `schema.json`
+(`columns.id` + `annotate_fields`), overridable via the `DATASET_SCHEMA` env var — see
+[`modules/local/biodiv_annotate/README.md`](../../modules/local/biodiv_annotate/README.md).
 
 ## TAXONOMY_CLASSIFY (WP3)
 
 | Direction | File | Notes |
 | --------- | ---- | ----- |
-| in | `enriched.csv` | from BIODIV_ANNOTATE |
-| out | `taxonomy_resolved.csv` | **semicolon-delimited**; keyed on `id`; columns include `clc_*`, `taxon_identifier`, `taxon_confidence`, `taxon_status`, `error` |
+| in | raw input CSV | biodiversity records |
+| out | `taxonomy_resolved.csv` | the **whole input dataset** with `llm_*` (land cover) and `taxon_*` (GBIF) columns appended, joined on the record id. Cultivated rows are kept with empty taxonomy fields. |
 
 ## OUTLIER_DETECT (WP4)
 
@@ -56,8 +60,8 @@ exactly — downstream modules read them by name. Every module also emits `versi
 
 | Direction | File | Notes |
 | --------- | ---- | ----- |
-| in | `enriched.csv` | base table |
-| in | `taxonomy_resolved.csv` | joined by `id` |
+| in | `enriched.csv` | base table (already carries the taxonomy columns through WP2) |
+| in | `taxonomy_resolved.csv` | joined by id — now vestigial: the taxonomy columns are already in the base, so nothing new is appended |
 | in | `flagged_records.csv` | joined by row position (no id column) |
 | out | `final_dataset.csv` | base records + taxonomy columns + outlier columns |
 
@@ -73,7 +77,9 @@ exactly — downstream modules read them by name. Every module also emits `versi
 
 Module output schemas have changed during development. Two joins are sensitive to it:
 
-- **Taxonomy** is semicolon-delimited and keyed on `id`; the WP1 assembler sniffs the
-  delimiter and detects the id column.
+- **Taxonomy** output (`taxonomy_resolved.csv`) is the whole input dataset with the `taxon_*` /
+  `llm_*` columns appended; the WP1 assembler sniffs the delimiter and detects the id
+  column. (The taxonomy join itself is now vestigial — the columns already reach the
+  assembler through WP2's `enriched.csv`.)
 - **Outlier** output has no id column, so it is joined by row position — valid only while
   every module preserves input order. Asking WP4 for a `record_id` would make this robust.
