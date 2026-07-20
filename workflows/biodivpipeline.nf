@@ -42,9 +42,6 @@ workflow BIODIVPIPELINE {
     BIODIV_ANNOTATE( ch_input )
     ch_versions = ch_versions.mix(BIODIV_ANNOTATE.out.versions)
 
-    // Only for demo purposes we gie some of the annotation output to the
-    // taxonomy classifier
-
     def ch_enriched = BIODIV_ANNOTATE.out.enriched
 
     TAXONOMY_CLASSIFY( ch_enriched )

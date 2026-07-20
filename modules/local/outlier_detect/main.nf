@@ -21,7 +21,7 @@ process OUTLIER_DETECT {
     export OPENAI_API_KEY=\$WP4_OPENAI_API_KEY
     export OPENAI_MODEL='gpt-4o-mini'
 
-    python /app/main_with_cli.py detect-csv --file $csv --output flagged_records.csv --enable-llm
+    python /app/main_with_cli.py detect-csv --file ${csv} --output flagged_records.csv --enable-llm
 
     cat <<-VERSIONS > versions.yml
     "${task.process}":
