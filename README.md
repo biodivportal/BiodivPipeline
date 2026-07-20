@@ -1,61 +1,48 @@
 # BiodivPipeline
 
-A modular nf-core / Nextflow pipeline scaffold that orchestrates pluggable modules to transform biodiversity CSV records into FAIR-compliant RDF outputs.
+A modular nf-core / Nextflow pipeline that turns raw biodiversity CSV records into a
+quality-annotated, taxonomically resolved dataset and FAIR RDF triples.
 
 **Framework:** [nf-core](https://nf-co.re) template v4.0.2
 
 ## Quick start
 
-**Prerequisites:**
-
-- Java 11+, [Nextflow](https://www.nextflow.io/) >= 25.10.4, and [Docker](https://www.docker.com/) **running**.
-- Four Nextflow secrets must be set: `WP2_BIODIV_API_KEY`, `WP3_OPENAI_API_KEY`, `WP4_OPENAI_API_KEY`, and `WP5_OPENAI_API_KEY` — see [Secrets](docs/usage.md#secrets) in the usage docs for what each is and the exact `nextflow secrets set` commands.
-- On **Apple Silicon (arm64)** add the `emulate_amd64` profile — the demo images are `amd64`-only. On Intel / Linux x86 you can drop it.
+**Prerequisites:** Java 11+, [Nextflow](https://www.nextflow.io/) >= 25.10.4, [Docker](https://www.docker.com/) running.
 
 ```bash
-# Run the bundled sample dataset end-to-end (calls real APIs — needs Docker + the four secrets)
-nextflow run main.nf -profile test,docker,emulate_amd64 --outdir results
+# 1. Set the module API keys (what each is for: docs/runbook/running.md#secrets)
+nextflow secrets set WP2_BIODIV_API_KEY '<BiodivPortal key>'
+nextflow secrets set WP3_OPENAI_API_KEY '<OpenAI key>'
+nextflow secrets set WP4_OPENAI_API_KEY '<OpenAI key>'
+nextflow secrets set WP5_OPENAI_API_KEY '<OpenAI key>'
 
-# Run with your own input
-nextflow run main.nf -profile docker,emulate_amd64 \
-    --input path/to/biodiv.csv \
-    --outdir results
+# 2. Run the bundled test dataset
+nextflow run main.nf -profile test,docker --outdir results
+
+# 3. Run your own data
+nextflow run main.nf -profile docker --input path/to/biodiv.csv --outdir results
 ```
 
-### Parameters
+No WP5 key? Add `--skip_provisional_concepts`.
 
-| Parameter          | Required | Description                                                                                 |
-| ------------------ | -------- | ------------------------------------------------------------------------------------------- |
-| `--input`          | Yes      | Path to input CSV file (biodiversity records)                                               |
-| `--mapping_schema` | No       | Path to RDF mapping schema (JSON-LD or Turtle). Defaults to `assets/default_mapping.jsonld` |
-| `--outdir`         | Yes      | Path to output directory                                                                    |
-| `-profile`         | Yes      | Execution profile: `docker`, `singularity`, `test`                                          |
-
-## Output
-
-Results are published under `--outdir`. See [docs/output.md](docs/output.md) for the directory layout.
+Full run guide, secrets, and parameters: **[docs/runbook/running.md](docs/runbook/running.md)**.
 
 ## Project structure
 
 ```
-BiodivPipeline/
-├── main.nf                      # Pipeline entry point
-├── workflows/biodivpipeline.nf  # Workflow DAG
-├── modules/local/               # Pipeline modules (one per work package)
-├── conf/                        # Nextflow config profiles
-├── assets/                      # Static files (e. g. default mapping schema)
-├── data/                        # Input datasets (raw + test sample)
-├── subworkflows/                # nf-core shared utilities
-└── docs/                        # Documentation
+main.nf                       # entry point
+workflows/biodivpipeline.nf   # workflow DAG
+modules/local/                # one module per work package
+conf/                         # config profiles
+docs/                         # documentation (see below)
 ```
 
 ## Documentation
 
-- [Usage](docs/usage.md) — how to run, parameters, profiles
-- [Output](docs/output.md) — output directory reference
-- [Contributing](docs/CONTRIBUTING.md) — git conventions, branch model, module structure
-- [Linting](docs/linting_guidelines.md) — Explainer on our linting configuration
-- [Resource Monitoring](docs/resource_monitoring.md) - Decision Record regarding automatic monitoring of resources used by the pipeline
-- [Testing Guidelines](docs/test_guidelines.md) - Which tests should contributors provide for their components?
+Start at the [documentation index](docs/README.md):
 
-Built on the [nf-core](https://nf-co.re) framework — see [`CITATIONS.md`](CITATIONS.md).
+- [Runbook](docs/runbook/running.md) — run, operate, troubleshoot
+- [Development](docs/development/developer-guide.md) — contribute and add modules
+- [Reference](docs/reference/architecture.md) — architecture and module interfaces
+
+Built on [nf-core](https://nf-co.re) — see [`CITATIONS.md`](CITATIONS.md).

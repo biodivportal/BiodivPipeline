@@ -38,7 +38,7 @@ workflow BIODIVPIPELINE {
     // WP2 (annotation) and WP3 (taxonomy) resolve against the ORIGINAL BGBM column
     // names (HerbariumID, FullNameCache, Genus, Family, ...). WP6 renames those columns
     // in its standardised output, so the annotation branch consumes the raw input
-    // directly. WP6's standardised CSV feeds the outlier + RDF branches.
+    // directly. WP6's standardised CSV feeds RDF branch.
     BIODIV_ANNOTATE( ch_input )
     ch_versions = ch_versions.mix(BIODIV_ANNOTATE.out.versions)
 
@@ -50,7 +50,7 @@ workflow BIODIVPIPELINE {
     OUTLIER_DETECT( ch_input )
     ch_versions = ch_versions.mix(OUTLIER_DETECT.out.versions)
 
-    // WP5 can be skipped (runs on the host, needs extra deps + an LLM key). When
+    // WP5 can be skipped (its ENVO/locality path needs a WP5_OPENAI_API_KEY secret). When
     // skipped, feed COLLECT_REPORTS an empty placeholder instead of its output.
     def ch_concepts
     if (params.skip_provisional_concepts) {
