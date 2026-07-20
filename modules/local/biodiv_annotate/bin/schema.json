@@ -4,9 +4,9 @@
   },
   "annotate_fields": [
     "FullNameCache",
-    "NameCache",
+    "taxon_canonical_name",
     "Genus",
-    "Family",
+    "taxon_family",
     "Locality",
     "FundortUNdOeko",
     "Country",

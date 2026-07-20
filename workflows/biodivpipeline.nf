@@ -35,17 +35,19 @@ workflow BIODIVPIPELINE {
 
     def ch_standardised = COLUMN_STANDARDISE.out.csv
 
-    // WP2 (annotation) and WP3 (taxonomy) resolve against the ORIGINAL BGBM column
-    // names (HerbariumID, FullNameCache, Genus, Family, ...). WP6 renames those columns
-    // in its standardised output, so the annotation branch consumes the raw input
-    // directly. WP6's standardised CSV feeds RDF branch.
-    BIODIV_ANNOTATE( ch_input )
+    // WP3 (taxonomy) runs first on the raw input and returns the whole original
+    // dataset with the taxonomy/land-cover columns appended. WP2 (annotation) then
+    // runs on that, so the *_URI annotation columns ride on top of the taxonomically
+    // resolved table. Both still resolve against the ORIGINAL BGBM column names
+    // (HerbariumID, FullNameCache, Genus, Family, ...) which WP6's standardised output
+    // renames — hence this branch consumes the raw input, not ch_standardised.
+    TAXONOMY_CLASSIFY( ch_input )
+    ch_versions = ch_versions.mix(TAXONOMY_CLASSIFY.out.versions)
+
+    BIODIV_ANNOTATE( TAXONOMY_CLASSIFY.out.resolved )
     ch_versions = ch_versions.mix(BIODIV_ANNOTATE.out.versions)
 
     def ch_enriched = BIODIV_ANNOTATE.out.enriched
-
-    TAXONOMY_CLASSIFY( ch_enriched )
-    ch_versions = ch_versions.mix(TAXONOMY_CLASSIFY.out.versions)
 
     OUTLIER_DETECT( ch_input )
     ch_versions = ch_versions.mix(OUTLIER_DETECT.out.versions)
@@ -81,6 +83,9 @@ workflow BIODIVPIPELINE {
     // Output (i): assemble the single quality-annotated, taxonomically resolved
     // dataset by joining the annotated records with taxonomy resolution + quality
     // flags (Lastenheft Requirement 1).
+    // Note: ch_enriched already carries the taxonomy columns (they flowed through
+    // WP2 from WP3's output), so the assembler's taxonomy join is now a no-op that
+    // only appends columns new to the base — kept for robustness, harmless here.
     ASSEMBLE_DATASET(
         ch_enriched,
         TAXONOMY_CLASSIFY.out.resolved,
