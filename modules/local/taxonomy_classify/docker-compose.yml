@@ -1,0 +1,10 @@
+# Production-shaped setup: this runs the same image the Nextflow pipeline runs.
+services:
+  classifier:
+    build: .
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    volumes:
+      - ./data:/data

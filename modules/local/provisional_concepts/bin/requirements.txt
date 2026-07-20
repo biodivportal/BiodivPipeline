@@ -1,0 +1,9 @@
+pygbif
+geopy
+rapidfuzz
+openai
+sentence-transformers
+torch
+numpy
+requests
+deep-translator

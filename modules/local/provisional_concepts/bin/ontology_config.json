@@ -1,0 +1,444 @@
+{
+  "Family": {
+    "ontology": "NCBITAXON",
+    "name": "",
+    "score": 0.631,
+    "decision": "use",
+    "translation_used": "no",
+    "all_recommendations": [
+      {
+        "acronym": "NCBITAXON",
+        "name": "",
+        "score": 0.631
+      },
+      {
+        "acronym": "TAXRANK",
+        "name": "",
+        "score": 0.248
+      },
+      {
+        "acronym": "TAXON",
+        "name": "",
+        "score": 0.219
+      },
+      {
+        "acronym": "TXN",
+        "name": "",
+        "score": 0.182
+      },
+      {
+        "acronym": "BIOBANK",
+        "name": "",
+        "score": 0.138
+      }
+    ]
+  },
+  "FullNameCache": {
+    "ontology": "NCBITAXON",
+    "name": "",
+    "score": 0.656,
+    "decision": "use",
+    "translation_used": "no",
+    "all_recommendations": [
+      {
+        "acronym": "NCBITAXON",
+        "name": "",
+        "score": 0.656
+      },
+      {
+        "acronym": "BOHLMANN",
+        "name": "",
+        "score": 0.184
+      },
+      {
+        "acronym": "LSLIFE",
+        "name": "",
+        "score": 0.097
+      },
+      {
+        "acronym": "TXN",
+        "name": "",
+        "score": 0.087
+      },
+      {
+        "acronym": "TAXON",
+        "name": "",
+        "score": 0.084
+      }
+    ]
+  },
+  "Sammlerteam": {
+    "ontology": "SWEET",
+    "name": "",
+    "score": 0.517,
+    "decision": "review",
+    "translation_used": "no",
+    "all_recommendations": [
+      {
+        "acronym": "SWEET",
+        "name": "",
+        "score": 0.517
+      },
+      {
+        "acronym": "ENVTHES",
+        "name": "",
+        "score": 0.409
+      },
+      {
+        "acronym": "ABCD",
+        "name": "",
+        "score": 0.294
+      },
+      {
+        "acronym": "SCHEMAORG",
+        "name": "",
+        "score": 0.251
+      },
+      {
+        "acronym": "LSLIFE",
+        "name": "",
+        "score": 0.244
+      }
+    ]
+  },
+  "CollectionDateBegin": {
+    "ontology": "SCHEMAORG",
+    "name": "",
+    "score": 0.674,
+    "decision": "use",
+    "translation_used": "no",
+    "all_recommendations": [
+      {
+        "acronym": "SCHEMAORG",
+        "name": "",
+        "score": 0.674
+      },
+      {
+        "acronym": "ENVTHES",
+        "name": "",
+        "score": 0.555
+      },
+      {
+        "acronym": "LSLIFE",
+        "name": "",
+        "score": 0.504
+      },
+      {
+        "acronym": "QUDT",
+        "name": "",
+        "score": 0.503
+      },
+      {
+        "acronym": "ABCD",
+        "name": "",
+        "score": 0.429
+      }
+    ]
+  },
+  "CollectionDateEnd": {
+    "ontology": "LSLIFE",
+    "name": "",
+    "score": 0.653,
+    "decision": "use",
+    "translation_used": "no",
+    "all_recommendations": [
+      {
+        "acronym": "LSLIFE",
+        "name": "",
+        "score": 0.653
+      },
+      {
+        "acronym": "ENVTHES",
+        "name": "",
+        "score": 0.327
+      },
+      {
+        "acronym": "SCHEMAORG",
+        "name": "",
+        "score": 0.282
+      },
+      {
+        "acronym": "PROV-O",
+        "name": "",
+        "score": 0.261
+      },
+      {
+        "acronym": "DCAT",
+        "name": "",
+        "score": 0.26
+      }
+    ]
+  },
+  "Country": {
+    "ontology": "LSLIFE",
+    "name": "",
+    "score": 0.434,
+    "decision": "review",
+    "translation_used": "no",
+    "all_recommendations": [
+      {
+        "acronym": "LSLIFE",
+        "name": "",
+        "score": 0.434
+      },
+      {
+        "acronym": "SWEET",
+        "name": "",
+        "score": 0.409
+      },
+      {
+        "acronym": "NFDICORE",
+        "name": "",
+        "score": 0.346
+      },
+      {
+        "acronym": "TXN",
+        "name": "",
+        "score": 0.308
+      },
+      {
+        "acronym": "SCHEMAORG",
+        "name": "",
+        "score": 0.258
+      }
+    ]
+  },
+  "Locality": {
+    "ontology": "ENVO",
+    "name": "",
+    "score": 0.531,
+    "decision": "review",
+    "translation_used": "yes (improved)",
+    "all_recommendations": [
+      {
+        "acronym": "ENVO",
+        "name": "",
+        "score": 0.531
+      },
+      {
+        "acronym": "SWEET",
+        "name": "",
+        "score": 0.331
+      },
+      {
+        "acronym": "ENVTHES",
+        "name": "",
+        "score": 0.317
+      },
+      {
+        "acronym": "BIODIVTHES",
+        "name": "",
+        "score": 0.174
+      },
+      {
+        "acronym": "ISOCOUNTRIES",
+        "name": "",
+        "score": 0.14
+      }
+    ]
+  },
+  "ShowOnMap": {
+    "ontology": "IHO",
+    "name": "",
+    "score": 0.634,
+    "decision": "use",
+    "translation_used": "no",
+    "all_recommendations": [
+      {
+        "acronym": "IHO",
+        "name": "",
+        "score": 0.634
+      },
+      {
+        "acronym": "RIVERS_DE",
+        "name": "",
+        "score": 0.591
+      },
+      {
+        "acronym": "SWEET",
+        "name": "",
+        "score": 0.549
+      },
+      {
+        "acronym": "EDAM",
+        "name": "",
+        "score": 0.524
+      },
+      {
+        "acronym": "GEONAMES",
+        "name": "",
+        "score": 0.521
+      }
+    ]
+  },
+  "Latitude": {
+    "ontology": "LSLIFE",
+    "name": "",
+    "score": 0.517,
+    "decision": "review",
+    "translation_used": "no",
+    "all_recommendations": [
+      {
+        "acronym": "LSLIFE",
+        "name": "",
+        "score": 0.517
+      },
+      {
+        "acronym": "BIODIVTHES",
+        "name": "",
+        "score": 0.266
+      },
+      {
+        "acronym": "SWEET",
+        "name": "",
+        "score": 0.244
+      },
+      {
+        "acronym": "NFDICORE",
+        "name": "",
+        "score": 0.193
+      },
+      {
+        "acronym": "ABCD",
+        "name": "",
+        "score": 0.16
+      }
+    ]
+  },
+  "Longitude": {
+    "ontology": "LSLIFE",
+    "name": "",
+    "score": 0.505,
+    "decision": "review",
+    "translation_used": "no",
+    "all_recommendations": [
+      {
+        "acronym": "LSLIFE",
+        "name": "",
+        "score": 0.505
+      },
+      {
+        "acronym": "ENVTHES",
+        "name": "",
+        "score": 0.425
+      },
+      {
+        "acronym": "SWEET",
+        "name": "",
+        "score": 0.239
+      },
+      {
+        "acronym": "NFDICORE",
+        "name": "",
+        "score": 0.184
+      },
+      {
+        "acronym": "ABCD",
+        "name": "",
+        "score": 0.154
+      }
+    ]
+  },
+  "FundortUNdOeko": {
+    "ontology": "ISOCOUNTRIES",
+    "name": "",
+    "score": 0.407,
+    "decision": "review",
+    "translation_used": "yes (no improvement)",
+    "all_recommendations": [
+      {
+        "acronym": "ISOCOUNTRIES",
+        "name": "",
+        "score": 0.407
+      },
+      {
+        "acronym": "UNESCOTHES",
+        "name": "",
+        "score": 0.347
+      },
+      {
+        "acronym": "ENVTHES",
+        "name": "",
+        "score": 0.279
+      },
+      {
+        "acronym": "SWEET",
+        "name": "",
+        "score": 0.243
+      },
+      {
+        "acronym": "LSLIFE",
+        "name": "",
+        "score": 0.239
+      }
+    ]
+  },
+  "NameCache": {
+    "ontology": "NCBITAXON",
+    "name": "",
+    "score": 0.647,
+    "decision": "use",
+    "translation_used": "no",
+    "all_recommendations": [
+      {
+        "acronym": "NCBITAXON",
+        "name": "",
+        "score": 0.647
+      },
+      {
+        "acronym": "BOHLMANN",
+        "name": "",
+        "score": 0.176
+      },
+      {
+        "acronym": "TAXRANK",
+        "name": "",
+        "score": 0.15
+      },
+      {
+        "acronym": "LSLIFE",
+        "name": "",
+        "score": 0.094
+      },
+      {
+        "acronym": "ABCD",
+        "name": "",
+        "score": 0.074
+      }
+    ]
+  },
+  "Genus": {
+    "ontology": "NCBITAXON",
+    "name": "",
+    "score": 0.645,
+    "decision": "use",
+    "translation_used": "no",
+    "all_recommendations": [
+      {
+        "acronym": "NCBITAXON",
+        "name": "",
+        "score": 0.645
+      },
+      {
+        "acronym": "BOHLMANN",
+        "name": "",
+        "score": 0.425
+      },
+      {
+        "acronym": "TAXRANK",
+        "name": "",
+        "score": 0.248
+      },
+      {
+        "acronym": "TAXON",
+        "name": "",
+        "score": 0.219
+      },
+      {
+        "acronym": "TXN",
+        "name": "",
+        "score": 0.182
+      }
+    ]
+  }
+}

@@ -1,0 +1,1097 @@
+@prefix dcam: <http://purl.org/dc/dcam/> .
+@prefix dwc: <http://rs.tdwg.org/dwc/terms/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+
+dwc:Assertion a rdfs:Class ;
+    rdfs:label "Assertion" .
+
+dwc:Dataset a rdfs:Class ;
+    rdfs:label "Dataset" .
+
+dwc:Event a rdfs:Class ;
+    rdfs:label "Event" .
+
+dwc:EventAttribute a rdfs:Class ;
+    rdfs:label "Event Attribute" .
+
+dwc:EventMeasurement a rdfs:Class ;
+    rdfs:label "Event Measurement" .
+
+dwc:FossilSpecimen a rdfs:Class ;
+    rdfs:label "Fossil Specimen" .
+
+dwc:GeologicalContext a rdfs:Class ;
+    rdfs:label "Geological Context" .
+
+dwc:HumanObservation a rdfs:Class ;
+    rdfs:label "Human Observation" .
+
+dwc:Identification a rdfs:Class ;
+    rdfs:label "Identification" .
+
+dwc:LivingSpecimen a rdfs:Class ;
+    rdfs:label "Living Specimen" .
+
+dwc:MachineObservation a rdfs:Class ;
+    rdfs:label "Machine Observation" .
+
+dwc:MaterialCitation a rdfs:Class ;
+    rdfs:label "Material Citation" .
+
+dwc:MaterialEntity a rdfs:Class ;
+    rdfs:label "Material Entity" .
+
+dwc:MaterialSample a rdfs:Class ;
+    rdfs:label "Material Sample" .
+
+dwc:MeasurementOrFact a rdfs:Class ;
+    rdfs:label "Measurement Or Fact" .
+
+dwc:MolecularProtocol a rdfs:Class ;
+    rdfs:label "Molecular Protocol" .
+
+dwc:NucleotideAnalysis a rdfs:Class ;
+    rdfs:label "Nucleotide Analysis" .
+
+dwc:NucleotideSequence a rdfs:Class ;
+    rdfs:label "Nucleotide Sequence" .
+
+dwc:Occurrence a rdfs:Class ;
+    rdfs:label "Occurrence" .
+
+dwc:OccurrenceMeasurement a rdfs:Class ;
+    rdfs:label "Occurrence Measurement" .
+
+dwc:Organism a rdfs:Class ;
+    rdfs:label "Organism" .
+
+dwc:OrganismInteraction a rdfs:Class ;
+    rdfs:label "Organism Interaction" .
+
+dwc:PreservedSpecimen a rdfs:Class ;
+    rdfs:label "Preserved Specimen" .
+
+dwc:Protocol a rdfs:Class ;
+    rdfs:label "Protocol" .
+
+dwc:Provenance a rdfs:Class ;
+    rdfs:label "Provenance" .
+
+dwc:ResourceRelationship a rdfs:Class ;
+    rdfs:label "Resource Relationship" .
+
+dwc:Sample a rdfs:Class ;
+    rdfs:label "Sample" .
+
+dwc:SampleAttribute a rdfs:Class ;
+    rdfs:label "Sample Attribute" .
+
+dwc:SamplingEvent a rdfs:Class ;
+    rdfs:label "Sampling Event" .
+
+dwc:SamplingLocation a rdfs:Class ;
+    rdfs:label "Sampling Location" .
+
+dwc:Taxon a rdfs:Class ;
+    rdfs:label "Taxon" .
+
+dwc:UsagePolicy a rdfs:Class ;
+    rdfs:label "Usage Policy" .
+
+dwc:AcceptedTaxon a rdf:Property ;
+    rdfs:label "Accepted Taxon" .
+
+dwc:AcceptedTaxonID a rdf:Property ;
+    rdfs:label "Accepted Taxon ID" .
+
+dwc:AccessConstraints a rdf:Property ;
+    rdfs:label "Access Constraints" .
+
+dwc:CatalogNumberNumeric a rdf:Property ;
+    rdfs:label "Catalog Number Numeric" .
+
+dwc:DwCType a dcam:VocabularyEncodingScheme ;
+    rdfs:label "Darwin Core Type" .
+
+dwc:EarliestDateCollected a rdf:Property ;
+    rdfs:label "Earliest Date Collected" .
+
+dwc:EndTimeOfDay a rdf:Property ;
+    rdfs:label "End Time of Day" .
+
+dwc:EventAttributeAccuracy a rdf:Property ;
+    rdfs:label "Event Attribute Accuracy" .
+
+dwc:EventAttributeDeterminedBy a rdf:Property ;
+    rdfs:label "Event Attribute Determined By" .
+
+dwc:EventAttributeDeterminedDate a rdf:Property ;
+    rdfs:label "Event Attribute Determined Date" .
+
+dwc:EventAttributeID a rdf:Property ;
+    rdfs:label "Event Attribute ID" .
+
+dwc:EventAttributeRemarks a rdf:Property ;
+    rdfs:label "Event Attribute Remarks" .
+
+dwc:EventAttributeType a rdf:Property ;
+    rdfs:label "Event Attribute Type" .
+
+dwc:EventAttributeUnit a rdf:Property ;
+    rdfs:label "Event Attribute Unit" .
+
+dwc:EventAttributeValue a rdf:Property ;
+    rdfs:label "Event Attribute" .
+
+dwc:Generalizations a rdf:Property ;
+    rdfs:label "Generalizations" .
+
+dwc:HigherTaxon a rdf:Property ;
+    rdfs:label "Higher Taxon" .
+
+dwc:HigherTaxonID a rdf:Property ;
+    rdfs:label "Higher Taxon ID" .
+
+dwc:LatestDateCollected a rdf:Property ;
+    rdfs:label "Latest Date Collected" .
+
+dwc:PreviousIdentifications a rdf:Property ;
+    rdfs:label "Previous Identifications" .
+
+dwc:RelatedBasisOfRecord a rdf:Property ;
+    rdfs:label "Related Basis of Record" .
+
+dwc:SampleAttributeAccuracy a rdf:Property ;
+    rdfs:label "Sample Attribute Accuracy" .
+
+dwc:SampleAttributeDeterminedBy a rdf:Property ;
+    rdfs:label "Sample Attribute Determined By" .
+
+dwc:SampleAttributeDeterminedDate a rdf:Property ;
+    rdfs:label "Sample Attribute Determined Date" .
+
+dwc:SampleAttributeRemarks a rdf:Property ;
+    rdfs:label "Sample Attribute Remarks" .
+
+dwc:SampleAttributeUnit a rdf:Property ;
+    rdfs:label "Sample Attribute Unit" .
+
+dwc:SampleAttributeValue a rdf:Property ;
+    rdfs:label "Sample Attribute Value" .
+
+dwc:SampleRemarks a rdf:Property ;
+    rdfs:label "Sample Remarks" .
+
+dwc:SamplingAttributeID a rdf:Property ;
+    rdfs:label "Sample Attribute ID" .
+
+dwc:SamplingAttributeType a rdf:Property ;
+    rdfs:label "Sample Attribute Type" .
+
+dwc:SamplingEventAttributes a rdf:Property ;
+    rdfs:label "Sampling Event Attributes" .
+
+dwc:SamplingEventID a rdf:Property ;
+    rdfs:label "Sampling Event ID" .
+
+dwc:SamplingEventRemarks a rdf:Property ;
+    rdfs:label "Sampling Event Remarks" .
+
+dwc:SamplingLocationID a rdf:Property ;
+    rdfs:label "Sampling Location ID" .
+
+dwc:SamplingLocationRemarks a rdf:Property ;
+    rdfs:label "Sampling Location Remarks" .
+
+dwc:StartTimeOfDay a rdf:Property ;
+    rdfs:label "Start Time of Day" .
+
+dwc:TaxonID a rdf:Property ;
+    rdfs:label "Taxon ID" .
+
+dwc:acceptedNameUsage a rdf:Property ;
+    rdfs:label "Accepted Name Usage" .
+
+dwc:acceptedNameUsageID a rdf:Property ;
+    rdfs:label "Accepted Name Usage ID" .
+
+dwc:acceptedScientificName a rdf:Property ;
+    rdfs:label "Accepted Scientific Name" .
+
+dwc:acceptedScientificNameID a rdf:Property ;
+    rdfs:label "Accepted Scientific Name ID" .
+
+dwc:acceptedTaxonID a rdf:Property ;
+    rdfs:label "Accepted Taxon ID" .
+
+dwc:acceptedTaxonName a rdf:Property ;
+    rdfs:label "Accepted Taxon Name" .
+
+dwc:acceptedTaxonNameID a rdf:Property ;
+    rdfs:label "Accepted Taxon Name ID" .
+
+dwc:accordingTo a rdf:Property ;
+    rdfs:label "According To" .
+
+dwc:accuracy a rdf:Property ;
+    rdfs:label "Accuracy" .
+
+dwc:agentID a rdf:Property ;
+    rdfs:label "Agent ID" .
+
+dwc:agentRemarks a rdf:Property ;
+    rdfs:label "Agent Remarks" .
+
+dwc:agentRoleOrder a rdf:Property ;
+    rdfs:label "Agent Role Order" .
+
+dwc:agentType a rdf:Property ;
+    rdfs:label "Agent Type" .
+
+dwc:assayType a rdf:Property ;
+    rdfs:label "Assay Type" .
+
+dwc:assertionBy a rdf:Property ;
+    rdfs:label "Assertion By" .
+
+dwc:assertionEffectiveDate a rdf:Property ;
+    rdfs:label "Assertion Effective Date" .
+
+dwc:assertionError a rdf:Property ;
+    rdfs:label "Assertion Error" .
+
+dwc:assertionID a rdf:Property ;
+    rdfs:label "Assertion ID" .
+
+dwc:assertionMadeDate a rdf:Property ;
+    rdfs:label "Assertion Made Date" .
+
+dwc:assertionProtocols a rdf:Property ;
+    rdfs:label "Assertion Protocols" .
+
+dwc:assertionReferences a rdf:Property ;
+    rdfs:label "Assertion References" .
+
+dwc:assertionRemarks a rdf:Property ;
+    rdfs:label "Assertion Remarks" .
+
+dwc:assertionType a rdf:Property ;
+    rdfs:label "Assertion Type" .
+
+dwc:assertionUnit a rdf:Property ;
+    rdfs:label "Assertion Unit" .
+
+dwc:assertionValue a rdf:Property ;
+    rdfs:label "Assertion Value" .
+
+dwc:associatedMedia a rdf:Property ;
+    rdfs:label "Associated Media" .
+
+dwc:associatedOccurrences a rdf:Property ;
+    rdfs:label "Associated Occurrences" .
+
+dwc:associatedOrganisms a rdf:Property ;
+    rdfs:label "Associated Organisms" .
+
+dwc:associatedReferences a rdf:Property ;
+    rdfs:label "Associated References" .
+
+dwc:associatedSequences a rdf:Property ;
+    rdfs:label "Associated Sequences" .
+
+dwc:associatedTaxa a rdf:Property ;
+    rdfs:label "Associated Taxa" .
+
+dwc:basionym a rdf:Property ;
+    rdfs:label "Basionym" .
+
+dwc:basionymID a rdf:Property ;
+    rdfs:label "Basionym ID" .
+
+dwc:basisOfRecord a rdf:Property ;
+    rdfs:label "Basis Of Record" .
+
+dwc:bed a rdf:Property ;
+    rdfs:label "Bed" .
+
+dwc:behavior a rdf:Property ;
+    rdfs:label "Behavior" .
+
+dwc:binomial a rdf:Property ;
+    rdfs:label "Binomial" .
+
+dwc:caste a rdf:Property ;
+    rdfs:label "Caste" .
+
+dwc:catalogNumber a rdf:Property ;
+    rdfs:label "Catalog Number" .
+
+dwc:causeOfDeath a rdf:Property ;
+    rdfs:label "Cause Of Death" .
+
+dwc:class a rdf:Property ;
+    rdfs:label "Class" .
+
+dwc:collectionCode a rdf:Property ;
+    rdfs:label "Collection Code" .
+
+dwc:collectionID a rdf:Property ;
+    rdfs:label "Collection ID" .
+
+dwc:continent a rdf:Property ;
+    rdfs:label "Continent" .
+
+dwc:coordinatePrecision a rdf:Property ;
+    rdfs:label "Coordinate Precision" .
+
+dwc:coordinateUncertaintyInMeters a rdf:Property ;
+    rdfs:label "Coordinate Uncertainty In Meters" .
+
+dwc:country a rdf:Property ;
+    rdfs:label "Country" .
+
+dwc:countryCode a rdf:Property ;
+    rdfs:label "Country Code" .
+
+dwc:county a rdf:Property ;
+    rdfs:label "Second Order Division" .
+
+dwc:cultivarEpithet a rdf:Property ;
+    rdfs:label "Cultivar Epithet" .
+
+dwc:dataGeneralizations a rdf:Property ;
+    rdfs:label "Data Generalizations" .
+
+dwc:datasetID a rdf:Property ;
+    rdfs:label "Dataset ID" .
+
+dwc:datasetName a rdf:Property ;
+    rdfs:label "Dataset Name" .
+
+dwc:dateIdentified a rdf:Property ;
+    rdfs:label "Date Identified" .
+
+dwc:day a rdf:Property ;
+    rdfs:label "Day" .
+
+dwc:decimalLatitude a rdf:Property ;
+    rdfs:label "Decimal Latitude" .
+
+dwc:decimalLongitude a rdf:Property ;
+    rdfs:label "Decimal Longitude" .
+
+dwc:degreeOfEstablishment a rdf:Property ;
+    rdfs:label "Degree of Establishment" .
+
+dwc:digitalSpecimenID a rdf:Property ;
+    rdfs:label "Digital Specimen ID" .
+
+dwc:discipline a rdf:Property ;
+    rdfs:label "Discipline" .
+
+dwc:disposition a rdf:Property ;
+    rdfs:label "Disposition" .
+
+dwc:dynamicProperties a rdf:Property ;
+    rdfs:label "Dynamic Properties" .
+
+dwc:earliestAgeOrLowestStage a rdf:Property ;
+    rdfs:label "Earliest Age Or Lowest Stage" .
+
+dwc:earliestEonOrLowestEonothem a rdf:Property ;
+    rdfs:label "Earliest Eon Or Lowest Eonothem" .
+
+dwc:earliestEpochOrLowestSeries a rdf:Property ;
+    rdfs:label "Earliest Epoch Or Lowest Series" .
+
+dwc:earliestEraOrLowestErathem a rdf:Property ;
+    rdfs:label "Earliest Era Or Lowest Erathem" .
+
+dwc:earliestPeriodOrLowestSystem a rdf:Property ;
+    rdfs:label "Earliest Period Or Lowest System" .
+
+dwc:endDayOfYear a rdf:Property ;
+    rdfs:label "End Day Of Year" .
+
+dwc:establishmentMeans a rdf:Property ;
+    rdfs:label "Establishment Means" .
+
+dwc:eventAttributes a rdf:Property ;
+    rdfs:label "Event Attributes" .
+
+dwc:eventCategory a rdf:Property ;
+    rdfs:label "Event Category" .
+
+dwc:eventDate a rdf:Property ;
+    rdfs:label "Event Date" .
+
+dwc:eventID a rdf:Property ;
+    rdfs:label "Event ID" .
+
+dwc:eventMeasurementAccuracy a rdf:Property ;
+    rdfs:label "Event Measurement Accuracy" .
+
+dwc:eventMeasurementDeterminedBy a rdf:Property ;
+    rdfs:label "Event Measurement Determined By" .
+
+dwc:eventMeasurementDeterminedDate a rdf:Property ;
+    rdfs:label "Event Measurement Determined Date" .
+
+dwc:eventMeasurementID a rdf:Property ;
+    rdfs:label "Event Measurement ID" .
+
+dwc:eventMeasurementRemarks a rdf:Property ;
+    rdfs:label "Event Measurement Remarks" .
+
+dwc:eventMeasurementType a rdf:Property ;
+    rdfs:label "Event Measurement Type" .
+
+dwc:eventMeasurementUnit a rdf:Property ;
+    rdfs:label "Event Measurement Unit" .
+
+dwc:eventMeasurementValue a rdf:Property ;
+    rdfs:label "Event Measurement Value" .
+
+dwc:eventRemarks a rdf:Property ;
+    rdfs:label "Event Remarks" .
+
+dwc:eventTime a rdf:Property ;
+    rdfs:label "Event Time" .
+
+dwc:eventType a rdf:Property ;
+    rdfs:label "Event Type" .
+
+dwc:family a rdf:Property ;
+    rdfs:label "Family" .
+
+dwc:feedbackURL a rdf:Property ;
+    rdfs:label "Feedback URL" .
+
+dwc:fieldNotes a rdf:Property ;
+    rdfs:label "Field Notes" .
+
+dwc:fieldNumber a rdf:Property ;
+    rdfs:label "Field Number" .
+
+dwc:footprintSRS a rdf:Property ;
+    rdfs:label "Footprint SRS" .
+
+dwc:footprintSpatialFit a rdf:Property ;
+    rdfs:label "Footprint Spatial Fit" .
+
+dwc:footprintWKT a rdf:Property ;
+    rdfs:label "Footprint WKT" .
+
+dwc:formation a rdf:Property ;
+    rdfs:label "Formation" .
+
+dwc:fundingAttributionID a rdf:Property ;
+    rdfs:label "Funding Attribution ID" .
+
+dwc:genericName a rdf:Property ;
+    rdfs:label "Generic Name" .
+
+dwc:genus a rdf:Property ;
+    rdfs:label "Genus" .
+
+dwc:geodeticDatum a rdf:Property ;
+    rdfs:label "Geodetic Datum" .
+
+dwc:geologicalContextID a rdf:Property ;
+    rdfs:label "Geological Context ID" .
+
+dwc:georeferenceProtocol a rdf:Property ;
+    rdfs:label "Georeference Protocol" .
+
+dwc:georeferenceRemarks a rdf:Property ;
+    rdfs:label "Georeference Remarks" .
+
+dwc:georeferenceSources a rdf:Property ;
+    rdfs:label "Georeference Sources" .
+
+dwc:georeferenceVerificationStatus a rdf:Property ;
+    rdfs:label "Georeference Verification Status" .
+
+dwc:georeferencedBy a rdf:Property ;
+    rdfs:label "Georeferenced By" .
+
+dwc:georeferencedDate a rdf:Property ;
+    rdfs:label "Georeferenced Date" .
+
+dwc:group a rdf:Property ;
+    rdfs:label "Group" .
+
+dwc:habitat a rdf:Property ;
+    rdfs:label "Habitat" .
+
+dwc:higherClassification a rdf:Property ;
+    rdfs:label "Higher Classification" .
+
+dwc:higherGeography a rdf:Property ;
+    rdfs:label "Higher Geography" .
+
+dwc:higherGeographyID a rdf:Property ;
+    rdfs:label "Higher Geography ID" .
+
+dwc:higherTaxonName a rdf:Property ;
+    rdfs:label "Higher Taxon Name" .
+
+dwc:higherTaxonNameID a rdf:Property ;
+    rdfs:label "Higher Taxon Name ID" .
+
+dwc:higherTaxonconceptID a rdf:Property ;
+    rdfs:label "Higher Taxon Concept ID" .
+
+dwc:highestBiostratigraphicZone a rdf:Property ;
+    rdfs:label "Highest Biostratigraphic Zone" .
+
+dwc:identificationAttributes a rdf:Property ;
+    rdfs:label "Identification Attributes" .
+
+dwc:identificationID a rdf:Property ;
+    rdfs:label "Identification ID" .
+
+dwc:identificationQualifier a rdf:Property ;
+    rdfs:label "Identification Qualifier" .
+
+dwc:identificationReferences a rdf:Property ;
+    rdfs:label "Identification References" .
+
+dwc:identificationRemarks a rdf:Property ;
+    rdfs:label "Identification Remarks" .
+
+dwc:identificationType a rdf:Property ;
+    rdfs:label "Identification Type" .
+
+dwc:identificationVerificationStatus a rdf:Property ;
+    rdfs:label "Identification Verification Status" .
+
+dwc:identifiedBy a rdf:Property ;
+    rdfs:label "Identified By" .
+
+dwc:identifiedByID a rdf:Property ;
+    rdfs:label "Identified By ID" .
+
+dwc:individualCount a rdf:Property ;
+    rdfs:label "Individual Count" .
+
+dwc:individualID a rdf:Property ;
+    rdfs:label "Individual ID" .
+
+dwc:informationWithheld a rdf:Property ;
+    rdfs:label "Information Withheld" .
+
+dwc:infragenericEpithet a rdf:Property ;
+    rdfs:label "Infrageneric Epithet" .
+
+dwc:infraspecificEpithet a rdf:Property ;
+    rdfs:label "Infraspecific Epithet" .
+
+dwc:institutionCode a rdf:Property ;
+    rdfs:label "Institution Code" .
+
+dwc:institutionID a rdf:Property ;
+    rdfs:label "Institution ID" .
+
+dwc:isAcceptedIdentification a rdf:Property ;
+    rdfs:label "Is Accepted Identification" .
+
+dwc:island a rdf:Property ;
+    rdfs:label "Island" .
+
+dwc:islandGroup a rdf:Property ;
+    rdfs:label "Island Group" .
+
+dwc:kingdom a rdf:Property ;
+    rdfs:label "Kingdom" .
+
+dwc:latestAgeOrHighestStage a rdf:Property ;
+    rdfs:label "Latest Age Or Highest Stage" .
+
+dwc:latestEonOrHighestEonothem a rdf:Property ;
+    rdfs:label "Latest Eon Or Highest Eonothem" .
+
+dwc:latestEpochOrHighestSeries a rdf:Property ;
+    rdfs:label "Latest Epoch Or Highest Series" .
+
+dwc:latestEraOrHighestErathem a rdf:Property ;
+    rdfs:label "Latest Era Or Highest Erathem" .
+
+dwc:latestPeriodOrHighestSystem a rdf:Property ;
+    rdfs:label "Latest Period Or Highest System" .
+
+dwc:lifeStage a rdf:Property ;
+    rdfs:label "Life Stage" .
+
+dwc:lithostratigraphicTerms a rdf:Property ;
+    rdfs:label "Lithostratigraphic Terms" .
+
+dwc:locality a rdf:Property ;
+    rdfs:label "Locality" .
+
+dwc:locationAccordingTo a rdf:Property ;
+    rdfs:label "Location According To" .
+
+dwc:locationAttributes a rdf:Property ;
+    rdfs:label "Location Attributes" .
+
+dwc:locationID a rdf:Property ;
+    rdfs:label "Location ID" .
+
+dwc:locationRemarks a rdf:Property ;
+    rdfs:label "Location Remarks" .
+
+dwc:lowestBiostratigraphicZone a rdf:Property ;
+    rdfs:label "Lowest Biostratigraphic Zone" .
+
+dwc:materialEntityCategory a rdf:Property ;
+    rdfs:label "Material Entity Category" .
+
+dwc:materialEntityID a rdf:Property ;
+    rdfs:label "Material Entity ID" .
+
+dwc:materialEntityRemarks a rdf:Property ;
+    rdfs:label "Material Entity Remarks" .
+
+dwc:materialEntityType a rdf:Property ;
+    rdfs:label "Material Entity Type" .
+
+dwc:materialSampleID a rdf:Property ;
+    rdfs:label "Material Sample ID" .
+
+dwc:maximumDepthInMeters a rdf:Property ;
+    rdfs:label "Maximum Depth In Meters" .
+
+dwc:maximumDistanceAboveSurfaceInMeters a rdf:Property ;
+    rdfs:label "Maximum Distance Above Surface In Meters" .
+
+dwc:maximumElevationInMeters a rdf:Property ;
+    rdfs:label "Maximum Elevation In Meters" .
+
+dwc:measurementAccuracy a rdf:Property ;
+    rdfs:label "Measurement Accuracy" .
+
+dwc:measurementDeterminedBy a rdf:Property ;
+    rdfs:label "Measurement Determined By" .
+
+dwc:measurementDeterminedDate a rdf:Property ;
+    rdfs:label "Measurement Determined Date" .
+
+dwc:measurementID a rdf:Property ;
+    rdfs:label "Measurement ID" .
+
+dwc:measurementMethod a rdf:Property ;
+    rdfs:label "Measurement Method" .
+
+dwc:measurementRemarks a rdf:Property ;
+    rdfs:label "Measurement Remarks" .
+
+dwc:measurementType a rdf:Property ;
+    rdfs:label "Measurement Type" .
+
+dwc:measurementUnit a rdf:Property ;
+    rdfs:label "Measurement Unit" .
+
+dwc:measurementValue a rdf:Property ;
+    rdfs:label "Measurement Value" .
+
+dwc:member a rdf:Property ;
+    rdfs:label "Member" .
+
+dwc:minimumDepthInMeters a rdf:Property ;
+    rdfs:label "Minimum Depth In Meters" .
+
+dwc:minimumDistanceAboveSurfaceInMeters a rdf:Property ;
+    rdfs:label "Minimum Distance Above Surface In Meters" .
+
+dwc:minimumElevationInMeters a rdf:Property ;
+    rdfs:label "Minimum Elevation In Meters" .
+
+dwc:molecularProtocolID a rdf:Property ;
+    rdfs:label "Molecular Protocol ID" .
+
+dwc:month a rdf:Property ;
+    rdfs:label "Month" .
+
+dwc:municipality a rdf:Property ;
+    rdfs:label "Third Order Division" .
+
+dwc:nameAccordingTo a rdf:Property ;
+    rdfs:label "Name According To" .
+
+dwc:nameAccordingToID a rdf:Property ;
+    rdfs:label "Name According To ID" .
+
+dwc:namePublicationID a rdf:Property ;
+    rdfs:label "Name Publication ID" .
+
+dwc:namePublishedIn a rdf:Property ;
+    rdfs:label "Name Published In" .
+
+dwc:namePublishedInID a rdf:Property ;
+    rdfs:label "Name Published In ID" .
+
+dwc:namePublishedInYear a rdf:Property ;
+    rdfs:label "Name Published In Year" .
+
+dwc:nomenclaturalCode a rdf:Property ;
+    rdfs:label "Nomenclatural Code" .
+
+dwc:nomenclaturalStatus a rdf:Property ;
+    rdfs:label "Nomenclatural Status" .
+
+dwc:nucleotideSequenceRemarks a rdf:Property ;
+    rdfs:label "Nucleotide Sequence Remarks" .
+
+dwc:objectQuantity a rdf:Property ;
+    rdfs:label "Object Quantity" .
+
+dwc:objectQuantityType a rdf:Property ;
+    rdfs:label "Object Quantity Type" .
+
+dwc:occurrenceAttributes a rdf:Property ;
+    rdfs:label "Occurrence Attributes" .
+
+dwc:occurrenceDetails a rdf:Property ;
+    rdfs:label "Occurrence Details" .
+
+dwc:occurrenceID a rdf:Property ;
+    rdfs:label "Occurrence ID" .
+
+dwc:occurrenceMeasurementAccuracy a rdf:Property ;
+    rdfs:label "Occurrence Measurement Accuracy" .
+
+dwc:occurrenceMeasurementDeterminedBy a rdf:Property ;
+    rdfs:label "Occurrence Measurement Determined By" .
+
+dwc:occurrenceMeasurementDeterminedDate a rdf:Property ;
+    rdfs:label "Occurrence Measurement Determined Date" .
+
+dwc:occurrenceMeasurementID a rdf:Property ;
+    rdfs:label "Occurrence Measurement ID" .
+
+dwc:occurrenceMeasurementRemarks a rdf:Property ;
+    rdfs:label "Occurrence Measurement Remarks" .
+
+dwc:occurrenceMeasurementType a rdf:Property ;
+    rdfs:label "Occurrence Measurement Type" .
+
+dwc:occurrenceMeasurementUnit a rdf:Property ;
+    rdfs:label "Occurrence Measurement Unit" .
+
+dwc:occurrenceMeasurementValue a rdf:Property ;
+    rdfs:label "Occurrence Measurement Value" .
+
+dwc:occurrenceRemarks a rdf:Property ;
+    rdfs:label "Occurrence Remarks" .
+
+dwc:occurrenceStatus a rdf:Property ;
+    rdfs:label "Occurrence Status" .
+
+dwc:order a rdf:Property ;
+    rdfs:label "Order" .
+
+dwc:organismID a rdf:Property ;
+    rdfs:label "Organism ID" .
+
+dwc:organismInteractionDescription a rdf:Property ;
+    rdfs:label "Organism Interaction Description" .
+
+dwc:organismInteractionID a rdf:Property ;
+    rdfs:label "Organism Interaction ID" .
+
+dwc:organismInteractionType a rdf:Property ;
+    rdfs:label "Organism Interaction Type" .
+
+dwc:organismName a rdf:Property ;
+    rdfs:label "Organism Name" .
+
+dwc:organismQuantity a rdf:Property ;
+    rdfs:label "Organism Quantity" .
+
+dwc:organismQuantityType a rdf:Property ;
+    rdfs:label "Organism Quantity Type" .
+
+dwc:organismRemarks a rdf:Property ;
+    rdfs:label "Organism Remarks" .
+
+dwc:organismScope a rdf:Property ;
+    rdfs:label "Organism Scope" .
+
+dwc:originalNameUsage a rdf:Property ;
+    rdfs:label "Original Name Usage" .
+
+dwc:originalNameUsageID a rdf:Property ;
+    rdfs:label "Original Name Usage ID" .
+
+dwc:otherCatalogNumbers a rdf:Property ;
+    rdfs:label "Other Catalog Numbers" .
+
+dwc:ownerInstitutionCode a rdf:Property ;
+    rdfs:label "Owner Institution Code" .
+
+dwc:parentEventID a rdf:Property ;
+    rdfs:label "Parent Event ID" .
+
+dwc:parentMeasurementID a rdf:Property ;
+    rdfs:label "Parent Measurement ID" .
+
+dwc:parentNameUsage a rdf:Property ;
+    rdfs:label "Parent Name Usage" .
+
+dwc:parentNameUsageID a rdf:Property ;
+    rdfs:label "Parent Name Usage ID" .
+
+dwc:pathway a rdf:Property ;
+    rdfs:label "Pathway" .
+
+dwc:phylum a rdf:Property ;
+    rdfs:label "Phylum" .
+
+dwc:pointRadiusSpatialFit a rdf:Property ;
+    rdfs:label "Point Radius Spatial Fit" .
+
+dwc:preferredSpatialRepresentation a rdf:Property ;
+    rdfs:label "Preferred Spatial Representation" .
+
+dwc:preparations a rdf:Property ;
+    rdfs:label "Preparations" .
+
+dwc:previousIdentifications a rdf:Property ;
+    rdfs:label "Previous Identifications" .
+
+dwc:processedTotalReadCount a rdf:Property ;
+    rdfs:label "Processed Total Read Count" .
+
+dwc:projectID a rdf:Property ;
+    rdfs:label "Project ID" .
+
+dwc:projectTitle a rdf:Property ;
+    rdfs:label "Project Title" .
+
+dwc:protocolDescription a rdf:Property ;
+    rdfs:label "Protocol Description" .
+
+dwc:protocolID a rdf:Property ;
+    rdfs:label "Protocol ID" .
+
+dwc:protocolReferences a rdf:Property ;
+    rdfs:label "Protocol References" .
+
+dwc:protocolRemarks a rdf:Property ;
+    rdfs:label "Protocol Remarks" .
+
+dwc:protocolType a rdf:Property ;
+    rdfs:label "Protocol Type" .
+
+dwc:readCount a rdf:Property ;
+    rdfs:label "Read Count" .
+
+dwc:recordNumber a rdf:Property ;
+    rdfs:label "Record Number" .
+
+dwc:recordedBy a rdf:Property ;
+    rdfs:label "Recorded By" .
+
+dwc:recordedByID a rdf:Property ;
+    rdfs:label "Recorded By ID" .
+
+dwc:referenceID a rdf:Property ;
+    rdfs:label "Reference ID" .
+
+dwc:referenceRemarks a rdf:Property ;
+    rdfs:label "Reference Remarks" .
+
+dwc:referenceType a rdf:Property ;
+    rdfs:label "Reference Type" .
+
+dwc:relatedResourceID a rdf:Property ;
+    rdfs:label "Related Resource ID" .
+
+dwc:relatedResourceType a rdf:Property ;
+    rdfs:label "Related Resource Type" .
+
+dwc:relationshipAccordingTo a rdf:Property ;
+    rdfs:label "Relationship According To" .
+
+dwc:relationshipEstablishedDate a rdf:Property ;
+    rdfs:label "Relationship Established Date" .
+
+dwc:relationshipOfResource a rdf:Property ;
+    rdfs:label "Relationship Of Resource" .
+
+dwc:relationshipOfResourceID a rdf:Property ;
+    rdfs:label "Relationship Of Resource ID" .
+
+dwc:relationshipRemarks a rdf:Property ;
+    rdfs:label "Relationship Remarks" .
+
+dwc:reproductiveCondition a rdf:Property ;
+    rdfs:label "Reproductive Condition" .
+
+dwc:resourceID a rdf:Property ;
+    rdfs:label "Resource ID" .
+
+dwc:resourceRelationshipID a rdf:Property ;
+    rdfs:label "Resource Relationship ID" .
+
+dwc:sampleSizeUnit a rdf:Property ;
+    rdfs:label "Sample Size Unit" .
+
+dwc:sampleSizeValue a rdf:Property ;
+    rdfs:label "Sample Size Value" .
+
+dwc:sampledSubstrateCategory a rdf:Property ;
+    rdfs:label "Sampled Substrate Category" .
+
+dwc:sampledSubstrateLayer a rdf:Property ;
+    rdfs:label "Sampled Substrate Layer" .
+
+dwc:samplingEffort a rdf:Property ;
+    rdfs:label "Sampling Effort" .
+
+dwc:samplingProtocol a rdf:Property ;
+    rdfs:label "Sampling Protocol" .
+
+dwc:scientificName a rdf:Property ;
+    rdfs:label "Scientific Name" .
+
+dwc:scientificNameAuthorship a rdf:Property ;
+    rdfs:label "Scientific Name Authorship" .
+
+dwc:scientificNameID a rdf:Property ;
+    rdfs:label "Scientific Name ID" .
+
+dwc:scientificNameRank a rdf:Property ;
+    rdfs:label "Scientific Name Rank" .
+
+dwc:sequence a rdf:Property ;
+    rdfs:label "Sequence" .
+
+dwc:sex a rdf:Property ;
+    rdfs:label "Sex" .
+
+dwc:siteNumber a rdf:Property ;
+    rdfs:label "Site Number" .
+
+dwc:specificEpithet a rdf:Property ;
+    rdfs:label "Specific Epithet" .
+
+dwc:startDayOfYear a rdf:Property ;
+    rdfs:label "Start Day Of Year" .
+
+dwc:stateProvince a rdf:Property ;
+    rdfs:label "First Order Division" .
+
+dwc:subfamily a rdf:Property ;
+    rdfs:label "Subfamily" .
+
+dwc:subgenus a rdf:Property ;
+    rdfs:label "Subgenus" .
+
+dwc:subtribe a rdf:Property ;
+    rdfs:label "Subtribe" .
+
+dwc:superfamily a rdf:Property ;
+    rdfs:label "Superfamily" .
+
+dwc:taxonAccordingTo a rdf:Property ;
+    rdfs:label "Taxon According To" .
+
+dwc:taxonAttributes a rdf:Property ;
+    rdfs:label "Taxon Attributes" .
+
+dwc:taxonConceptID a rdf:Property ;
+    rdfs:label "Taxon Concept ID" .
+
+dwc:taxonFormula a rdf:Property ;
+    rdfs:label "Taxon Formula" .
+
+dwc:taxonID a rdf:Property ;
+    rdfs:label "Taxon ID" .
+
+dwc:taxonNameID a rdf:Property ;
+    rdfs:label "Taxon Name ID" .
+
+dwc:taxonRank a rdf:Property ;
+    rdfs:label "Taxon Rank" .
+
+dwc:taxonRemarks a rdf:Property ;
+    rdfs:label "Taxon Remarks" .
+
+dwc:taxonomicStatus a rdf:Property ;
+    rdfs:label "Taxonomic Status" .
+
+dwc:tribe a rdf:Property ;
+    rdfs:label "Tribe" .
+
+dwc:typeOfType a rdf:Property ;
+    rdfs:label "Type Of Type" .
+
+dwc:typeStatus a rdf:Property ;
+    rdfs:label "Type Status" .
+
+dwc:typifiedName a rdf:Property ;
+    rdfs:label "Typified Name" .
+
+dwc:verbatimAssertionType a rdf:Property ;
+    rdfs:label "Verbatim Assertion Type" .
+
+dwc:verbatimCoordinateSystem a rdf:Property ;
+    rdfs:label "Verbatim Coordinate System" .
+
+dwc:verbatimCoordinates a rdf:Property ;
+    rdfs:label "Verbatim Coordinates" .
+
+dwc:verbatimDepth a rdf:Property ;
+    rdfs:label "Verbatim Depth" .
+
+dwc:verbatimElevation a rdf:Property ;
+    rdfs:label "Verbatim Elevation" .
+
+dwc:verbatimEventDate a rdf:Property ;
+    rdfs:label "Verbatim EventDate" .
+
+dwc:verbatimIdentification a rdf:Property ;
+    rdfs:label "Verbatim Identification" .
+
+dwc:verbatimLabel a rdf:Property ;
+    rdfs:label "Verbatim Label" .
+
+dwc:verbatimLatitude a rdf:Property ;
+    rdfs:label "Verbatim Latitude" .
+
+dwc:verbatimLocality a rdf:Property ;
+    rdfs:label "Verbatim Locality" .
+
+dwc:verbatimLongitude a rdf:Property ;
+    rdfs:label "Verbatim Longitude" .
+
+dwc:verbatimMeasurementType a rdf:Property ;
+    rdfs:label "Verbatim Measurement Type" .
+
+dwc:verbatimSRS a rdf:Property ;
+    rdfs:label "Verbatim SRS" .
+
+dwc:verbatimScientificNameRank a rdf:Property ;
+    rdfs:label "Verbatim Scientific Name Rank" .
+
+dwc:verbatimTaxonRank a rdf:Property ;
+    rdfs:label "Verbatim Taxon Rank" .
+
+dwc:vernacularName a rdf:Property ;
+    rdfs:label "Vernacular Name" .
+
+dwc:verticalDatum a rdf:Property ;
+    rdfs:label "Vertical Datum" .
+
+dwc:vitality a rdf:Property ;
+    rdfs:label "Vitality" .
+
+dwc:waterBody a rdf:Property ;
+    rdfs:label "Water Body" .
+
+dwc:year a rdf:Property ;
+    rdfs:label "Year" .
+

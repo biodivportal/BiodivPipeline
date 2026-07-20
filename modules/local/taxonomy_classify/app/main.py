@@ -1,0 +1,112 @@
+import io
+import logging
+
+import numpy as np
+import pandas as pd
+
+from enum import Enum
+from fastapi import FastAPI, HTTPException, UploadFile, File, Query
+from fastapi.responses import Response, JSONResponse
+import json
+
+from .config import DEFAULT_CONFIG, configure_logging
+from .pipeline import process_csv
+from .util.pricing import calc_pricing
+
+app = FastAPI(
+    title='Land Taxonomy Classifier and Plant Taxonomy Service',
+    version='1.0.0',
+)
+
+configure_logging()
+log = logging.getLogger(__name__)
+
+@app.get('/')
+def root():
+    return {'status': 'ok'}
+
+class InputFormat(str, Enum):
+    csv = 'csv'
+    json = 'json'
+
+@app.post('/price')
+async def pricing(
+    file: UploadFile = File(...),
+):
+
+    if not file.filename or not file.filename.endswith(('.csv', '.json')):
+        log.warning('Rejected upload: not a CSV or JSON (filename=%s)', file.filename)
+        raise HTTPException(status_code=400, detail='Only CSV or JSON files are supported.')
+
+    content = await file.read()
+    
+    df = pd.read_csv(io.BytesIO(content), sep=None, engine='python')
+    
+    log.info('Received %s with %d rows', file.filename, len(df))
+
+
+    # process_csv writes to temp file
+    result = calc_pricing(
+        prompt_tokens=df['llm_prompt_tokens'].sum(),
+        completion_tokens=df['llm_completion_tokens'].sum(),
+        cached_tokens=df['llm_cached_tokens'].sum(),
+        model=df['llm_model'].iloc[0],
+    )
+
+    return f'The output cost ${result}.'
+
+@app.post('/classify')
+async def classify(
+    file: UploadFile = File(...),
+    fmt: InputFormat = Query(default=InputFormat.csv, description='Response format.'),
+    download_file: bool = True,
+):
+
+    if not file.filename or not file.filename.endswith(('.csv', '.json')):
+        log.warning('Rejected upload: not a CSV or JSON (filename=%s)', file.filename)
+        raise HTTPException(status_code=400, detail='Only CSV or JSON files are supported.')
+
+    content = await file.read()
+    
+    df = pd.read_csv(io.BytesIO(content), sep=None, engine='python')
+    
+    log.info('Received %s with %d rows', file.filename, len(df))
+
+
+    # process_csv writes to temp file
+    result = await process_csv(
+        df=df,
+        model=DEFAULT_CONFIG['model'],
+    )
+
+    if fmt is InputFormat.json:
+        if download_file:
+            payload = {
+                'rows': len(result),
+                'columns': list(result.columns),
+                'data': result.replace({np.nan: None}).to_dict(orient='records'),
+            }
+
+            json_bytes = json.dumps(payload).encode('utf-8')
+    
+            return Response(
+                content=json_bytes,
+                media_type='application/json',
+                headers={'Content-Disposition': f'attachment; filename=processed_{file.filename}'},
+            )
+        else:
+            return JSONResponse(content={
+                'rows': len(result),
+                'columns': list(result.columns),
+                'data': result.replace({np.nan: None}).to_dict(orient='records'),
+            })
+
+    if download_file:
+        return Response(
+            content=result.to_csv(index=False),
+            media_type='text/csv',
+            headers={'Content-Disposition': f'attachment; filename=processed_{file.filename}'},
+        )
+    
+    else: 
+        return result.to_dict(orient='records')

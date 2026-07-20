@@ -1,0 +1,12 @@
+.env
+venv/
+__pycache__/
+*.pyc
+*.pyo
+.idea/
+TODO.txt
+.ipynb_checkpoints/
+*.log
+.nf-test/
+*.egg-info
+output.csv

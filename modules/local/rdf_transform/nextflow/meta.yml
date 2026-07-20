@@ -1,0 +1,43 @@
+name: rdf_transform
+description: |
+  Transform a tabular biodiversity dataset into RDF triples via the WP8
+  RDF Matching and Transformation Service. Internally calls /validate
+  (against the loaded OBOE ontology) before /transform, so a model that
+  has drifted from the ontology aborts the task instead of producing
+  RDF pointing at undefined terms.
+keywords:
+  - rdf
+  - biodiversity
+  - rml
+  - oboe
+  - darwin core
+  - transformation
+
+input:
+  - dataset:
+      type: file
+      description: Tabular input — CSV, TSV or JSON.
+      pattern: "*.{csv,tsv,json}"
+  - schema:
+      type: file
+      description: RML mapping (Turtle or JSON-LD) produced by the WP7 Schema Editor.
+      pattern: "*.{ttl,jsonld}"
+
+output:
+  - rdf:
+      type: file
+      description: Generated RDF in the requested serialisation (turtle / ntriples / jsonld).
+      pattern: "*.{ttl,nt,jsonld}"
+  - validate:
+      type: file
+      description: |
+        JSON response from /validate — useful for downstream logging or
+        for surfacing model-quality information without re-running.
+      pattern: "validate.json"
+  - versions:
+      type: file
+      description: Version stamp emitted by the service's GET / endpoint.
+      pattern: "versions.yml"
+
+authors:
+  - "SP_WP8 SS26 — InfAI / FU Berlin"

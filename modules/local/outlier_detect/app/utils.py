@@ -1,0 +1,114 @@
+from typing import Any
+import pandas as pd
+from datetime import datetime
+from app.preprocessing.bgbm_normalizer import (
+    normalize_bgbm_record,
+)
+from fastapi import HTTPException
+from app.config import get_columns
+
+BGBM_COLUMNS = [
+    get_columns().get("HERBARIUM_ID", "HerbariumID"),
+    get_columns().get("BILD", "Bild"),
+    get_columns().get("DB", "DB"),
+    get_columns().get("FAMILY", "Family"),
+    get_columns().get("FULL_NAME_CACHE", "FullNameCache"),
+    get_columns().get("ANMERKUNGEN", "Anmerkungen"),
+    get_columns().get("SAMMLERTEAM", "Sammlerteam"),
+    get_columns().get("SAMMELNUMMER", "Sammelnummer"),
+    get_columns().get("COLLECTION_DATE_BEGIN", "CollectionDateBegin"),
+    get_columns().get("COLLECTION_DATE_END", "CollectionDateEnd"),
+    get_columns().get("COUNTRY", "Country"),
+    get_columns().get("LOCALITY", "Locality"),
+    get_columns().get("TITEL_ETIKETT", "TitelEtikett"),
+    get_columns().get("EXPEDITIONSANGABE", "Expeditionsangabe"),
+    get_columns().get("SHOW_ON_MAP", "ShowOnMap"),
+    get_columns().get("LATITUDE", "Latitude"),
+    get_columns().get("LONGITUDE", "Longitude"),
+    get_columns().get("FUNDORT_UND_OEKO", "FundortUNdOeko"),
+    get_columns().get("NAME_CACHE", "NameCache"),
+    get_columns().get("GENUS", "Genus"),
+    get_columns().get("IDENTIFIER", "Identifier"),
+    get_columns().get("BARCODE", "Barcode"),
+    get_columns().get("STABLE_URI", "StableURI"),
+]
+
+
+def extract_year(value: Any) -> int | None:
+    """Extract a four-digit year from a variety of date string formats.
+
+    Supports ISO date strings, European date formats, and simple year-only values.
+    """
+    if value is None:
+        return None
+
+    text = str(value).strip()
+
+    if not text:
+        return None
+
+    formats = [
+        "%Y-%m-%d",
+        "%Y-%m",
+        "%Y",
+        "%d.%m.%Y",
+        "%d/%m/%Y",
+        "%Y/%m/%d",
+        "%d-%m-%Y",
+    ]
+
+    for fmt in formats:
+        try:
+            return datetime.strptime(text, fmt).year
+
+        except ValueError:
+            continue
+
+    if len(text) >= 4 and text[:4].isdigit():
+        try:
+            return int(text[:4])
+
+        except ValueError:
+            return None
+
+    return None
+
+
+def normalize_records(records: list[dict]) -> list[dict]:
+    """Normalize all records into the internal BGBM-derived schema."""
+    return [normalize_bgbm_record(record) for record in records]
+
+
+def add_event_year(records: list[dict]) -> list[dict]:
+    """Add a derived `eventYear` field based on collection or event date strings."""
+    for record in records:
+        record["eventYear"] = extract_year(
+            record.get("collectionDateBegin") or record.get("eventDate")
+        )
+
+    return records
+
+
+def prepare_dataframe(df: pd.DataFrame) -> pd.DataFrame:
+    """Replace pandas missing values with Python None for downstream processing."""
+    return df.where(pd.notnull(df), None)
+
+
+def apply_bgbm_columns_if_needed(
+    df: pd.DataFrame,
+) -> pd.DataFrame:
+    """Assign BGBM header names to a CSV chunk if it lacks explicit column labels."""
+
+    if all(isinstance(col, int) for col in df.columns):
+        if len(df.columns) != len(BGBM_COLUMNS):
+            raise HTTPException(
+                status_code=400,
+                detail=(
+                    f"CSV has {len(df.columns)} columns, "
+                    f"expected {len(BGBM_COLUMNS)} BGBM columns."
+                ),
+            )
+
+        df.columns = BGBM_COLUMNS
+
+    return df
