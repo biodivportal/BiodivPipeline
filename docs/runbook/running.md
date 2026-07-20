@@ -56,7 +56,7 @@ The published module images are multi-arch (`linux/amd64` + `linux/arm64`), so n
 | `--mapping_schema` | No | `assets/default_mapping.jsonld` | RML mapping for RDF (Turtle or JSON-LD) |
 | `--skip_provisional_concepts` | No | `false` | Skip WP5 (avoids needing its key) |
 | `--skip_rdf` | No | `true` | Skip WP7 RDF — needs an RML mapping matching the dataset. Not in the schema, so set it from a `-params-file`, never the CLI (see [Run](#run)) |
-| `-profile` | Yes | — | Comma-separated: `test`, `docker`, `singularity`, `emulate_amd64` |
+| `-profile` | Yes | — | Comma-separated: `test`, `docker`, `emulate_amd64` |
 
 Parameters can also be supplied from a YAML file with `-params-file params.yaml`.
 
@@ -66,7 +66,6 @@ Parameters can also be supplied from a YAML file with `-params-file params.yaml`
 | ------- | ------ |
 | `test` | Uses the bundled real BGBM sample CSV; no other params needed |
 | `docker` | Run module containers with Docker |
-| `singularity` | Run module containers with Singularity |
 | `emulate_amd64` | Force `linux/amd64` — optional; images are multi-arch, so only a fallback |
 
 Combine with commas (`-profile test,docker`); later profiles override earlier ones. The
