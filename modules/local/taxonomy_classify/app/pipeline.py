@@ -171,13 +171,12 @@ async def process_csv(
         retried = await _retry_failed(failed, system_prompt, model, taxa, use_species)
         result = [retried.get(r.id, r) if r.error else r for r in result]
 
-    # Return the WHOLE input dataset with the taxonomy / land-cover columns appended.
-    # The per-record results above only cover the non-cultivated subset (cultivated
-    # rows were filtered out of df_filtered before classification). Left-joining them
-    # back onto the original frame means every input row survives — including
-    # cultivated rows, which reappear with empty taxonomy fields (to_csv writes NaN
-    # as the empty string). The result's stringified `id` is dropped so the original
-    # id column (ID, e.g. HerbariumID) is the sole key.
+    # Reintroduce the plant taxa for cultivated specimens
+    for _, row in df.loc[df['Cultivated']].iterrows():
+        rid = str(row.get(ID, "?"))
+        result.append(ClassifierResult(id=rid, taxon=taxa.get(rid) or TaxonMatch()))
+
+    # Reintroduce the full original dataset, appending the taxonomy classification
     result_df = pd.DataFrame([r.to_row() for r in result])
     id_key = "__wp3_id_key"
     df[id_key] = df[ID].astype(str)

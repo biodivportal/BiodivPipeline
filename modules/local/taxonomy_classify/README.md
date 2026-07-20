@@ -97,7 +97,7 @@ Column names are not hard-coded. They come from a schema file:
 - `columns` maps the roles the code needs to your dataset's headers.
 - `locality_labels` is **priority-ordered**: the first field present is used, and later fields are added only if they are not redundant (see How It Works).
 - `field_labels` and the values in `locality_labels` are the labels the **model** sees in the prompt — editing them changes the prompt, not just the parsing.
-- If a plant is detected to be cultivated it is **skipped for classification** (no LLM call), but the row is still kept in the output with empty land-cover/taxonomy fields.
+- If a plant is detected to be cultivated the **land-cover LLM call is skipped** (no `llm_*`), but its resolved GBIF taxonomy is still written to the output.
 
 The BGBM schema is loaded into the image as the default. To use another schema, change the default one and rebuild the docker image.
  
@@ -109,7 +109,7 @@ Every input row produces exactly one output row; nothing is filtered out.
  
 - **No usable locality text**: a warning is logged, no LLM call is made, and the land-cover fields come back empty (`llm_code` empty, `llm_confidence` null).
 - **No scientific name**: no GBIF call; taxonomy fields come back empty with `taxon_status: unresolved`.
-- **Cultivated specimen**: detected via the `cultivated_field` markers; skipped for classification but still present in the output with empty land-cover/taxonomy fields.
+- **Cultivated specimen**: detected via the `cultivated_field` markers; the land-cover LLM call is skipped, but the resolved GBIF taxonomy is still written.
 
 ---
 
