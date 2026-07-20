@@ -26,7 +26,7 @@ process BIODIV_ANNOTATE {
         --out-json annotated.jsonld \\
         --out-unresolved unresolved_terms.csv \\
         --out-enriched-csv enriched.csv \\
-        --max-rows ${params.max_rows ?: 30}
+        --max-rows ${params.max_rows}
 
     cat <<-VERSIONS > versions.yml
     "${task.process}":
