@@ -227,12 +227,12 @@ async def detect_csv(
 
     important_columns = [
         get_columns().get("HERBARIUM_ID", "HerbariumID"),
-        get_columns().get("FULL_NAME_CACHE"),
-        get_columns().get("COUNTRY"),
-        get_columns().get("LOCALITY"),
-        get_columns().get("LATITUDE"),
-        get_columns().get("LONGITUDE"),
-        get_columns().get("COLLECTION_DATE_BEGIN"),
+        get_columns().get("FULL_NAME_CACHE", "FullNameCache"),
+        get_columns().get("COUNTRY", "Country"),
+        get_columns().get("LOCALITY", "Locality"),
+        get_columns().get("LATITUDE", "Latitude"),
+        get_columns().get("LONGITUDE", "Longitude"),
+        get_columns().get("COLLECTION_DATE_BEGIN", "CollectionDateBegin"),
         "outlier_detected",
         "outlier_status",
         "outlier_confidence",
