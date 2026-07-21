@@ -114,21 +114,14 @@ Refer to [app/config.py](app/config.py) for the full list of header constants.
 ## Diagram
 ```mermaid
 graph TD
-    %% Base Styling Definitions
-    classDef api fill:#4a90e2,stroke:#1d5da3,stroke-width:2px,color:#fff;
-    classDef pipeline fill:#50e3c2,stroke:#1bb394,stroke-width:2px,color:#000;
-    classDef modelFile fill:#f5a623,stroke:#d47d00,stroke-width:2px,color:#000;
-    classDef fallback fill:#eaeaea,stroke:#b5b5b5,stroke-width:1px,color:#333;
-    classDef data fill:#f5a623,stroke:#d47d00,stroke-width:2px,color:#000;
-
     %% Configuration & Settings Load
     C[config.py and ollama_config.py:<br>App Settings] --> M1
     C --> M2
 
     %% User Entry Points
     subgraph Client_Interface [User Entry Points]
-        M1[main_with_cli.py<br>Batch CLI]:::api
-        M2[main.py<br>FastAPI Application]:::api
+        M1[main_with_cli.py<br>Batch CLI]
+        M2[main.py<br>FastAPI Application]
     end
 
     %% Ingress Payloads & Routing Architecture (Train moved to the right)
@@ -147,7 +140,7 @@ graph TD
     %% Training State Mechanism (Shifted right below G)
     subgraph Offline_Training_State [Offline Training Loop]
         G --> K[train.py]
-        K -->|Save Models and<br>Statistical Data| L[(app/detectors/models/*)]:::modelFile
+        K -->|Save Models and<br>Statistical Data| L[(app/detectors/models/*)]
     end
 
     %% Normalization & Pipeline Engine
@@ -186,10 +179,8 @@ graph TD
     %% Output Serialization & Reporting
     subgraph Output_Aggregation [Output Serialization & Reporting]
         S1A & S2A & S2B & S2C & S2D & S2E & S2F & S3A & N --> O[report.py<br>Result Aggregator]
-        O -->|JSON Output / CSV Export| Q[Annotated Report]:::data
+        O -->|JSON Output / CSV Export| Q[Annotated Report]
     end
-
-    class Stage1,Stage2,Stage3,Stage4 pipeline;
 ```
 
 # Installation and Setup
