@@ -4,7 +4,7 @@ process BIODIV_ANNOTATE {
 
     secret 'WP2_BIODIV_API_KEY' // dedicated WP2 key; aliased to BIODIV_API_KEY in the task script below (matches the WP-prefixed names in docs/usage.md)
 
-    container 'ghcr.io/biodivportal/biodiv-annotate:0.1' // built + published from this module's Dockerfile by .github/workflows/docker-publish.yml
+    container 'ghcr.io/biodivportal/biodiv-annotate:0.2' // built + published from this module's Dockerfile by .github/workflows/docker-publish.yml
 
     input:
     path csv
@@ -26,7 +26,7 @@ process BIODIV_ANNOTATE {
         --out-json annotated.jsonld \\
         --out-unresolved unresolved_terms.csv \\
         --out-enriched-csv enriched.csv \\
-        --max-rows ${params.max_rows ?: 30}
+        --max-rows ${params.max_rows}
 
     cat <<-VERSIONS > versions.yml
     "${task.process}":

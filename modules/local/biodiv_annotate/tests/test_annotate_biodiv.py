@@ -295,3 +295,55 @@ def test_save_enriched_csv_original_columns_preserved():
         row = next(reader)
     assert row["HerbariumID"] == "B1"
     assert row["Bild"] == "http://img.org/1"
+
+
+#  schema-driven column mapping (bin/schema.json)
+
+SCRIPT = os.path.join(os.path.dirname(__file__), "..", "bin", "annotate_biodiv.py")
+
+
+def _load_fresh():
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("annotate_biodiv_fresh", SCRIPT)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def test_shipped_schema_drives_defaults():
+    ab = _load_fresh()
+    assert ab.ID_COLUMN == "HerbariumID"
+    assert ab.FIELDS_TO_CHECK == [
+        "FullNameCache", "NameCache", "Genus", "Family", "Locality",
+        "FundortUNdOeko", "Country", "TitelEtikett", "Expeditionsangabe",
+    ]
+
+
+def test_custom_schema_overrides_id_and_fields():
+    schema_path = os.path.join(tempfile.gettempdir(), "test_wp2_schema.json")
+    with open(schema_path, "w", encoding="utf-8") as f:
+        json.dump({
+            "columns": {"id": "record_id"},
+            "annotate_fields": ["Species", "Habitat"],
+        }, f)
+    os.environ["DATASET_SCHEMA"] = schema_path
+    try:
+        ab = _load_fresh()
+        assert ab.ID_COLUMN == "record_id"
+        assert ab.FIELDS_TO_CHECK == ["Species", "Habitat"]
+        # collect_terms keys off the configured id column + annotate fields.
+        terms = ab.collect_terms([{"record_id": "R1", "Species": "Fagus"}])
+        assert "Species::fagus" in terms
+        assert terms["Species::fagus"]["occurrences"][0]["record_id"] == "R1"
+    finally:
+        os.environ.pop("DATASET_SCHEMA", None)
+
+
+def test_missing_schema_falls_back_to_defaults():
+    os.environ["DATASET_SCHEMA"] = "/nonexistent/path/schema.json"
+    try:
+        ab = _load_fresh()
+        assert ab.ID_COLUMN == "HerbariumID"
+        assert "FullNameCache" in ab.FIELDS_TO_CHECK
+    finally:
+        os.environ.pop("DATASET_SCHEMA", None)

@@ -145,8 +145,9 @@ async def process_csv(
     if taxa is None:
         taxa = await resolve_taxa(df)
 
-    df['Cultivated'] = df[CULTIVATED_FIELD].apply(apply_is_cultivated)
-    df_filtered = df.loc[df['Cultivated'] == False]
+    cultivated_col = "__wp3_cultivated__"
+    df[cultivated_col] = df[CULTIVATED_FIELD].apply(apply_is_cultivated)
+    df_filtered = df.loc[df[cultivated_col] == False]
 
     id = {str(row.get(ID, "?")): row for _, row in df_filtered.iterrows()}
     result: list[ClassifierResult] = []
@@ -171,4 +172,13 @@ async def process_csv(
         retried = await _retry_failed(failed, system_prompt, model, taxa, use_species)
         result = [retried.get(r.id, r) if r.error else r for r in result]
 
-    return pd.DataFrame([r.to_row() for r in result])
+    for _, row in df.loc[df[cultivated_col]].iterrows():
+        rid = str(row.get(ID, "?"))
+        result.append(ClassifierResult(id=rid, taxon=taxa.get(rid) or TaxonMatch()))
+
+    # Reintroduce the full original dataset, appending the taxonomy classification
+    result_df = pd.DataFrame([r.to_row() for r in result])
+    new_cols = ["id"] + [c for c in result_df.columns if c != "id" and c not in df.columns]
+    merged = df.merge(result_df[new_cols], left_on=ID, right_on="id", how="left")
+    merged = merged.drop(columns=["id", cultivated_col], errors="ignore")
+    return merged

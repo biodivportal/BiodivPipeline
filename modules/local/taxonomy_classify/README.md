@@ -1,7 +1,7 @@
 # Land Taxonomy Classifier (WP3)
 
-Takes a CSV of herbarium specimen records and returns a CORINE Land Cover (CLC) code and a GBIF backbone identifier for each row. The GBIF backbone identifier is resolved from the plant name, family and genus. To obtain the CLC code, an LLM uses free-text locality description and plant data (refined through GBIF output) and analyzes those. \
-Both are returned together and **joined** by record ID.
+Takes a CSV of herbarium specimen records and returns the **whole input dataset** with two added columns per row: a CORINE Land Cover (CLC) code and a GBIF backbone identifier. The GBIF backbone identifier is resolved from the plant name, family and genus. To obtain the CLC code, an LLM uses free-text locality description and plant data (refined through GBIF output) and analyzes those. \
+The two results are **joined** onto the original record by its ID, so every input row and every original column is preserved.
 
 Part of the BiodivPipeline project, where it runs as the `TAXONOMY_CLASSIFY` Nextflow module. It also runs standalone as a FastAPI service or a batch CLI.
 
@@ -97,7 +97,7 @@ Column names are not hard-coded. They come from a schema file:
 - `columns` maps the roles the code needs to your dataset's headers.
 - `locality_labels` is **priority-ordered**: the first field present is used, and later fields are added only if they are not redundant (see How It Works).
 - `field_labels` and the values in `locality_labels` are the labels the **model** sees in the prompt — editing them changes the prompt, not just the parsing.
-- If a plant is detected to be cultivated it is ignored.
+- If a plant is detected to be cultivated the **land-cover LLM call is skipped** (no `llm_*`), but its resolved GBIF taxonomy is still written to the output.
 
 The BGBM schema is loaded into the image as the default. To use another schema, change the default one and rebuild the docker image.
  
@@ -109,18 +109,18 @@ Every input row produces exactly one output row; nothing is filtered out.
  
 - **No usable locality text**: a warning is logged, no LLM call is made, and the land-cover fields come back empty (`llm_code` empty, `llm_confidence` null).
 - **No scientific name**: no GBIF call; taxonomy fields come back empty with `taxon_status: unresolved`.
+- **Cultivated specimen**: detected via the `cultivated_field` markers; the land-cover LLM call is skipped, but the resolved GBIF taxonomy is still written.
 
 ---
 
 ## Output
  
-One row per input record, joined on `id`. The pipeline has two phases. First, GBIF taxonomy is resolved for the whole dataset. Second, land classification runs in batches (means classifier can use the resolved taxon as context).
+The **whole input dataset** is returned: every original column is preserved and every input row appears exactly once, with the land-cover (`llm_*`) and taxonomy (`taxon_*`) columns appended and joined by the input's record-id column (e.g. `HerbariumID`). The pipeline has two phases. First, GBIF taxonomy is resolved for the whole dataset. Second, land classification runs in batches (means classifier can use the resolved taxon as context).
  
 ### Land cover (LLM)
  
 | Column | Description |
 |---|---|
-| `id` | Record identifier from the input |
 | `llm_code` | CORINE Level-3 code, e.g. `311` |
 | `llm_name` | CLC category name for that code |
 | `llm_confidence` | `0.0`–`1.0`, self-assigned by the model against a fixed rubric |
@@ -226,7 +226,7 @@ flowchart TD
     end
  
     P2 --> P3["Phase 3: one sequential retry pass<br/>over rows that still errored"]
-    P3 --> OUT["Output CSV<br/>id + llm_* + taxon_*"]
+    P3 --> OUT["Output CSV<br/>original columns + llm_* + taxon_*"]
  
     classDef ext fill:#e8e8e8,stroke:#888,color:#000;
     class GBIF,OAI ext;

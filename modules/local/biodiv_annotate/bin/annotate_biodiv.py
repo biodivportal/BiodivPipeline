@@ -70,6 +70,40 @@ FIELDS_TO_CHECK = [
     # "Anmerkungen",
 ]
 
+
+# Dataset schema: maps the record-id column and the columns to annotate to this
+# dataset's headers, so the module is not hard-coded to the BGBM column names.
+# Mirrors the schema.json used by WP3 (taxonomy_classify). Override the path with
+# the DATASET_SCHEMA env var; defaults to schema.json next to this script.
+SCHEMA_PATH = os.environ.get(
+    "DATASET_SCHEMA",
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), "schema.json"),
+)
+
+
+def load_dataset_schema(path):
+    # Returns (id_column, annotate_fields). Falls back to the BGBM defaults below
+    # if the schema is missing or malformed, so the module still runs standalone.
+    default_id = "HerbariumID"
+    default_fields = list(FIELDS_TO_CHECK)
+    try:
+        with open(path, encoding="utf-8") as f:
+            raw = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        print(f"[warn] Dataset schema not found/invalid at {path!r}; using BGBM defaults.", flush=True)
+        return default_id, default_fields
+
+    columns = raw.get("columns", {}) if isinstance(raw, dict) else {}
+    id_column = columns.get("id") or default_id
+    annotate_fields = raw.get("annotate_fields") or default_fields
+    return id_column, annotate_fields
+
+
+ID_COLUMN, SCHEMA_FIELDS = load_dataset_schema(SCHEMA_PATH)
+# Drive annotation off the schema's field list (falls back to the BGBM list above).
+FIELDS_TO_CHECK = SCHEMA_FIELDS
+
+
 def get_ontology_name(url):
     # Ontology links end with the ontology acronym ex: NCBITAXON
     if not url:
@@ -224,7 +258,7 @@ def collect_terms(rows):
     terms = {}
 
     for row in rows:
-        record_id = row.get("HerbariumID")
+        record_id = row.get(ID_COLUMN)
 
 
         for field in FIELDS_TO_CHECK:
@@ -302,14 +336,14 @@ def guess_category(field):
 
 
 def annotate_records(rows, terms, term_results):
-    row_lookup = {row["HerbariumID"]: row for row in rows}
+    row_lookup = {row[ID_COLUMN]: row for row in rows}
 
     records = {}
     unresolved = []
     wp5_by_record = {}
 
     for row in rows:
-        record_id = row.get("HerbariumID")
+        record_id = row.get(ID_COLUMN)
 
         records[record_id] = {
             "record_id": record_id,
@@ -513,7 +547,7 @@ def save_enriched_csv(rows, annotated_records, out_path):
         writer.writeheader()
 
         for row in rows:
-            record_id = row.get("HerbariumID")
+            record_id = row.get(ID_COLUMN)
             uris = uri_lookup.get(record_id, {})
             out_row = dict(row)
             for field in FIELDS_TO_CHECK:

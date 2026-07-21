@@ -3,7 +3,7 @@ process TAXONOMY_CLASSIFY {
     tag "taxonomy"
     label 'process_low'
 
-    container 'ghcr.io/biodivportal/taxonomy-classify:0.1'
+    container 'ghcr.io/biodivportal/taxonomy-classify:0.2'
 
     input:
     path csv
