@@ -11,9 +11,9 @@ class RateLimiter:
     def __init__(self):
         self.requests = deque()
         try:
-            self.max_requests = int(os.environ.get("WP5_LLM_RPM", "15"))
+            self.max_requests = int(os.environ.get("WP5_LLM_RPM", "60"))
         except ValueError:
-            self.max_requests = 15
+            self.max_requests = 60
 
     def wait_if_needed(self):
         if self.max_requests <= 0:
@@ -40,7 +40,7 @@ class RateLimiter:
 _rate_limiter = RateLimiter()
 
 WP5_LLM_USE_BATCH = os.environ.get("WP5_LLM_USE_BATCH", "true")
-_BATCH_MIN = 5              # No point in using batch for small number of requests (likely can be set higher)
+_BATCH_MIN = 50              # No point in using batch for small number of requests (likely can be set higher)
 _BATCH_POLL_INTERVAL = 30   # wait for polling
 _BATCH_TIMEOUT = 3600       # timeout set to an hour, for large runs set this higher!
 

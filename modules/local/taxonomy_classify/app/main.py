@@ -40,7 +40,7 @@ async def pricing(
 
     content = await file.read()
     
-    df = pd.read_csv(io.BytesIO(content), sep=None, engine='python')
+    df = pd.read_csv(io.BytesIO(content), sep=None, engine='python', encoding='utf-8-sig')
     
     log.info('Received %s with %d rows', file.filename, len(df))
 
@@ -68,7 +68,7 @@ async def classify(
 
     content = await file.read()
     
-    df = pd.read_csv(io.BytesIO(content), sep=None, engine='python')
+    df = pd.read_csv(io.BytesIO(content), sep=None, engine='python', encoding='utf-8-sig')
     
     log.info('Received %s with %d rows', file.filename, len(df))
 

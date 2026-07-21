@@ -13,7 +13,7 @@ configure_logging()
 log = logging.getLogger(__name__)
 
 async def _run(args):
-    df = pd.read_csv(args.input, sep=None, engine='python')
+    df = pd.read_csv(args.input, sep=None, engine='python', encoding='utf-8-sig')
     log.info('Received %s with %d rows', args.input, len(df))
     result = await process_csv(
         df=df,

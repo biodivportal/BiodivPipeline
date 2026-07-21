@@ -14,17 +14,17 @@ flowchart TD
     SCH[/"RML mapping schema<br/>(from WP8 Schema Editor)"/]
 
     IN --> WP6["WP6 · COLUMN_STANDARDISE"]
-    IN --> WP2["WP2 · BIODIV_ANNOTATE"]
+    IN --> WP3["WP3 · TAXONOMY_CLASSIFY"]
     IN --> WP4["WP4 · OUTLIER_DETECT"]
 
-    WP2 -->|enriched.csv| WP3["WP3 · TAXONOMY_CLASSIFY"]
+    WP3 -->|"taxonomy_resolved.csv: whole dataset + taxonomy"| WP2["WP2 · BIODIV_ANNOTATE"]
     WP2 -->|unresolved_terms.csv| WP5["WP5 · PROVISIONAL_CONCEPTS"]
 
     WP6 -->|standardised.csv| WP7["WP7 · RDF_TRANSFORM"]
     SCH --> WP7
 
     WP2 -->|enriched.csv| ASM["ASSEMBLE_DATASET"]
-    WP3 -->|taxonomy_resolved.csv| ASM
+    WP3 -->|taxonomy_resolved.csv (vestigial — already in enriched)| ASM
     WP4 -->|flagged_records.csv| ASM
 
     WP6 -->|column_mapping.json| COL["COLLECT_REPORTS"]
@@ -47,8 +47,11 @@ flowchart TD
 ```
 
 - The raw CSV fans out to three independent branches: **WP6** (column standardisation),
-  **WP2** (annotation), **WP4** (outlier detection).
-- WP2's `enriched.csv` feeds **WP3 taxonomy**; its `unresolved_terms.csv` feeds **WP5**.
+  **WP3** (taxonomy), **WP4** (outlier detection).
+- **WP3** runs on the raw input and returns the whole dataset with the taxonomy/land-cover
+  columns appended; that `taxonomy_resolved.csv` feeds **WP2 annotation**, whose `unresolved_terms.csv`
+  feeds **WP5**. (The taxonomy join at `ASSEMBLE_DATASET` is now vestigial — the taxonomy
+  columns already ride through WP2 into `enriched.csv` — but kept for robustness.)
 - **Green (WP1):** `ASSEMBLE_DATASET` builds the unified dataset; `COLLECT_REPORTS`
   aggregates every module's signal.
 - **Orange dashed (skippable):** WP5 (needs an LLM key) and WP7 RDF (needs a matching RML

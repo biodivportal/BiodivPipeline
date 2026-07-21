@@ -1,0 +1,16 @@
+{
+  "columns": {
+    "id": "HerbariumID"
+  },
+  "annotate_fields": [
+    "FullNameCache",
+    "taxon_canonical_name",
+    "Genus",
+    "taxon_family",
+    "Locality",
+    "FundortUNdOeko",
+    "Country",
+    "TitelEtikett",
+    "Expeditionsangabe"
+  ]
+}

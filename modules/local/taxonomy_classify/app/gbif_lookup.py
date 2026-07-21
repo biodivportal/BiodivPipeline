@@ -10,9 +10,15 @@ log = logging.getLogger(__name__)
 _gbif_cache: dict[tuple, TaxonMatch] = {}
 
 
+def _clean_cell(v) -> str:
+    # updated empty float field check, NaN doesn't fail to strip()
+    if v is None or (isinstance(v, float) and v != v):
+        return ""
+    return str(v)
+
+
 def _key(name: str, genus: str, family: str) -> tuple:
-    # coerce first: genus/family are only ~98% filled, and None.strip() raises
-    return tuple((v or '').strip().lower() for v in (name, genus, family))
+    return tuple(_clean_cell(v).strip().lower() for v in (name, genus, family))
 
 
 def _family_from(classification: list[dict]) -> str:
@@ -74,7 +80,7 @@ async def _api_call(name: str, genus: str, family: str, client: httpx.AsyncClien
 
 
 async def match_gbif(name: str, genus: str, family: str, client: httpx.AsyncClient) -> TaxonMatch:
-    if not name or not name.strip():
+    if not _clean_cell(name).strip():
         return TaxonMatch()
 
     key = _key(name, genus, family)

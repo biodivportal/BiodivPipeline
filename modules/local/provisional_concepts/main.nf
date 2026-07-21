@@ -3,7 +3,7 @@ process PROVISIONAL_CONCEPTS {
     label 'process_single'
 
     secret 'WP5_OPENAI_API_KEY'
-    container 'ghcr.io/biodivportal/provisional-concepts:0.2'
+    container 'ghcr.io/biodivportal/provisional-concepts:0.3'
 
     input:
     path unresolved // resolves the csv :crossed_fingers:
