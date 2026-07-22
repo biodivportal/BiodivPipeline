@@ -20,31 +20,15 @@ REPO_ROOT = Path(__file__).parent.parent
 DATA_DIR   = REPO_ROOT / "data"
 CACHE_PATH = DATA_DIR / "envo_relevant_terms.json"
 
-RELEVANT_ROOT_IRIS = {
-    # broad environmental concepts
-    "http://purl.obolibrary.org/obo/ENVO_01000254", # environmental system
-    "http://purl.obolibrary.org/obo/ENVO_00010483", # environmental material
-
-    # aquatic features
-    "http://purl.obolibrary.org/obo/ENVO_00000063", # water body
-    "http://purl.obolibrary.org/obo/ENVO_01000617", # lentic water body
-    "http://purl.obolibrary.org/obo/ENVO_00000022", # river
-    "http://purl.obolibrary.org/obo/ENVO_00000023", # stream
-
-    # terrestrial environments
-    "http://purl.obolibrary.org/obo/ENVO_01001886", # landform
-    "http://purl.obolibrary.org/obo/ENVO_00000191", # solid astronomical body part
-
-    # vegetation / habitats
-    "http://purl.obolibrary.org/obo/ENVO_01001243",# forest ecosystem
-    "http://purl.obolibrary.org/obo/ENVO_01000177",# grassland ecosystem
-
-    # materials
-    "http://purl.obolibrary.org/obo/ENVO_00001998",# soil
-    "http://purl.obolibrary.org/obo/ENVO_00002007",# sediment
-
-    # human influenced environments
-    "http://purl.obolibrary.org/obo/ENVO_01000951",# cultivated environment
+HABITAT_ROOT_IRIS = {
+    "http://purl.obolibrary.org/obo/ENVO_01000254",  # environmental system
+    "http://purl.obolibrary.org/obo/ENVO_00000446",  # biome
+    "http://purl.obolibrary.org/obo/ENVO_00000873",  # aquatic biome
+    "http://purl.obolibrary.org/obo/ENVO_00002010",  # terrestrial biome
+    "http://purl.obolibrary.org/obo/ENVO_00000063",  # water body
+    "http://purl.obolibrary.org/obo/ENVO_01000617",  # lentic water body
+    "http://purl.obolibrary.org/obo/ENVO_01001243",  # forest ecosystem
+    "http://purl.obolibrary.org/obo/ENVO_01000177",  # grassland ecosystem
 }
 
 def encode_iri(iri: str) -> str:
@@ -99,7 +83,7 @@ def semantic_search(text: str, rows: int = 10) -> List[Dict[str, Any]]:
     return response.json().get("response", {}).get("docs", [])
 
 
-def simplify_term(term: Dict[str, Any], root_iri: str) -> Dict[str, Any]:
+def simplify_term(term: Dict[str, Any], is_habitat: bool = False) -> Dict[str, Any]:
 # keeps only the fields needed by WP5 matching/scoring
     return {
         "label": term.get("label"),
@@ -107,30 +91,56 @@ def simplify_term(term: Dict[str, Any], root_iri: str) -> Dict[str, Any]:
         "obo_id": term.get("obo_id"),
         "description": term.get("description", []),
         "synonyms": term.get("synonyms", []) or term.get("synonym", []),
-        "root_iri": root_iri,
+        "is_habitat": is_habitat,
     }
 
 
-def build_envo_cache(cache_path: Path = CACHE_PATH) -> List[Dict[str, Any]]:
-# Builds a local cache containing all relevant ENVO terms
-    cache_path.parent.mkdir(parents=True, exist_ok=True)
-    all_terms: Dict[str, Dict[str, Any]] = {}
+def _fetch_all_terms() -> List[Dict[str, Any]]:
+    terms: Dict[str, Dict[str, Any]] = {}
+    page = 0
+    while True:
+        response = requests.get(
+            f"{OLS_BASE_URL}/ontologies/{ONTOLOGY}/terms",
+            params={"page": page, "size": 500},
+            timeout=REQUEST_TIMEOUT,
+        )
+        response.raise_for_status()
+        data = response.json()
+        chunk = data.get("_embedded", {}).get("terms", [])
+        for term in chunk:
+            iri = term.get("iri")
+            if not iri or not term.get("label") or "/ENVO_" not in iri or term.get("is_obsolete"):
+                continue
+            terms.setdefault(iri, term)
+        total_pages = data.get("page", {}).get("totalPages", 1)
+        page += 1
+        if page >= total_pages or len(chunk) < 500:
+            break
+    return list(terms.values())
 
-    for root_iri in RELEVANT_ROOT_IRIS:
-        print(f"Loading descendants for: {root_iri}")
 
+def _fetch_habitat_iris() -> set:
+    iris = set()
+    for root_iri in HABITAT_ROOT_IRIS:
         for term in get_descendants(root_iri):
             iri = term.get("iri")
-            if not iri:
-                continue
-            all_terms[iri] = simplify_term(term, root_iri)
+            if iri and "/ENVO_" in iri:
+                iris.add(iri)
+    return iris
 
-    cached_terms = list(all_terms.values())
+
+def build_envo_cache(cache_path: Path = CACHE_PATH) -> List[Dict[str, Any]]:
+# Whole-ENVO cache (all non-obsolete terms) with an is_habitat tag (descendant of a habitat root).
+    cache_path.parent.mkdir(parents=True, exist_ok=True)
+    habitat_iris = _fetch_habitat_iris()
+    raw = _fetch_all_terms()
+    cached_terms = [simplify_term(t, is_habitat=(t.get("iri") in habitat_iris)) for t in raw]
 
     with open(cache_path, "w", encoding="utf-8") as file:
         json.dump(cached_terms, file, indent=2, ensure_ascii=False)
 
-    print(f"Saved {len(cached_terms)} ENVO terms to {cache_path}")
+    n_habitat = sum(1 for t in cached_terms if t["is_habitat"])
+    print(f"Saved {len(cached_terms)} ENVO terms ({n_habitat} habitat) to {cache_path}")
     return cached_terms
 
 

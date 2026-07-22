@@ -35,7 +35,7 @@ RUN if [ "$DEVICE" = "cpu" ]; then \
 # container runs under an arbitrary uid (docker.runOptions '-u $(id -u):$(id -g)').
 ENV HF_HOME=/opt/hf \
     SENTENCE_TRANSFORMERS_HOME=/opt/hf
-RUN python -c "from sentence_transformers import SentenceTransformer, CrossEncoder; SentenceTransformer('BAAI/bge-large-en-v1.5'); CrossEncoder('cross-encoder/ms-marco-MiniLM-L-12-v2')" \
+RUN python -c "from sentence_transformers import SentenceTransformer, CrossEncoder; SentenceTransformer('BAAI/bge-large-en-v1.5'); CrossEncoder('BAAI/bge-reranker-v2-m3')" \
     && chmod -R 0777 /opt/hf
 
 # Force offline model loading at runtime and give the arbitrary-uid process a
@@ -59,6 +59,11 @@ ENV HF_HUB_OFFLINE=1 \
 COPY . /app
 RUN mkdir -p /app/geonames_data \
     && chmod -R 0777 /app/geonames_data
+
+# Pre-build the ENVO embeddings cache (whole-ENVO + BGE prefix) so the locality path needs no rebuild at
+# runtime under the arbitrary uid. The EMBEDDING_SCHEME tag keeps it consistent with the code.
+RUN python -c "from resolvers.locality.envo_matching import load_resources; load_resources()" \
+    && chmod -R 0777 /app/data
 
 # Pre-download local GeoNames data for Germany (DE) so it is baked into the image
 RUN python clients/local_geonames.py
