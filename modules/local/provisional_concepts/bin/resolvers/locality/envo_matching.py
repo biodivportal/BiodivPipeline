@@ -23,7 +23,7 @@ MAX_SYNONYMS_FOR_TEXT = 3
 # and the translation step can be removed
 MODEL_NAME = "BAAI/bge-large-en-v1.5"
 BGE_QUERY_INSTRUCTION = "Represent this sentence for searching relevant passages: "
-EMBEDDING_SCHEME = "bge"  # bump to force-rebuild the embeddings cache
+EMBEDDING_SCHEME = "bge-label"  # bump to force-rebuild the embeddings cache
 RERANK_MODEL_NAME = "BAAI/bge-reranker-v2-m3"
 
 EXISTENCE_THRESHOLD = 0.7
@@ -96,9 +96,7 @@ def top_synonyms(term, limit=MAX_SYNONYMS_FOR_TEXT):
 
 def build_envo_text(term):
     label = term.get("label", "")
-    parts = [label, label]
-    parts.extend(top_synonyms(term))
-    return " ".join(p for p in parts if p)
+    return " ".join([label, label])
 
 def build_rerank_text(term):
     label = term.get("label", "")
