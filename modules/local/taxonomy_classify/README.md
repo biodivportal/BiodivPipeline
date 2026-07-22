@@ -227,12 +227,9 @@ flowchart TD
  
     P2 --> P3["Phase 3: one sequential retry pass<br/>over rows that still errored"]
     P3 --> OUT["Output CSV<br/>original columns + llm_* + taxon_*"]
- 
-    classDef ext fill:#e8e8e8,stroke:#888,color:#000;
-    class GBIF,OAI ext;
 ```
 
-Taxonomy is resolved first for the whole dataset because the classifier uses the resolved name as prompt context. The phases are ordered by this dependency. White nodes are external services.
+Taxonomy is resolved first for the whole dataset because the classifier uses the resolved name as prompt context. The phases are ordered by this dependency. Hexagon nodes are external services.
  
 ### Phase 1: Taxonomy (`gbif_lookup.py`)
  

@@ -24,7 +24,7 @@ flowchart TD
     SCH --> WP7
 
     WP2 -->|enriched.csv| ASM["ASSEMBLE_DATASET"]
-    WP3 -->|taxonomy_resolved.csv (vestigial — already in enriched)| ASM
+    WP3 -->|"taxonomy_resolved.csv (vestigial — already in enriched)"| ASM
     WP4 -->|flagged_records.csv| ASM
 
     WP6 -->|column_mapping.json| COL["COLLECT_REPORTS"]
@@ -38,12 +38,8 @@ flowchart TD
     WP7 --> O2[/"RDF triples .ttl — output (ii)"/]
     COL --> O3[/"pipeline_summary.json / .md — output (iii)"/]
 
-    classDef wp1 fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px;
-    classDef skip fill:#fff3e0,stroke:#ef6c00,stroke-dasharray:4 3;
-    classDef out fill:#e1f5fe,stroke:#0277bd;
-    class ASM,COL wp1;
+    classDef skip stroke-dasharray:4 3;
     class WP5,WP7 skip;
-    class O1,O2,O3 out;
 ```
 
 - The raw CSV fans out to three independent branches: **WP6** (column standardisation),
@@ -52,9 +48,9 @@ flowchart TD
   columns appended; that `taxonomy_resolved.csv` feeds **WP2 annotation**, whose `unresolved_terms.csv`
   feeds **WP5**. (The taxonomy join at `ASSEMBLE_DATASET` is now vestigial — the taxonomy
   columns already ride through WP2 into `enriched.csv` — but kept for robustness.)
-- **Green (WP1):** `ASSEMBLE_DATASET` builds the unified dataset; `COLLECT_REPORTS`
+- **WP1 (assembly & reporting):** `ASSEMBLE_DATASET` builds the unified dataset; `COLLECT_REPORTS`
   aggregates every module's signal.
-- **Orange dashed (skippable):** WP5 (needs an LLM key) and WP7 RDF (needs a matching RML
+- **Dashed (skippable):** WP5 (needs an LLM key) and WP7 RDF (needs a matching RML
   mapping; enable it from a params-file, not the CLI).
 
 ## Modules
