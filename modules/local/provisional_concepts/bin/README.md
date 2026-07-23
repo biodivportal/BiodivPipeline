@@ -2,6 +2,8 @@
 
 This directory contains the core logic for the **Provisional Concepts (WP5)** pipeline module.
 
+Locality resolution is a LLM split/translate → ENVO retrieval (embeddings + reranker) → LLM judge. Each locality ends up `ACCEPT` (matched an ENVO term), `REGISTER` (a habitat concept missing from ENVO, with a generated definition), or `DISCARD` (no habitat term). If the input has an upstream CLC (Corine Land Cover) hint (`llm_code`/`llm_name`/`llm_confidence`), it's passed to the judge.
+
 ## Relevant Scripts
 
 - `main.py`: Core CLI orchestrator. It ingests unresolved terms, routes them to the appropriate resolvers, writes both JSON and CSV output files, and optionally runs evaluation.
@@ -66,16 +68,24 @@ python clients/local_geonames.py AT CH
 ## Docker Integration
 
 ### Build the Image
-To build the Docker image locally for testing:
+The ENVO term set + embeddings are produced by a separate single-arch **data image** (`Dockerfile.data`) and copied into the runtime image at build time (see [Baked Assets](#baked-assets-in-the-dockerfile)). CI builds the data image automatically; for a local build you do it in two steps from this `bin/` directory:
+This is only because precomputing the embeddings saves on start-up time but the GH build is too slow on arm64.
+
+**1. Build the data image** (fetches the ENVO term set from OLS and encodes it — fast on native CPU, and skipped entirely if `data/envo_embeddings.pkl` already exists locally):
+```bash
+docker build -t ghcr.io/biodivportal/provisional-concepts-data:0.4 -f Dockerfile.data .
+```
+
+**2. Build the runtime image:**
 
 **CPU version (default):**
 ```bash
-docker build -t ghcr.io/biodivportal/provisional-concepts:0.2 -f Dockerfile .
+docker build -t ghcr.io/biodivportal/provisional-concepts:0.4 -f Dockerfile .
 ```
 
 **GPU version (uses PyTorch CUDA 12.6 wheels):**
 ```bash
-docker build --build-arg DEVICE=gpu -t ghcr.io/biodivportal/provisional-concepts:0.2-gpu -f Dockerfile .
+docker build --build-arg DEVICE=gpu -t ghcr.io/biodivportal/provisional-concepts:0.4-gpu -f Dockerfile .
 ```
 
 ### Run the Image Standalone
@@ -87,7 +97,7 @@ To run the container standalone (which defaults to running the resolver script):
 docker run -it --rm \
     -v /absolute/path/to/local/data:/data \
     -e WP5_OPENAI_API_KEY="your-key-here" \
-    ghcr.io/biodivportal/provisional-concepts:0.2 \
+    ghcr.io/biodivportal/provisional-concepts:0.4 \
     --input /data/unresolved_terms.csv \
     --output /data/provisional_concepts.json
 ```
@@ -98,7 +108,7 @@ Running with GPU support requires the [NVIDIA Container Toolkit](https://docs.nv
 docker run -it --rm --gpus all \
     -v /absolute/path/to/local/data:/data \
     -e WP5_OPENAI_API_KEY="your-key-here" \
-    ghcr.io/biodivportal/provisional-concepts:0.2-gpu \
+    ghcr.io/biodivportal/provisional-concepts:0.4-gpu \
     --input /data/unresolved_terms.csv \
     --output /data/provisional_concepts.json
 ```
@@ -106,4 +116,5 @@ docker run -it --rm --gpus all \
 ### Baked Assets in the Dockerfile
 To reduce startup times some data is baked into the docker image.
 1. **Local GeoNames database** (Germany `DE` and `admin1CodesASCII` maps).
-2. **HuggingFace Embedding and Reranking models** (`BAAI/bge-large-en-v1.5` and `cross-encoder/ms-marco-MiniLM-L-12-v2`).
+2. **HuggingFace embedding + reranker models** (`BAAI/bge-large-en-v1.5` and `BAAI/bge-reranker-v2-m3`).
+3. **ENVO term cache and embeddings** — pulled from OLS and precomputed by the separate `provisional-concepts-data` image (`Dockerfile.data`), then copied into the runtime image. Building them in a single-arch (amd64) image avoids re-encoding the 3,872-term set per platform under QEMU, which previously blew past the CI 6h limit. CI publishes the data image as `ghcr.io/biodivportal/provisional-concepts-data:<version>`; it can stay private since only the authenticated CI build pulls it, and it only needs rebuilding when the ENVO term set or `EMBEDDING_SCHEME` in `resolvers/locality/envo_matching.py` changes.

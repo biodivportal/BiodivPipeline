@@ -14,7 +14,7 @@ CACHE_PATH = DATA_DIR / "envo_embeddings.pkl"  # cached embedding
 
 RETRIEVE_K = 50          # how many candidates the embedding stage pulls
 RERANK_SHORTLIST_K = 20  # how many of those actually get reranked
-FINAL_TOP_K = 3
+FINAL_TOP_K = 10
 
 MAX_SYNONYMS_FOR_TEXT = 3
 
@@ -22,7 +22,9 @@ MAX_SYNONYMS_FOR_TEXT = 3
 # that means if there is a better multilingual option: both can be replaced with a multilingual embedder
 # and the translation step can be removed
 MODEL_NAME = "BAAI/bge-large-en-v1.5"
-RERANK_MODEL_NAME = "cross-encoder/ms-marco-MiniLM-L-12-v2"
+BGE_QUERY_INSTRUCTION = "Represent this sentence for searching relevant passages: "
+EMBEDDING_SCHEME = "bge-label"  # bump to force-rebuild the embeddings cache
+RERANK_MODEL_NAME = "BAAI/bge-reranker-v2-m3"
 
 EXISTENCE_THRESHOLD = 0.7
 
@@ -94,9 +96,7 @@ def top_synonyms(term, limit=MAX_SYNONYMS_FOR_TEXT):
 
 def build_envo_text(term):
     label = term.get("label", "")
-    parts = [label, label]
-    parts.extend(top_synonyms(term))
-    return " ".join(p for p in parts if p)
+    return " ".join([label, label])
 
 def build_rerank_text(term):
     label = term.get("label", "")
@@ -110,7 +110,7 @@ def build_rerank_text(term):
 def build_envo_embeddings(terms, cache_path=CACHE_PATH):
     texts = [build_envo_text(t) for t in terms]
     emb = get_model().encode(
-        ["passage: " + t for t in texts],
+        texts,
         batch_size=64,
         convert_to_numpy=True,
         normalize_embeddings=True,
@@ -118,7 +118,7 @@ def build_envo_embeddings(terms, cache_path=CACHE_PATH):
     )
     try:
         with open(cache_path, "wb") as f:
-            pickle.dump({"model": MODEL_NAME, "count": len(terms), "embeddings": emb}, f)
+            pickle.dump({"model": MODEL_NAME, "scheme": EMBEDDING_SCHEME, "count": len(terms), "embeddings": emb}, f)
     except OSError as e:
         print(f"Warning: Could not save embeddings cache to {cache_path} ({e}). Proceeding with in-memory embeddings.")
     return emb
@@ -134,6 +134,7 @@ def load_resources():
         # rebuild if out of date
         if (isinstance(cache, dict)
                 and cache.get("model") == MODEL_NAME
+                and cache.get("scheme") == EMBEDDING_SCHEME
                 and cache.get("count") == len(envo_terms)):
             envo_embeddings = cache["embeddings"]
             return
@@ -142,7 +143,7 @@ def load_resources():
 def embedding_search(query, top_k=RETRIEVE_K):
     load_resources()
     vec = get_model().encode(
-        ["query: " + query],
+        [BGE_QUERY_INSTRUCTION + query],
         convert_to_numpy=True,
         normalize_embeddings=True,
     )[0]
@@ -160,11 +161,12 @@ def rerank(query, candidates):
     return out
 
 
-def match_envo(clean_field, threshold=EXISTENCE_THRESHOLD):
-    if not clean_field:
+def match_envo(clean_field, query_en=None, threshold=EXISTENCE_THRESHOLD):
+    if not clean_field and not query_en:
         return {"method": None, "exists": False, "matches": []}
 
-    query_en = translate_to_english(clean_field)
+    if query_en is None:
+        query_en = translate_to_english(clean_field)
 
     hits = embedding_search(query_en, top_k=RETRIEVE_K)
     if not hits:

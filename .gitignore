@@ -8,6 +8,7 @@ null/
 
 # Data (too large for git — download separately)
 Belege_aus_D.csv
+envo_relevant_terms.json
 
 # OS
 .DS_Store

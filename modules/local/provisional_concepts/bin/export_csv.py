@@ -20,6 +20,11 @@ def extract_row(concept):
     proposed_action = concept.get("proposed_action", "")
     ontology_inclusion_score = round(concept.get("ontology_inclusion_score", 0.0), 3)
     explanation = concept.get("explanation", "")
+    translated_term = concept.get("translated_term", "")
+    definition = concept.get("definition", "")
+    proposed_synonyms = ", ".join(concept.get("proposed_synonyms") or [])
+    clc_code = concept.get("clc_code", "")
+    clc_name = concept.get("clc_name", "")
 
     if is_locality:
         # envo
@@ -66,6 +71,11 @@ def extract_row(concept):
         "proposed_action": proposed_action,
         "ontology_inclusion_score": ontology_inclusion_score,
         "explanation": explanation,
+        "translated_term": translated_term,
+        "definition": definition,
+        "proposed_synonyms": proposed_synonyms,
+        "clc_code": clc_code,
+        "clc_name": clc_name,
         "match_term": match_term,
         "match_uri": match_uri,
         "match_confidence": match_confidence,
@@ -88,6 +98,11 @@ def export_concepts_csv(concepts, output_path):
         "proposed_action",
         "ontology_inclusion_score",
         "explanation",
+        "translated_term",
+        "definition",
+        "proposed_synonyms",
+        "clc_code",
+        "clc_name",
         "match_term",
         "match_uri",
         "match_confidence",
