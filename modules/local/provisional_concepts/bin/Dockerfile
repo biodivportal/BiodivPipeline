@@ -2,6 +2,10 @@
 # Contains both resolver paths:
 #   - taxon  (GBIF, no key)          -> run with --species
 #   - locality (ENVO embeddings+LLM) -> run with --localities (needs WP5_OPENAI_API_KEY)
+ARG DATA_IMAGE=ghcr.io/biodivportal/provisional-concepts-data:0.4
+
+FROM --platform=$BUILDPLATFORM ${DATA_IMAGE} AS envo-data
+
 FROM python:3.11-slim
 
 # procps provides `ps`, which Nextflow uses to collect resource metrics
@@ -62,8 +66,7 @@ RUN mkdir -p /app/geonames_data \
 
 # Pull the pre-built ENVO embeddings + whole-ENVO term set from the single-arch
 # (linux/amd64) data image that CI builds via Dockerfile.data.
-ARG DATA_IMAGE=ghcr.io/biodivportal/provisional-concepts-data:0.4
-COPY --from=${DATA_IMAGE} /app/data/envo_embeddings.pkl /app/data/envo_relevant_terms.json /app/data/
+COPY --from=envo-data /app/data/envo_embeddings.pkl /app/data/envo_relevant_terms.json /app/data/
 RUN chmod -R 0777 /app/data
 
 # Pre-download local GeoNames data for Germany (DE) so it is baked into the image
