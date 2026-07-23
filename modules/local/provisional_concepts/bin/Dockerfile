@@ -34,13 +34,13 @@ RUN if [ "$DEVICE" = "cpu" ]; then \
         echo "Error: Unsupported DEVICE '$DEVICE'. Must be 'cpu' or 'gpu'." && exit 1; \
     fi
 
-# Bake the ENVO embedding and reranking models into the image so the locality path needs no
-# network download at runtime. Store them in a world-writable location because the
+# Point the HF / sentence-transformers cache at a world-writable location because the
 # container runs under an arbitrary uid (docker.runOptions '-u $(id -u):$(id -g)').
 ENV HF_HOME=/opt/hf \
     SENTENCE_TRANSFORMERS_HOME=/opt/hf
-RUN python -c "from sentence_transformers import SentenceTransformer, CrossEncoder; SentenceTransformer('BAAI/bge-large-en-v1.5'); CrossEncoder('BAAI/bge-reranker-v2-m3')" \
-    && chmod -R 0777 /opt/hf
+# Reuse the embedding + reranker models already warmed in the single-arch (amd64)
+COPY --from=envo-data /opt/hf /opt/hf
+RUN chmod -R 0777 /opt/hf
 
 # Force offline model loading at runtime and give the arbitrary-uid process a
 # writable HOME (pygbif caching, dotenv, HF lock files).
