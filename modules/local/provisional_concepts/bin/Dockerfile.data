@@ -1,0 +1,56 @@
+# WP5 provisional_concepts — ENVO embeddings data image
+#
+# Single-arch (linux/amd64) helper image. Its only purpose is to produce the two
+# artifacts the locality resolver needs at runtime:
+#
+#   /app/data/envo_relevant_terms.json  — whole-ENVO term set (fetched from OLS)
+#   /app/data/envo_embeddings.pkl       — BGE embeddings of those terms
+#
+# Building these once on native amd64 — instead of inside the multi-arch runtime
+# image — avoids re-encoding 3,872 terms per platform under QEMU (the former 6h
+# build-timeout driver). The runtime Dockerfile COPYs both files out of this
+# image (`COPY --from=...provisional-concepts-data`).
+#
+# Published by .github/workflows/docker-publish.yml (platforms: linux/amd64 only)
+# as ghcr.io/biodivportal/provisional-concepts-data:<version>. It can stay
+# private: only CI (authenticated) pulls it, never end users.
+FROM python:3.11-slim
+
+# procps provides `ps`; kept for parity with the runtime image.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends procps \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Copy requirements.txt first for caching.
+COPY requirements.txt .
+
+# cpu/gpu builds (defaults to cpu; same DEVICE switch as the runtime Dockerfile).
+ARG DEVICE="cpu"
+RUN if [ "$DEVICE" = "cpu" ]; then \
+        pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu && \
+        pip install --no-cache-dir -r requirements.txt --extra-index-url https://download.pytorch.org/whl/cpu; \
+    elif [ "$DEVICE" = "gpu" ]; then \
+        pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cu126 && \
+        pip install --no-cache-dir -r requirements.txt --extra-index-url https://download.pytorch.org/whl/cu126; \
+    else \
+        echo "Error: Unsupported DEVICE '$DEVICE'. Must be 'cpu' or 'gpu'." && exit 1; \
+    fi
+
+# Warm the embedding + reranker models into the cache so the encode step below is offline.
+ENV HF_HOME=/opt/hf \
+    SENTENCE_TRANSFORMERS_HOME=/opt/hf
+RUN python -c "from sentence_transformers import SentenceTransformer, CrossEncoder; SentenceTransformer('BAAI/bge-large-en-v1.5'); CrossEncoder('BAAI/bge-reranker-v2-m3')" \
+    && chmod -R 0777 /opt/hf
+
+# Copy the WP5 source (resolvers/, clients/, ...) so load_resources() can import it.
+COPY . /app
+
+# Fetch the whole-ENVO term set from OLS and encode it.
+# In CI these files are absent from the checkout (envo_relevant_terms.json is
+# gitignored), so this regenerates them reproducibly; if present locally,
+# load_resources() validates (model + scheme + count) and reuses them.
+# Produces /app/data/envo_relevant_terms.json and /app/data/envo_embeddings.pkl.
+RUN python -c "from resolvers.locality.envo_matching import load_resources; load_resources()" \
+    && ls -lh /app/data/envo_embeddings.pkl /app/data/envo_relevant_terms.json
