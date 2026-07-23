@@ -60,10 +60,11 @@ COPY . /app
 RUN mkdir -p /app/geonames_data \
     && chmod -R 0777 /app/geonames_data
 
-# Pre-build the ENVO embeddings cache (whole-ENVO + BGE prefix) so the locality path needs no rebuild at
-# runtime under the arbitrary uid. The EMBEDDING_SCHEME tag keeps it consistent with the code.
-RUN python -c "from resolvers.locality.envo_matching import load_resources; load_resources()" \
-    && chmod -R 0777 /app/data
+# Pull the pre-built ENVO embeddings + whole-ENVO term set from the single-arch
+# (linux/amd64) data image that CI builds via Dockerfile.data.
+ARG DATA_IMAGE=ghcr.io/biodivportal/provisional-concepts-data:0.4
+COPY --from=${DATA_IMAGE} /app/data/envo_embeddings.pkl /app/data/envo_relevant_terms.json /app/data/
+RUN chmod -R 0777 /app/data
 
 # Pre-download local GeoNames data for Germany (DE) so it is baked into the image
 RUN python clients/local_geonames.py

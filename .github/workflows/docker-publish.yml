@@ -144,6 +144,23 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      # provisional-concepts only: build & push the single-arch (amd64) ENVO
+      # embeddings data image first, so the multi-arch runtime build below can
+      # COPY the pre-built envo_embeddings.pkl + envo_relevant_terms.json
+      # The CI runs too slow on QEMU arm64
+      # See modules/local/provisional_concepts/bin/Dockerfile.data.
+      - name: Build & push embeddings data image (provisional-concepts only)
+        if: matrix.module == 'provisional-concepts'
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.context }}
+          file: ${{ matrix.context }}/Dockerfile.data
+          platforms: linux/amd64
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.OWNER }}/provisional-concepts-data:${{ matrix.version }}
+          cache-from: type=gha,scope=data
+          cache-to: type=gha,mode=max,scope=data
+
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
@@ -152,5 +169,10 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          # provisional-concepts resolves its DATA_IMAGE build-arg to the data
+          # image pushed above; other modules get an empty build-args list (no
+          # unhandled-arg warning).
+          build-args: |
+            ${{ matrix.module == 'provisional-concepts' && format('DATA_IMAGE={0}/{1}/provisional-concepts-data:{2}', env.REGISTRY, env.OWNER, matrix.version) || '' }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
