@@ -94,6 +94,7 @@ async def transform(
     # RML mappings are RDF, so the schema may arrive as Turtle or JSON-LD.
     # Auto-detected from the upload's extension; override here if needed.
     mapping_format: Optional[str] = Form(None),
+    ontologies: LoadedOntologies = Depends(get_ontologies),
 ) -> Response:
     fmt = output_format.lower()
     if fmt not in _FORMAT_TO_MEDIA:
@@ -108,6 +109,33 @@ async def transform(
     dataset_bytes = await dataset.read()
     mapping_bytes = await mapping_schema.read()
     map_fmt = _detect_mapping_format(mapping_schema.filename, mapping_format)
+
+    # Mandatory dataset/mapping compatibility check.
+# This cannot be bypassed by skipping the preflight endpoint.
+
+    compatibility_result = validate_model(
+        mapping_bytes,
+        ontologies,
+        mapping_format=map_fmt,
+        dataset_bytes=dataset_bytes,
+        source_type=source_type,
+        delimiter=delimiter
+    )
+
+    column_issues = [
+        issue
+        for issue in compatibility_result.issues
+        if issue.startswith("[L4]")
+    ]
+
+    if column_issues:
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "message": "RML mapping is incompatible with the supplied dataset.",
+                "issues": column_issues
+            }
+        )
 
     try:
         result = await asyncio.to_thread(
@@ -140,7 +168,10 @@ async def transform(
 @router.post("/validate", response_model=ValidateResponse)
 async def validate(
     mapping_schema: UploadFile = File(...),
+    dataset: Optional[UploadFile] = File(None),
     mapping_format: Optional[str] = Form(None),
+    source_type: str = Form("CSV"),
+    delimiter: str = Form("COMMA"),
     ontologies: LoadedOntologies = Depends(get_ontologies),
 ) -> ValidateResponse:
     """Pre-flight check of an RML mapping:
@@ -149,12 +180,30 @@ async def validate(
     - L2 — the file declares a triples map (`rml:subjectMap` + logical source)
     - L3 — every IRI in a known ontology namespace is actually declared
       there (catches typos and stale mapping references)
+    - L4 — if a dataset is provided, every `rml:source` can be read and
+      every `rml:reference` resolves to a column in the dataset 
 
     See `src/core/model_validator.py` for the implementation. A clean
     mapping returns `{"valid": true, "issues": []}`; any finding flips
     `valid` to false and lists the specific issues.
     """
     model_bytes = await mapping_schema.read()
-    map_fmt = _detect_mapping_format(mapping_schema.filename, mapping_format)
-    result = validate_model(model_bytes, ontologies, mapping_format=map_fmt)
-    return ValidateResponse(valid=result.valid, issues=result.issues)
+    dataset_bytes = await dataset.read() if dataset else None
+    map_fmt = _detect_mapping_format(
+        mapping_schema.filename,
+        mapping_format
+    )
+
+    result = validate_model(
+        model_bytes,
+        ontologies,
+        mapping_format=map_fmt,
+        dataset_bytes=dataset_bytes,
+        source_type=source_type,
+        delimiter=delimiter
+    )
+
+    return ValidateResponse(
+        valid=result.valid,
+        issues=result.issues
+    )

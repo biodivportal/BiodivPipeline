@@ -51,8 +51,11 @@ process RDF_TRANSFORM {
     done
 
     # Pre-flight: validate the mapping against the loaded ontologies.
-    curl -sf -X POST http://127.0.0.1:8000/validate \\
-        -F "mapping_schema=@${schema}" \\
+    curl -sf -X POST http://127.0.0.1:8000/validate \
+        -F "dataset=@${dataset}" \
+        -F "mapping_schema=@${schema}" \
+        -F "source_type=${source_type}" \
+        -F "delimiter=${delimiter}" \
         -o validate.json
 
     # Abort the task if the mapping is invalid (unless skipped).

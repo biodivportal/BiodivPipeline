@@ -10,6 +10,38 @@ from app.matching.pipeline import MappingPipeline
 from app.services.llm_service import get_llm_prediction
 from app.api import DEFAULT_WEIGHTS, abcd_path, load_abcd_descriptions
 
+def find_duplicate_headers(headers):
+    """
+    Return duplicate header names and their 1-based positions.
+    Matching is exact and case-sensitive.
+    """
+    positions = {}
+
+    for index, header in enumerate(headers, start=1):
+        positions.setdefault(header, []).append(index)
+
+    return {
+        header: indexes
+        for header, indexes in positions.items()
+        if len(indexes) > 1
+    }
+
+
+def validate_unique_headers(headers, description):
+    """
+    Reject duplicate column headers.
+    """
+    duplicates = find_duplicate_headers(headers)
+
+    if duplicates:
+        details = "; ".join(
+            f"{header!r} at positions {positions}"
+            for header, positions in duplicates.items()
+        )
+
+        raise ValueError(
+            f"Duplicate {description} headers detected: {details}"
+        )
 
 def main():
     parser = argparse.ArgumentParser(description="ABCD Column Standardizer CLI")
@@ -91,7 +123,42 @@ def main():
         except UnicodeDecodeError:
             decoded = contents.decode("latin1")
 
-        df = pd.read_csv(StringIO(decoded), sep=None, engine="python")
+        try:
+            # First read the header row without allowing pandas to
+            # automatically rename duplicate column names.
+            header_df = pd.read_csv(
+                StringIO(decoded),
+                sep=None,
+                engine="python",
+                header=None,
+                nrows=1,
+                dtype=str,
+                keep_default_na=False
+            )
+
+            if header_df.empty:
+                raise ValueError("CSV file is empty or has no header row.")
+
+            raw_headers = header_df.iloc[0].tolist()
+
+            validate_unique_headers(
+                raw_headers,
+                "input"
+            )
+
+            # Read the actual dataset using the existing delimiter detection.
+            df = pd.read_csv(
+                StringIO(decoded),
+                sep=None,
+                engine="python"
+            )
+
+        except Exception as e:
+            print(
+                f"Error reading or validating CSV {args.input}: {e}",
+                file=sys.stderr
+            )
+            sys.exit(1)
     except Exception as e:
         print(f"Error reading CSV {args.input}: {e}", file=sys.stderr)
         sys.exit(1)
@@ -203,6 +270,15 @@ def main():
                 total_output_tokens += llm_pred.get("output_tokens", 0)
                 llm_used_at_least_once = True
 
+            if predicted_header is None or not str(predicted_header).strip():
+                raise ValueError(
+                    f"Empty predicted header for input column {header!r}"
+                )
+
+            # Apply the same naming convention to every prediction,
+            # including predictions returned by an LLM.
+            predicted_header = str(predicted_header).replace(" ", "")    
+
         new_headers[header] = predicted_header
 
         # Save to mapping array
@@ -247,8 +323,27 @@ def main():
             "total_tokens": total_input_tokens + total_output_tokens,
         }
 
-    # Create standardised CSV
-    standardised_df = df.rename(columns=new_headers)
+    # Calculate the exact output header for each original column.
+    final_headers = [
+        new_headers[header]
+        for header in df.columns
+    ]
+
+    # Check for collisions, including collisions with unchanged headers.
+    try:
+        validate_unique_headers(
+            final_headers,
+            "standardised output"
+        )
+    except ValueError as e:
+        print(f"Standardisation failed: {e}", file=sys.stderr)
+        sys.exit(1)
+
+    # Assign the validated headers.
+    standardised_df = df.copy()
+    standardised_df.columns = final_headers
+
+    # Write the standardised dataset.
     standardised_df.to_csv(args.out_csv, index=False)
 
     # Save mapping and metadata

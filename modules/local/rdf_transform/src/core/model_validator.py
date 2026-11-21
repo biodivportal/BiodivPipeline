@@ -22,9 +22,16 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from rdflib import Graph, URIRef
+from rdflib import Graph, URIRef, Literal
 
 from src.core.ontology_loader import LoadedOntologies, term_namespace
+
+import re
+
+from src.core.morph_runner import (
+    MorphError,
+    read_tabular_dataset
+)
 
 # A triples map is identified structurally by a subject map + a logical
 # source. We accept all three vocabularies a Schema Editor might emit:
@@ -42,19 +49,75 @@ _LOGICAL_SOURCE_PREDICATES = (
     URIRef("http://www.w3.org/ns/r2rml#logicalTable"),
 )
 
+#Modern RML reference
+# Legacy RML reference
+# Legacy R2RML column reference
+
+_COLUMN_REFERENCE_PREDICATES = (
+    URIRef("http://w3id.org/rml/reference"),
+    URIRef("http://semweb.mmlab.be/ns/rml#reference"),
+    URIRef("http://www.w3.org/ns/r2rml#column"),
+)
+
+# References embedded inside URI templates.
+
+_TEMPLATE_PREDICATES = (
+    URIRef("http://w3id.org/rml/template"),
+    URIRef("http://semweb.mmlab.be/ns/rml#template"),
+    URIRef("http://www.w3.org/ns/r2rml#template"),
+)
+
+_TEMPLATE_VARIABLE_PATTERN = re.compile(r"\{([^{}]+)\}")
+
 
 @dataclass
 class ValidationResult:
     valid: bool
     issues: list[str] = field(default_factory=list)
 
+def extract_column_references(graph: Graph) -> set[str]:
+    """
+    Extract CSV column references from an RML graph.
+
+    Supports:
+    - Modern RML: rml:reference
+    - Legacy R2RML: rr:column
+    - Modern and legacy template placeholders
+    """
+
+    references = set()
+
+    # 1. Direct column references.
+    for predicate in _COLUMN_REFERENCE_PREDICATES:
+        for value in graph.objects(None, predicate):
+            if isinstance(value, Literal):
+                references.add(str(value))
+
+    # 2. Column references inside templates.
+    for predicate in _TEMPLATE_PREDICATES:
+        for value in graph.objects(None, predicate):
+            if not isinstance(value, Literal):
+                continue
+
+            template = str(value)
+
+            placeholders = _TEMPLATE_VARIABLE_PATTERN.findall(
+                template
+            )
+
+            references.update(placeholders)
+
+    return references
 
 def validate_model(
     model_bytes: bytes,
     ontologies: LoadedOntologies,
     mapping_format: str = "turtle",
+    dataset_bytes: bytes | None = None,
+    source_type: str = "CSV",
+    delimiter: str = "COMMA",
 ) -> ValidationResult:
-    """Run L1+L2+L3 over `model_bytes` and return a structured result.
+    """Run L1+L2+L3+L4 over `model_bytes` and return a structured result.
 
     `mapping_format` is the rdflib parse format ("turtle" or "json-ld").
     """
@@ -99,33 +162,83 @@ def validate_model(
     # check it's declared there.
     if ontologies.is_empty:
         issues.append(
-            "[L3] No ontologies are loaded; skipping ontology-alignment check. "
-            "Set ONTOLOGIES_DIR or drop .owl files into the configured "
-            "directory to enable L3."
-        )
-        return ValidationResult(valid=not issues, issues=issues)
-
-    unknown: list[str] = []
-    seen: set[str] = set()
-    for triple in graph:
-        for node in triple:
-            if not isinstance(node, URIRef):
-                continue
-            iri = str(node)
-            if iri in seen:
-                continue
-            seen.add(iri)
-            ns = term_namespace(iri)
-            if ns is None or ns not in ontologies.namespaces:
-                continue
-            if iri not in ontologies.defined:
-                unknown.append(iri)
-
-    for iri in sorted(unknown):
-        issues.append(
-            f"[L3] `{iri}` is referenced but not declared by any loaded "
-            f"ontology (namespace {term_namespace(iri)} is owned by "
-            f"{', '.join(sorted(ontologies.sources))})."
+            "[L3] No ontologies are loaded; "
+            "skipping ontology-alignment check."
         )
 
-    return ValidationResult(valid=not issues, issues=issues)
+    else:
+        unknown = []
+        seen = set()
+
+        for triple in graph:
+            for node in triple:
+
+                if not isinstance(node, URIRef):
+                    continue
+
+                iri = str(node)
+
+                if iri in seen:
+                    continue
+
+                seen.add(iri)
+
+                ns = term_namespace(iri)
+
+                if ns is None or ns not in ontologies.namespaces:
+                    continue
+
+                if iri not in ontologies.defined:
+                    unknown.append(iri)
+
+        for iri in sorted(unknown):
+            issues.append(
+                f"[L3] `{iri}` is referenced but not declared "
+                f"by any loaded ontology."
+            )
+
+
+    # L4 — dataset-column compatibility.
+
+    if dataset_bytes is not None:
+
+        # This validation concerns tabular field names.
+        # JSON sources require separate JSONPath validation.
+        if (source_type or "CSV").upper() != "JSON":
+
+            try:
+                dataset_df = read_tabular_dataset(
+                    dataset_bytes,
+                    delimiter
+                )
+
+                dataset_headers = set(
+                    str(header)
+                    for header in dataset_df.columns
+                )
+
+                mapping_references = extract_column_references(
+                    graph
+                )
+
+                missing_columns = sorted(
+                    mapping_references - dataset_headers
+                )
+
+                for column in missing_columns:
+                    issues.append(
+                        f"[L4] Mapping references CSV column "
+                        f"{column!r}, but this column does not "
+                        f"exist in the supplied dataset."
+                    )
+
+            except MorphError as exc:
+                issues.append(
+                    f"[L4] Could not validate dataset columns: {exc}"
+                )
+
+
+    return ValidationResult(
+        valid=not issues,
+        issues=issues
+    )

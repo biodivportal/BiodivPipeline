@@ -52,6 +52,64 @@ class MorphResult:
     graph: Graph
     triples: int
 
+def read_tabular_dataset(dataset_bytes: bytes, delimiter: str = "COMMA"):
+    """
+    Read a tabular dataset using the same parsing configuration
+    used by the RDF transformation.
+    """
+
+    sep = _DELIMITERS.get(
+        (delimiter or "COMMA").upper(),
+        ","
+    )
+
+    try:
+        # Inspect original headers before pandas can mangle duplicates.
+        header_df = pd.read_csv(
+            io.BytesIO(dataset_bytes),
+            sep=sep,
+            header=None,
+            nrows=1,
+            dtype=str,
+            keep_default_na=False
+        )
+
+        if header_df.empty:
+            raise MorphError("Dataset has no header row.")
+
+        original_headers = header_df.iloc[0].tolist()
+
+        duplicates = {}
+
+        for index, header in enumerate(original_headers, start=1):
+            duplicates.setdefault(header, []).append(index)
+
+        duplicates = {
+            header: positions
+            for header, positions in duplicates.items()
+            if len(positions) > 1
+        }
+
+        if duplicates:
+            raise MorphError(
+                f"Dataset contains duplicate headers: {duplicates}"
+            )
+
+        # Read the dataset using the same settings as transformation.
+        return pd.read_csv(
+            io.BytesIO(dataset_bytes),
+            sep=sep,
+            dtype=str,
+            keep_default_na=False
+        )
+
+    except MorphError:
+        raise
+
+    except Exception as exc:
+        raise MorphError(
+            f"Could not parse tabular dataset: {exc}"
+        ) from exc
 
 def _normalize_dataset(dataset_bytes: bytes, source_type: str, delimiter: str,
                        tmp_dir: Path) -> Path:
@@ -66,12 +124,10 @@ def _normalize_dataset(dataset_bytes: bytes, source_type: str, delimiter: str,
         path.write_bytes(dataset_bytes)
         return path
 
-    sep = _DELIMITERS.get((delimiter or "COMMA").upper(), ",")
-    try:
-        df = pd.read_csv(io.BytesIO(dataset_bytes), sep=sep, dtype=str,
-                         keep_default_na=False)
-    except Exception as exc:  # pandas raises a zoo of parse errors
-        raise MorphError(f"Could not parse tabular dataset: {exc}") from exc
+    df = read_tabular_dataset(
+        dataset_bytes,
+        delimiter
+    )
     path = tmp_dir / "dataset.csv"
     df.to_csv(path, index=False)
     return path

@@ -74,3 +74,72 @@ def test_transform_passes_upload_through_to_runner(client, monkeypatch):
     assert captured["mapping_format"] == "json-ld"  # detected from .jsonld
     assert captured["dataset_bytes"] == b'[{"a":"1"}]'
     assert "ex:p" in response.text or "http://example.org/p" in response.text
+
+def test_transform_rejects_incompatible_mapping(
+    client,
+    monkeypatch
+):
+    called = False
+
+    def fake_run_morph(**kwargs):
+        nonlocal called
+        called = True
+        raise AssertionError(
+            "Transformation should not have been called"
+        )
+
+    monkeypatch.setattr(
+        "src.api.routes.run_morph",
+        fake_run_morph
+    )
+
+    mapping = b"""
+    @prefix rml: <http://w3id.org/rml/> .
+    @prefix ex: <http://example.org/> .
+
+    <#TM> a rml:TriplesMap ;
+
+        rml:logicalSource [
+            rml:source "input.csv" ;
+            rml:referenceFormulation rml:CSV
+        ] ;
+
+        rml:subjectMap [
+            rml:template "http://example.org/{MissingID}"
+        ] .
+    """
+
+    response = client.post(
+        "/transform",
+        files={
+            "dataset": (
+                "standardised.csv",
+                b"ScientificName,AccessionNumber\n"
+                b"Quercus robur,12345\n",
+                "text/csv"
+            ),
+            "mapping_schema": (
+                "mapping.rml.ttl",
+                mapping,
+                "text/turtle"
+            )
+        },
+        data={
+            "source_type": "CSV",
+            "delimiter": "COMMA",
+            "output_format": "turtle"
+        }
+    )
+
+    assert response.status_code == 400
+
+    body = response.json()
+
+    assert "incompatible" in body["detail"]["message"].lower()
+
+    assert any(
+        "MissingID" in issue
+        for issue in body["detail"]["issues"]
+    )
+
+    assert called is False
